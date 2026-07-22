@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0c1117;
-  --bg-elevated: #121a24;
-  --bg-soft: #182231;
-  --border: #243041;
-  --text: #e8eef6;
-  --text-muted: #8b9bb0;
-  --accent: #3d9cf0;
-  --accent-soft: #1a3a5c;
-  --success: #3ecf8e;
-  --warning: #e6b84d;
-  --danger: #ef6b6b;
-  --font-display: "Segoe UI", "Helvetica Neue", sans-serif;
+  /* Trust / ProContador — bronze + esmeralda */
+  --bg: #0c0e0c;
+  --bg-elevated: #141714;
+  --bg-soft: #1c211c;
+  --border: #2c332c;
+  --text: #f2eee6;
+  --text-muted: #9a9488;
+  --accent: #c9a35a;
+  --accent-soft: #1a3d36;
+  --accent-ink: #14110c;
+  --success: #3aa88a;
+  --warning: #d4a84b;
+  --danger: #e07870;
+  --teal: #1f6b5e;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-body: "Segoe UI", "Helvetica Neue", sans-serif;
 }
 
@@ -25,9 +28,13 @@
   --color-text-muted: var(--text-muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-teal: var(--teal);
+  --font-family-display: var(--font-display);
+  --font-family-body: var(--font-body);
 }
 
 * {
