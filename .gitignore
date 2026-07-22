@@ -57,5 +57,6 @@ Desktop.ini
 # SEFAZ secrets & captured XML
 /data/certs/
 /data/xml/
+/data/proofs/
 *.pfx
 *.p12

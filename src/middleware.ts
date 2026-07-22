@@ -51,5 +51,6 @@ export const config = {
     "/api/deliveries/:path*",
     "/api/certificates/:path*",
     "/api/xml/:path*",
+    "/api/payments/:path*",
   ],
 };

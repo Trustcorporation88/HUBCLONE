@@ -8,6 +8,7 @@ import {
   MarkViewedButton,
   SendGuideButtons,
 } from "@/components/send-guide-buttons";
+import { PayGuideButtons } from "@/components/pay-guide-buttons";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function ObligationsPage() {
     include: {
       client: true,
       deliveries: { orderBy: { createdAt: "desc" }, take: 4 },
+      payments: { orderBy: { createdAt: "desc" }, take: 5 },
     },
     orderBy: { dueAt: "asc" },
   });
@@ -33,8 +35,8 @@ export default async function ObligationsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Guias & obrigações</h1>
         <p className="text-sm text-text-muted mt-1">
-          Envie por e-mail e WhatsApp, rastreie entrega e leitura — ConnectHub /
-          Confi level. Provider atual: mock (troca por API real via env).
+          Enviar → pagar (PIX/boleto) → comprovante — ConnectHub + Dootax/Pag
+          Útil. Providers mock trocáveis via env.
         </p>
       </header>
 
@@ -64,12 +66,19 @@ export default async function ObligationsPage() {
                   {o.client.whatsapp ?? "—"}
                 </p>
               </div>
-              <SendGuideButtons
-                obligationId={o.id}
-                hasEmail={Boolean(o.client.email)}
-                hasWhatsapp={Boolean(o.client.whatsapp)}
-                disabled={["PAID", "CANCELLED"].includes(o.status)}
-              />
+              <div className="flex flex-col items-end gap-3">
+                <SendGuideButtons
+                  obligationId={o.id}
+                  hasEmail={Boolean(o.client.email)}
+                  hasWhatsapp={Boolean(o.client.whatsapp)}
+                  disabled={["PAID", "CANCELLED"].includes(o.status)}
+                />
+                <PayGuideButtons
+                  obligationId={o.id}
+                  disabled={["CANCELLED", "DRAFT"].includes(o.status)}
+                  payments={o.payments}
+                />
+              </div>
             </div>
 
             {o.deliveries.length > 0 && (

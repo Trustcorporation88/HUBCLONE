@@ -25,6 +25,7 @@ model Firm {
   deliveries  Delivery[]
   certificates Certificate[]
   captureRuns  CaptureRun[]
+  payments     Payment[]
 }
 
 model User {
@@ -138,6 +139,7 @@ model Obligation {
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   task   Task?  @relation(fields: [taskId], references: [id])
   deliveries Delivery[]
+  payments   Payment[]
 
   @@index([firmId, status])
   @@index([clientId, competence])
@@ -157,6 +159,31 @@ model Delivery {
   sentAt        DateTime?
   viewedAt      DateTime?
   createdAt     DateTime  @default(now())
+
+  firm       Firm       @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  obligation Obligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+
+  @@index([obligationId])
+  @@index([firmId, status])
+}
+
+/// Pagamento de guia (Dootax / Pag Útil level)
+model Payment {
+  id            String    @id @default(cuid())
+  firmId        String
+  obligationId  String
+  method        String    // PIX | BOLETO
+  status        String    @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | CANCELLED
+  amountCents   Int
+  pixCopyPaste  String?
+  boletoBarcode String?
+  boletoDigitable String?
+  providerRef   String?
+  proofPath     String?
+  paidAt        DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   firm       Firm       @relation(fields: [firmId], references: [id], onDelete: Cascade)
   obligation Obligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
