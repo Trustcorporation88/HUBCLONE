@@ -11,11 +11,13 @@ function secretKey() {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isPortalLogin = pathname === "/portal/login";
+  const isPortal = pathname.startsWith("/portal") && !isPortalLogin;
   const isApp = pathname.startsWith("/app");
   const isApiProtected =
     pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/");
 
-  if (!isApp && !isApiProtected) {
+  if (!isApp && !isPortal && !isApiProtected) {
     return NextResponse.next();
   }
 
@@ -25,20 +27,34 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = isPortal ? "/portal/login" : "/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
 
   try {
-    await jwtVerify(token, secretKey());
+    const { payload } = await jwtVerify(token, secretKey());
+    const role = String(payload.role ?? "");
+
+    if (isApp && role === "CLIENT") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/portal";
+      return NextResponse.redirect(url);
+    }
+
+    if (isPortal && role !== "CLIENT") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/app";
+      return NextResponse.redirect(url);
+    }
+
     return NextResponse.next();
   } catch {
     if (isApiProtected) {
       return NextResponse.json({ error: "Sessão inválida" }, { status: 401 });
     }
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = isPortal ? "/portal/login" : "/login";
     return NextResponse.redirect(url);
   }
 }
@@ -46,6 +62,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/app/:path*",
+    "/portal",
+    "/portal/:path*",
     "/api/pipeline/:path*",
     "/api/obligations/:path*",
     "/api/deliveries/:path*",

@@ -43,7 +43,13 @@ export default function HomePage() {
               href="/login"
               className="rounded-md bg-accent text-bg px-5 py-2.5 text-sm font-medium"
             >
-              Entrar no escritório
+              Escritório
+            </Link>
+            <Link
+              href="/portal/login"
+              className="rounded-md border border-border px-5 py-2.5 text-sm text-text-muted hover:text-text"
+            >
+              Portal do cliente
             </Link>
             <Link
               href="/app/knowledge"

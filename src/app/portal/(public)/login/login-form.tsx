@@ -4,12 +4,12 @@ import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function LoginForm() {
+export default function PortalLoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/app";
+  const next = params.get("next") ?? "/portal";
 
-  const [email, setEmail] = useState("owner@trust.demo");
+  const [email, setEmail] = useState("financeiro@alpha.demo");
   const [password, setPassword] = useState("hub123");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,6 +30,9 @@ export default function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha no login");
+      if (data.user?.role !== "CLIENT") {
+        throw new Error("Esta área é só para clientes. Use o login do escritório.");
+      }
       router.replace(data.redirectTo ?? next);
       router.refresh();
     } catch (err) {
@@ -43,12 +46,12 @@ export default function LoginForm() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-bg-elevated p-8">
         <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
-          HUB Contábil OS
+          Portal do cliente
         </div>
-        <h1 className="mt-2 text-2xl font-semibold">Entrar no escritório</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Trust Contabilidade</h1>
         <p className="mt-2 text-sm text-text-muted">
-          Multi-tenant por escritório. Demo:{" "}
-          <code className="text-accent">owner@trust.demo</code> /{" "}
+          White-label do escritório. Demo:{" "}
+          <code className="text-accent">financeiro@alpha.demo</code> /{" "}
           <code className="text-accent">hub123</code>
         </p>
 
@@ -79,13 +82,14 @@ export default function LoginForm() {
             disabled={loading}
             className="w-full rounded-md bg-accent text-bg py-2.5 text-sm font-medium disabled:opacity-50"
           >
-            {loading ? "Entrando…" : "Entrar"}
+            {loading ? "Entrando…" : "Entrar no app"}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-text-muted">
-          <Link href="/" className="hover:text-text">
-            Voltar ao site
+          É do escritório?{" "}
+          <Link href="/login" className="text-accent hover:underline">
+            Login interno
           </Link>
         </p>
       </div>

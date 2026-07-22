@@ -27,6 +27,7 @@ export async function POST(req: Request, ctx: Ctx) {
     firmName: session.firmName,
     obligationId: id,
     method: parsed.data.method,
+    clientId: session.role === "CLIENT" ? session.clientId : null,
   });
 
   if ("error" in result && result.error) {

@@ -7,11 +7,13 @@ export const SESSION_COOKIE = "hub_session";
 export type SessionPayload = {
   userId: string;
   firmId: string;
+  clientId: string | null;
   email: string;
   name: string;
   role: string;
   firmSlug: string;
   firmName: string;
+  brandName: string;
 };
 
 function secretKey() {
@@ -29,7 +31,7 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export async function createSessionToken(payload: SessionPayload) {
-  return new SignJWT(payload)
+  return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
@@ -42,7 +44,12 @@ export async function readSession(): Promise<SessionPayload | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secretKey());
-    return payload as unknown as SessionPayload;
+    const p = payload as unknown as SessionPayload;
+    return {
+      ...p,
+      clientId: p.clientId ?? null,
+      brandName: p.brandName || p.firmName,
+    };
   } catch {
     return null;
   }
@@ -50,8 +57,20 @@ export async function readSession(): Promise<SessionPayload | null> {
 
 export async function requireSession(): Promise<SessionPayload> {
   const session = await readSession();
-  if (!session) {
-    throw new Error("UNAUTHORIZED");
+  if (!session) throw new Error("UNAUTHORIZED");
+  return session;
+}
+
+export async function requireStaffSession(): Promise<SessionPayload> {
+  const session = await requireSession();
+  if (session.role === "CLIENT") throw new Error("FORBIDDEN");
+  return session;
+}
+
+export async function requireClientSession(): Promise<SessionPayload> {
+  const session = await requireSession();
+  if (session.role !== "CLIENT" || !session.clientId) {
+    throw new Error("FORBIDDEN");
   }
   return session;
 }

@@ -23,6 +23,8 @@ async function main() {
     data: {
       name: "Trust Contabilidade Demo",
       slug: "trust-demo",
+      brandName: "Trust Contabilidade",
+      brandTagline: "Seu escritório no bolso",
       users: {
         create: [
           {
@@ -196,8 +198,20 @@ async function main() {
     },
   });
 
+  await prisma.user.create({
+    data: {
+      firmId: firm.id,
+      clientId: clients[0].id,
+      email: "financeiro@alpha.demo",
+      name: "Financeiro Alpha",
+      role: "CLIENT",
+      passwordHash,
+    },
+  });
+
   console.log("Seed OK — firm:", firm.slug);
-  console.log("Login: owner@trust.demo / hub123  ou  fiscal@trust.demo / hub123");
+  console.log("Escritório: owner@trust.demo / hub123");
+  console.log("Portal cliente: financeiro@alpha.demo / hub123 → /portal");
 }
 
 main()

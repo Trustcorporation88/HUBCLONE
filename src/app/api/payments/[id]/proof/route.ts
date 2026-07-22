@@ -13,7 +13,13 @@ export async function GET(_req: Request, ctx: Ctx) {
 
   const { id } = await ctx.params;
   const payment = await prisma.payment.findFirst({
-    where: { id, firmId: session.firmId },
+    where: {
+      id,
+      firmId: session.firmId,
+      ...(session.role === "CLIENT" && session.clientId
+        ? { obligation: { clientId: session.clientId } }
+        : {}),
+    },
   });
 
   if (!payment?.proofPath) {

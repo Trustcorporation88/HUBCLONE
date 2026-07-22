@@ -10,8 +10,8 @@
 - [x] WhatsApp/e-mail envio de guia (mock + rastreio VIEWED)
 - [x] Captura SEFAZ DistDFe (A1 mTLS + mock fallback)
 - [x] Pagamento de guias PIX/boleto + comprovante (mock PSP)
+- [x] Portal do cliente white-label (/portal)
 - [ ] NFS-e Portal Nacional / CT-e DistDFe
-- [ ] Portal do cliente (app white-label)
 
 ## Fase 2 — 6 meses
 

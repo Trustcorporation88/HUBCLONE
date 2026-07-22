@@ -1,13 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function LogoutButton() {
   const router = useRouter();
+  const pathname = usePathname();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
+    const dest = pathname.startsWith("/portal") ? "/portal/login" : "/login";
+    router.replace(dest);
     router.refresh();
   }
 

@@ -59,9 +59,14 @@ export async function createGuidePayment(opts: {
   firmName: string;
   obligationId: string;
   method: PayMethod;
+  clientId?: string | null;
 }) {
   const obligation = await prisma.obligation.findFirst({
-    where: { id: opts.obligationId, firmId: opts.firmId },
+    where: {
+      id: opts.obligationId,
+      firmId: opts.firmId,
+      ...(opts.clientId ? { clientId: opts.clientId } : {}),
+    },
     include: { client: true },
   });
   if (!obligation) return { error: "Guia não encontrada", status: 404 as const };
@@ -139,9 +144,16 @@ export async function createGuidePayment(opts: {
 export async function confirmGuidePayment(opts: {
   firmId: string;
   paymentId: string;
+  clientId?: string | null;
 }) {
   const payment = await prisma.payment.findFirst({
-    where: { id: opts.paymentId, firmId: opts.firmId },
+    where: {
+      id: opts.paymentId,
+      firmId: opts.firmId,
+      ...(opts.clientId
+        ? { obligation: { clientId: opts.clientId } }
+        : {}),
+    },
     include: {
       obligation: { include: { client: true } },
     },

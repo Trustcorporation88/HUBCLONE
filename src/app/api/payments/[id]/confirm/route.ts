@@ -15,6 +15,7 @@ export async function POST(_req: Request, ctx: Ctx) {
   const result = await confirmGuidePayment({
     firmId: session.firmId,
     paymentId: id,
+    clientId: session.role === "CLIENT" ? session.clientId : null,
   });
 
   if ("error" in result && result.error) {

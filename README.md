@@ -39,7 +39,9 @@ npm run dev
 
 Abra [http://localhost:3000](http://localhost:3000) → **Entrar**.
 
-Demo: `owner@trust.demo` / `hub123` (ou `fiscal@trust.demo` / `hub123`)
+Demo escritório: `owner@trust.demo` / `hub123`
+
+Portal cliente: `financeiro@alpha.demo` / `hub123` → [/portal](http://localhost:3000/portal)
 
 ## Segurança — GitHub token
 

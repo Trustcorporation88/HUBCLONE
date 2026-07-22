@@ -34,20 +34,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "E-mail ou senha inválidos" }, { status: 401 });
   }
 
+  const brandName = firm.brandName || firm.name;
+
   const token = await createSessionToken({
     userId: user.id,
     firmId: firm.id,
+    clientId: user.clientId,
     email: user.email,
     name: user.name,
     role: user.role,
     firmSlug: firm.slug,
     firmName: firm.name,
+    brandName,
   });
+
+  const redirectTo = user.role === "CLIENT" ? "/portal" : "/app";
 
   const res = NextResponse.json({
     ok: true,
-    user: { name: user.name, email: user.email, role: user.role },
-    firm: { name: firm.name, slug: firm.slug },
+    redirectTo,
+    user: {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      clientId: user.clientId,
+    },
+    firm: { name: firm.name, slug: firm.slug, brandName },
   });
 
   res.cookies.set(SESSION_COOKIE, token, {
