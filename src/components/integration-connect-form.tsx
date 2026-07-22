@@ -77,7 +77,7 @@ export function IntegrationConnectForm({ provider }: { provider: string }) {
             }
             placeholder={
               provider === "PROCONTADOR" && f.key === "baseUrl"
-                ? "https://api.procontador.com.br/api/v1"
+                ? "https://contador-api-production.up.railway.app/api/v1"
                 : undefined
             }
             value={values[f.key] ?? ""}

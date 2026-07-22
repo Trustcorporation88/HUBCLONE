@@ -4,7 +4,7 @@ import { decodeCreds } from "@/lib/integrations";
 
 const DEFAULT_API =
   process.env.PROCONTADOR_API_URL?.replace(/\/$/, "") ||
-  "https://api.procontador.com.br/api/v1";
+  "https://contador-api-production.up.railway.app/api/v1";
 
 type CompanyRow = {
   id?: string;
@@ -32,14 +32,22 @@ export async function loginProContador(creds: {
   password: string;
 }): Promise<{ accessToken: string; baseUrl: string }> {
   const baseUrl = (creds.baseUrl || DEFAULT_API).replace(/\/$/, "");
-  const res = await fetch(`${baseUrl}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      email: creds.email,
-      password: creds.password,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${baseUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        email: creds.email,
+        password: creds.password,
+      }),
+    });
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : "fetch failed";
+    throw new Error(
+      `Não alcançou a API ProContador (${baseUrl}): ${reason}. Use https://contador-api-production.up.railway.app/api/v1 ou https://www.procontador.com.br/api/v1`,
+    );
+  }
   const data = (await res.json().catch(() => null)) as {
     accessToken?: string;
     data?: { accessToken?: string; refreshToken?: string };
