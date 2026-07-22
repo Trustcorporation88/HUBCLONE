@@ -52,7 +52,7 @@ export default function LoginForm() {
         </div>
         <h1 className="mt-2 text-2xl font-semibold">Entrar no escritório</h1>
         <p className="mt-2 text-sm text-text-muted">
-          Acesso operacional multi-tenant. Sem contas demo.
+          Acesso do escritório.
         </p>
 
         {needsBootstrap && (

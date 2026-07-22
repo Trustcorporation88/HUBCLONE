@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { prisma } from "@/lib/db";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const firmCount = await prisma.firm.count().catch(() => -1);
+  const needsSetup = firmCount === 0;
+  const officeHref = needsSetup ? "/setup" : "/login";
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-border px-8 py-5 flex items-center justify-between">
@@ -8,13 +15,13 @@ export default function HomePage() {
           <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
             Trust Corporation
           </div>
-          <div className="text-2xl font-semibold mt-1">HUB Contábil OS</div>
+          <div className="text-2xl font-semibold mt-1">ProContador OS</div>
         </div>
         <Link
-          href="/login"
+          href={officeHref}
           className="rounded-md bg-accent text-bg px-4 py-2 text-sm font-medium hover:opacity-90"
         >
-          Entrar
+          {needsSetup ? "Criar escritório" : "Entrar"}
         </Link>
       </header>
 
@@ -40,10 +47,10 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/login"
+              href={officeHref}
               className="rounded-md bg-accent text-bg px-5 py-2.5 text-sm font-medium"
             >
-              Escritório
+              {needsSetup ? "Criar escritório" : "Escritório"}
             </Link>
             <Link
               href="/portal/login"
@@ -58,6 +65,15 @@ export default function HomePage() {
               Base de conhecimento
             </Link>
           </div>
+          {needsSetup && (
+            <p className="mt-6 text-sm text-text-muted">
+              Primeiro acesso: crie o escritório em{" "}
+              <Link href="/setup" className="text-accent underline">
+                /setup
+              </Link>
+              .
+            </p>
+          )}
         </div>
       </section>
     </div>

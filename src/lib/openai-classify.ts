@@ -29,7 +29,7 @@ export async function classifyInboxWithOpenAI(opts: {
   apiKey?: string;
 }): Promise<ClassifyResult> {
   const apiKey = opts.apiKey?.trim() || requireEnv("OPENAI_API_KEY");
-  const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+  const model = process.env.OPENAI_MODEL?.trim() || "gpt-4.1";
 
   const prompt = [
     "Classifique o documento fiscal/contábil brasileiro em UMA categoria:",
