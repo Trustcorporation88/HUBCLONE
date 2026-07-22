@@ -3,25 +3,8 @@ import path from "path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
-import { decodeCreds } from "@/lib/integrations";
 import { classifyInboxWithOpenAI } from "@/lib/openai-classify";
-
-async function resolveOpenAiKey(firmId: string): Promise<string> {
-  const envKey = process.env.OPENAI_API_KEY?.trim();
-  if (envKey) return envKey;
-
-  const row = await prisma.integration.findUnique({
-    where: {
-      firmId_provider: { firmId, provider: "OPENAI" },
-    },
-  });
-  const fromIntegration = decodeCreds(row?.credentialsEnc).apiKey?.trim();
-  if (fromIntegration) return fromIntegration;
-
-  throw new Error(
-    "OPENAI_API_KEY ausente. Configure no .env/Railway ou em Integrações → OpenAI.",
-  );
-}
+import { resolveOpenAiKey } from "@/lib/openai-key";
 
 export async function GET() {
   const session = await readSession();

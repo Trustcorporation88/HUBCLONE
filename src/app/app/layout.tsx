@@ -14,10 +14,12 @@ import {
   FileSignature,
   Inbox,
   ShieldAlert,
+  CircleHelp,
 } from "lucide-react";
 import { readSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/logout-button";
+import { OfficeChatFab } from "@/components/office-chat-fab";
 
 const NAV = [
   { href: "/app", label: "Painel", icon: LayoutDashboard },
@@ -32,6 +34,7 @@ const NAV = [
   { href: "/app/inbox", label: "Inbox", icon: Inbox },
   { href: "/app/health", label: "Saúde", icon: ShieldAlert },
   { href: "/app/integrations", label: "Integrações", icon: Puzzle },
+  { href: "/app/help", label: "Ajuda", icon: CircleHelp },
   { href: "/app/knowledge", label: "Benchmark", icon: BookOpen },
 ];
 
@@ -92,6 +95,7 @@ export default async function AppShellLayout({
       <main className="flex-1 min-w-0 overflow-auto">
         <div className="max-w-6xl mx-auto px-8 py-8">{children}</div>
       </main>
+      {session.role !== "CLIENT" && <OfficeChatFab />}
     </div>
   );
 }

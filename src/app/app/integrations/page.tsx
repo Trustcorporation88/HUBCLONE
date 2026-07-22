@@ -31,7 +31,7 @@ const LABELS: Record<string, { title: string; desc: string }> = {
   },
   OPENAI: {
     title: "OpenAI",
-    desc: "Classificação do inbox — também defina OPENAI_API_KEY no env",
+    desc: "Inbox + Assistente (Ajuda) — também OPENAI_API_KEY no Railway",
   },
 };
 
