@@ -1,17 +1,24 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { readSession } from "@/lib/auth";
-import { runXmlCapture } from "@/lib/sefaz/capture";
+import { runXmlCapture, type CaptureKind } from "@/lib/sefaz/capture";
 
 const bodySchema = z.object({
   clientId: z.string().min(1),
   forceMock: z.boolean().optional(),
+  kinds: z
+    .array(z.enum(["NFE", "CTE", "NFSE"]))
+    .min(1)
+    .optional(),
 });
 
 export async function POST(req: Request) {
   const session = await readSession();
   if (!session) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+  if (session.role === "CLIENT") {
+    return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
   }
 
   const json = await req.json().catch(() => null);
@@ -24,10 +31,11 @@ export async function POST(req: Request) {
     firmId: session.firmId,
     clientId: parsed.data.clientId,
     forceMock: parsed.data.forceMock,
+    kinds: parsed.data.kinds as CaptureKind[] | undefined,
   });
 
-  if ("error" in result && result.error && !("run" in result && result.run)) {
-    return NextResponse.json({ error: result.error }, { status: result.status ?? 400 });
+  if ("error" in result && result.error && result.status === 404) {
+    return NextResponse.json({ error: result.error }, { status: 404 });
   }
 
   if ("error" in result && result.error) {

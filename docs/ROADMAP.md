@@ -9,9 +9,10 @@
 - [x] Auth multi-tenant real
 - [x] WhatsApp/e-mail envio de guia (mock + rastreio VIEWED)
 - [x] Captura SEFAZ DistDFe (A1 mTLS + mock fallback)
+- [x] CT-e DistDFe + NFS-e ADN (mock + live hooks)
 - [x] Pagamento de guias PIX/boleto + comprovante (mock PSP)
 - [x] Portal do cliente white-label (/portal)
-- [ ] NFS-e Portal Nacional / CT-e DistDFe
+- [x] WhatsApp manual (download + wa.me); e-mail automático
 
 ## Fase 2 — 6 meses
 

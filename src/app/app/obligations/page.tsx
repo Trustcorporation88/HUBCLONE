@@ -35,8 +35,8 @@ export default async function ObligationsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Guias & obrigações</h1>
         <p className="text-sm text-text-muted mt-1">
-          Enviar → pagar (PIX/boleto) → comprovante — ConnectHub + Dootax/Pag
-          Útil. Providers mock trocáveis via env.
+          E-mail automático · WhatsApp manual (baixar arquivo e anexar) · pagamento
+          PIX/boleto.
         </p>
       </header>
 
@@ -71,6 +71,7 @@ export default async function ObligationsPage() {
                   obligationId={o.id}
                   hasEmail={Boolean(o.client.email)}
                   hasWhatsapp={Boolean(o.client.whatsapp)}
+                  whatsappPhone={o.client.whatsapp}
                   disabled={["PAID", "CANCELLED"].includes(o.status)}
                 />
                 <PayGuideButtons

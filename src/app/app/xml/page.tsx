@@ -50,8 +50,8 @@ export default async function XmlPage() {
       <header>
         <h1 className="text-2xl font-semibold">XML compra & venda</h1>
         <p className="text-sm text-text-muted mt-1">
-          DistDFe Nacional com certificado A1 (mTLS) · modo{" "}
-          <code className="text-accent">{mode}</code> · Qive-level NSU contínuo
+          DistDFe NF-e + CT-e · NFS-e ADN · modo{" "}
+          <code className="text-accent">{mode}</code> · marque os tipos e capture
         </p>
       </header>
 

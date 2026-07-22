@@ -58,5 +58,6 @@ Desktop.ini
 /data/certs/
 /data/xml/
 /data/proofs/
+/data/guides/
 *.pfx
 *.p12

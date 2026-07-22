@@ -257,6 +257,8 @@ model Certificate {
   passwordEnc      String
   environment      String    @default("2") // 1=prod 2=homolog
   lastNsu          String    @default("000000000000000")
+  lastNsuCte       String    @default("000000000000000")
+  lastNsuNfse      String    @default("000000000000000")
   validFrom        DateTime?
   validTo          DateTime?
   subjectCn        String?
@@ -277,6 +279,7 @@ model CaptureRun {
   clientId      String
   certificateId String?
   mode          String    // MOCK | LIVE
+  kindsJson     String    @default("[\"NFE\"]")
   status        String    @default("RUNNING") // RUNNING | DONE | FAILED
   docsFound     Int       @default(0)
   docsSaved     Int       @default(0)

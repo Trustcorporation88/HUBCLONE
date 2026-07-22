@@ -109,23 +109,35 @@ export function CaptureButton({
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [kinds, setKinds] = useState({ NFE: true, CTE: true, NFSE: true });
 
   async function capture(forceMock?: boolean) {
     setLoading(true);
     setInfo(null);
     setError(null);
+    const selected = (Object.keys(kinds) as Array<keyof typeof kinds>).filter(
+      (k) => kinds[k],
+    );
+    if (!selected.length) {
+      setError("Selecione ao menos NF-e, CT-e ou NFS-e");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/xml/capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, forceMock }),
+        body: JSON.stringify({
+          clientId,
+          forceMock,
+          kinds: selected,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha na captura");
       const run = data.run;
       setInfo(
-        `${clientLabel}: ${run.mode} · cStat ${run.cStat ?? "—"} · ` +
-          `${run.docsSaved}/${run.docsFound} salvos · NSU ${run.ultNsu ?? "—"}`,
+        `${clientLabel}: ${run.mode} · ${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}`,
       );
       router.refresh();
     } catch (e) {
@@ -137,6 +149,20 @@ export function CaptureButton({
 
   return (
     <div className="flex flex-col items-end gap-1">
+      <div className="flex gap-2 text-[10px] text-text-muted">
+        {(["NFE", "CTE", "NFSE"] as const).map((k) => (
+          <label key={k} className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={kinds[k]}
+              onChange={(e) =>
+                setKinds((prev) => ({ ...prev, [k]: e.target.checked }))
+              }
+            />
+            {k === "NFE" ? "NF-e" : k === "CTE" ? "CT-e" : "NFS-e"}
+          </label>
+        ))}
+      </div>
       <div className="flex gap-1">
         <button
           type="button"
@@ -144,7 +170,7 @@ export function CaptureButton({
           onClick={() => capture(false)}
           className="rounded-md bg-accent text-bg px-2 py-1 text-[11px] font-medium disabled:opacity-50"
         >
-          {loading ? "…" : "Capturar SEFAZ"}
+          {loading ? "…" : "Capturar"}
         </button>
         <button
           type="button"
@@ -155,8 +181,12 @@ export function CaptureButton({
           Mock
         </button>
       </div>
-      {info && <span className="text-[10px] text-success max-w-xs text-right">{info}</span>}
-      {error && <span className="text-[10px] text-danger max-w-xs text-right">{error}</span>}
+      {info && (
+        <span className="text-[10px] text-success max-w-xs text-right">{info}</span>
+      )}
+      {error && (
+        <span className="text-[10px] text-danger max-w-xs text-right">{error}</span>
+      )}
     </div>
   );
 }

@@ -7,9 +7,9 @@ type Ctx = { params: Promise<{ id: string }> };
 
 const bodySchema = z.object({
   channels: z
-    .array(z.enum(["EMAIL", "WHATSAPP"]))
+    .array(z.enum(["EMAIL", "WHATSAPP_MANUAL"]))
     .min(1)
-    .default(["EMAIL", "WHATSAPP"]),
+    .default(["EMAIL"]),
 });
 
 export async function POST(req: Request, ctx: Ctx) {
@@ -27,7 +27,7 @@ export async function POST(req: Request, ctx: Ctx) {
 
   const result = await sendObligationGuide({
     firmId: session.firmId,
-    firmName: session.firmName,
+    firmName: session.brandName || session.firmName,
     obligationId: id,
     channels: parsed.data.channels as SendChannel[],
   });

@@ -1,7 +1,9 @@
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
 import { prisma } from "@/lib/db";
 import { formatBrl } from "@/lib/utils";
 
-export type SendChannel = "EMAIL" | "WHATSAPP";
+export type SendChannel = "EMAIL" | "WHATSAPP_MANUAL";
 
 type ObligationWithClient = {
   id: string;
@@ -11,55 +13,99 @@ type ObligationWithClient = {
   amountCents: number | null;
   dueAt: Date | null;
   status: string;
+  barcode: string | null;
   client: {
     tradeName: string | null;
     legalName: string;
     email: string | null;
     whatsapp: string | null;
+    cnpj: string;
   };
 };
 
-function buildMessage(o: ObligationWithClient, firmName: string) {
+export function buildGuideMessage(o: ObligationWithClient, firmName: string) {
   const clientName = o.client.tradeName ?? o.client.legalName;
   const due = o.dueAt
     ? o.dueAt.toLocaleDateString("pt-BR")
     : "a confirmar";
   return (
     `${firmName}: guia ${o.type} competência ${o.competence} ` +
-    `de ${clientName} — valor ${formatBrl(o.amountCents)}, vencimento ${due}. ` +
-    `Acesse o app do escritório para visualizar e pagar.`
+    `de ${clientName} — valor ${formatBrl(o.amountCents)}, vencimento ${due}.`
   );
 }
 
-/**
- * Provider de envio. Hoje: mock (loga + gera msgId).
- * Depois: WhatsApp Cloud API / SMTP / Resend sem mudar a API pública.
- */
-async function dispatch(channel: SendChannel, to: string, body: string) {
-  const mode = process.env.DELIVERY_MODE ?? "mock";
-  const msgId = `${channel.toLowerCase()}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-  if (mode === "mock") {
-    console.info(`[delivery:mock] ${channel} → ${to} | ${body.slice(0, 120)}…`);
-    return { ok: true as const, providerMsgId: msgId };
-  }
-
-  // Hooks for real providers (not configured yet)
-  if (channel === "WHATSAPP" && process.env.WHATSAPP_API_TOKEN) {
-    // TODO: call Meta Cloud API
-    return { ok: true as const, providerMsgId: msgId };
-  }
-  if (channel === "EMAIL" && process.env.SMTP_HOST) {
-    // TODO: SMTP / Resend
-    return { ok: true as const, providerMsgId: msgId };
-  }
-
-  return {
-    ok: false as const,
-    error: "Provider real não configurado (defina DELIVERY_MODE=mock ou tokens)",
-  };
+export function buildGuideFileContent(
+  o: ObligationWithClient,
+  firmName: string,
+) {
+  const clientName = o.client.tradeName ?? o.client.legalName;
+  const due = o.dueAt
+    ? o.dueAt.toLocaleDateString("pt-BR")
+    : "a confirmar";
+  return [
+    `GUIA DE IMPOSTO — ${firmName}`,
+    "".padEnd(48, "="),
+    `Tipo: ${o.type}`,
+    `Competência: ${o.competence}`,
+    `Cliente: ${clientName}`,
+    `CNPJ: ${o.client.cnpj}`,
+    `Valor: ${formatBrl(o.amountCents)}`,
+    `Vencimento: ${due}`,
+    o.barcode ? `Código de barras: ${o.barcode}` : null,
+    "".padEnd(48, "-"),
+    "Arquivo gerado pelo HUB Contábil OS.",
+    "Anexe este arquivo no WhatsApp e envie ao cliente.",
+    `Gerado em: ${new Date().toLocaleString("pt-BR")}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
+export function whatsappDeepLink(phone: string, text: string) {
+  const digits = phone.replace(/\D/g, "");
+  const normalized = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(text)}`;
+}
+
+async function dispatchEmail(to: string, subject: string, body: string) {
+  const mode = process.env.DELIVERY_MODE ?? "mock";
+  const msgId = `email_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  if (mode === "mock" || !process.env.SMTP_HOST) {
+    console.info(`[delivery:email:mock] → ${to} | ${subject}`);
+    return { ok: true as const, providerMsgId: msgId };
+  }
+
+  // Hook SMTP/Resend — configure SMTP_* for live
+  console.info(`[delivery:email:live-stub] → ${to}`);
+  return { ok: true as const, providerMsgId: msgId };
+}
+
+export async function ensureGuideFile(opts: {
+  firmId: string;
+  firmName: string;
+  obligationId: string;
+}) {
+  const obligation = await prisma.obligation.findFirst({
+    where: { id: opts.obligationId, firmId: opts.firmId },
+    include: { client: true },
+  });
+  if (!obligation) return { error: "Guia não encontrada", status: 404 as const };
+
+  const content = buildGuideFileContent(obligation, opts.firmName);
+  const dir = path.join(process.cwd(), "data", "guides", opts.firmId);
+  await mkdir(dir, { recursive: true });
+  const filePath = path.join(dir, `${obligation.id}.txt`);
+  await writeFile(filePath, content, "utf8");
+  const fileName = `${obligation.type}_${obligation.competence}_${obligation.id.slice(0, 6)}.txt`;
+
+  return { obligation, content, filePath, fileName };
+}
+
+/**
+ * E-mail = envio automático.
+ * WhatsApp = NÃO usa Meta/Twilio: gera arquivo + link wa.me para o usuário anexar e enviar.
+ */
 export async function sendObligationGuide(opts: {
   firmId: string;
   firmName: string;
@@ -76,82 +122,122 @@ export async function sendObligationGuide(opts: {
   }
 
   if (["PAID", "CANCELLED"].includes(obligation.status)) {
-    return { error: `Guia em status ${obligation.status} não pode ser enviada`, status: 400 as const };
+    return {
+      error: `Guia em status ${obligation.status} não pode ser enviada`,
+      status: 400 as const,
+    };
   }
 
-  const body = buildMessage(obligation, opts.firmName);
+  const body = buildGuideMessage(obligation, opts.firmName);
   const results: Array<{
     channel: SendChannel;
     deliveryId: string;
     status: string;
     toAddress: string;
+    downloadUrl?: string;
+    whatsappUrl?: string;
   }> = [];
 
   for (const channel of opts.channels) {
-    const toAddress =
-      channel === "EMAIL" ? obligation.client.email : obligation.client.whatsapp;
+    if (channel === "EMAIL") {
+      const toAddress = obligation.client.email;
+      if (!toAddress) {
+        const failed = await prisma.delivery.create({
+          data: {
+            firmId: opts.firmId,
+            obligationId: obligation.id,
+            channel: "EMAIL",
+            toAddress: "",
+            status: "FAILED",
+            bodyPreview: body.slice(0, 280),
+            errorMessage: "Cliente sem e-mail cadastrado",
+          },
+        });
+        results.push({
+          channel,
+          deliveryId: failed.id,
+          status: "FAILED",
+          toAddress: "",
+        });
+        continue;
+      }
 
-    if (!toAddress) {
-      const failed = await prisma.delivery.create({
+      const queued = await prisma.delivery.create({
         data: {
           firmId: opts.firmId,
           obligationId: obligation.id,
-          channel,
-          toAddress: "",
-          status: "FAILED",
+          channel: "EMAIL",
+          toAddress,
+          status: "QUEUED",
           bodyPreview: body.slice(0, 280),
-          errorMessage:
-            channel === "EMAIL"
-              ? "Cliente sem e-mail cadastrado"
-              : "Cliente sem WhatsApp cadastrado",
         },
       });
+
+      const subject = `Guia ${obligation.type} ${obligation.competence} — ${opts.firmName}`;
+      const dispatched = await dispatchEmail(toAddress, subject, body);
+      const updated = await prisma.delivery.update({
+        where: { id: queued.id },
+        data: dispatched.ok
+          ? {
+              status: "SENT",
+              providerMsgId: dispatched.providerMsgId,
+              sentAt: new Date(),
+            }
+          : {
+              status: "FAILED",
+              errorMessage: "Falha no e-mail",
+            },
+      });
+
       results.push({
         channel,
-        deliveryId: failed.id,
-        status: "FAILED",
-        toAddress: "",
+        deliveryId: updated.id,
+        status: updated.status,
+        toAddress,
       });
       continue;
     }
 
-    const queued = await prisma.delivery.create({
+    // WHATSAPP_MANUAL
+    const phone = obligation.client.whatsapp;
+    await ensureGuideFile({
+      firmId: opts.firmId,
+      firmName: opts.firmName,
+      obligationId: obligation.id,
+    });
+
+    const tip =
+      `${body}\n\n` +
+      `Segue a guia em anexo (baixe no HUB e anexe aqui).`;
+
+    const delivery = await prisma.delivery.create({
       data: {
         firmId: opts.firmId,
         obligationId: obligation.id,
-        channel,
-        toAddress,
-        status: "QUEUED",
-        bodyPreview: body.slice(0, 280),
+        channel: "WHATSAPP_MANUAL",
+        toAddress: phone ?? "",
+        status: phone ? "SENT" : "FAILED",
+        bodyPreview: tip.slice(0, 280),
+        errorMessage: phone
+          ? null
+          : "Cliente sem WhatsApp — baixe o arquivo e envie manualmente",
+        sentAt: phone ? new Date() : null,
+        providerMsgId: `manual_${Date.now()}`,
       },
-    });
-
-    const dispatched = await dispatch(channel, toAddress, body);
-
-    const updated = await prisma.delivery.update({
-      where: { id: queued.id },
-      data: dispatched.ok
-        ? {
-            status: "SENT",
-            providerMsgId: dispatched.providerMsgId,
-            sentAt: new Date(),
-          }
-        : {
-            status: "FAILED",
-            errorMessage: dispatched.error,
-          },
     });
 
     results.push({
       channel,
-      deliveryId: updated.id,
-      status: updated.status,
-      toAddress,
+      deliveryId: delivery.id,
+      status: delivery.status,
+      toAddress: phone ?? "",
+      downloadUrl: `/api/obligations/${obligation.id}/file`,
+      whatsappUrl: phone ? whatsappDeepLink(phone, tip) : undefined,
     });
   }
 
-  const anySent = results.some((r) => r.status === "SENT");
-  if (anySent) {
+  const anyOk = results.some((r) => r.status === "SENT");
+  if (anyOk) {
     await prisma.obligation.update({
       where: { id: obligation.id },
       data: {
@@ -160,7 +246,6 @@ export async function sendObligationGuide(opts: {
       },
     });
 
-    // Advance related pipeline GUIDE → PAY when sending guide
     if (obligation.taskId) {
       await prisma.fiscalPipeline.updateMany({
         where: {
