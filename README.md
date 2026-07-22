@@ -27,6 +27,7 @@ num único fluxo:
 - Next.js 15 (App Router) + TypeScript
 - Prisma + SQLite (dev)
 - Tailwind CSS 4
+- SEFAZ NFeDistribuicaoDFe (mTLS A1) + mock DistDFe
 
 ## Setup
 

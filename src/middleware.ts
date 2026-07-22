@@ -49,5 +49,7 @@ export const config = {
     "/api/pipeline/:path*",
     "/api/obligations/:path*",
     "/api/deliveries/:path*",
+    "/api/certificates/:path*",
+    "/api/xml/:path*",
   ],
 };

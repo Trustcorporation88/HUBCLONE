@@ -8,7 +8,8 @@
 - [x] API: avançar estágio do pipeline (aprovação humana)
 - [x] Auth multi-tenant real
 - [x] WhatsApp/e-mail envio de guia (mock + rastreio VIEWED)
-- [ ] Captura SEFAZ real (certificado A1)
+- [x] Captura SEFAZ DistDFe (A1 mTLS + mock fallback)
+- [ ] NFS-e Portal Nacional / CT-e DistDFe
 
 ## Fase 2 — 6 meses
 

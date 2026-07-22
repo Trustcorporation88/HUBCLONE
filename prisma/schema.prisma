@@ -23,6 +23,8 @@ model Firm {
   xmlDocs     XmlDocument[]
   pipelines   FiscalPipeline[]
   deliveries  Delivery[]
+  certificates Certificate[]
+  captureRuns  CaptureRun[]
 }
 
 model User {
@@ -59,6 +61,8 @@ model Client {
   obligations  Obligation[]
   xmlDocs      XmlDocument[]
   pipelines    FiscalPipeline[]
+  certificates Certificate[]
+  captureRuns  CaptureRun[]
 
   @@unique([firmId, cnpj])
   @@index([firmId])
@@ -176,6 +180,8 @@ model XmlDocument {
   status        String   @default("CAPTURED") // CAPTURED | AUDITED | OK | WARNING | ERROR | IMPORTED
   auditJson     String?  // JSON audit findings
   rawPath       String?
+  nsu           String?
+  schemaSource  String?  // SEFAZ_DISTDFE | MOCK | UPLOAD
   createdAt     DateTime @default(now())
 
   firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
@@ -205,4 +211,53 @@ model FiscalPipeline {
 
   @@index([firmId, stage])
   @@unique([firmId, clientId, obligationType, competence])
+}
+
+/// Certificado A1 (.pfx) do cliente — mTLS DistDFe
+model Certificate {
+  id               String    @id @default(cuid())
+  firmId           String
+  clientId         String?
+  cnpj             String
+  label            String
+  pfxPath          String
+  passwordEnc      String
+  environment      String    @default("2") // 1=prod 2=homolog
+  lastNsu          String    @default("000000000000000")
+  validFrom        DateTime?
+  validTo          DateTime?
+  subjectCn        String?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  firm        Firm         @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client      Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  captureRuns CaptureRun[]
+
+  @@index([firmId, cnpj])
+}
+
+model CaptureRun {
+  id            String    @id @default(cuid())
+  firmId        String
+  clientId      String
+  certificateId String?
+  mode          String    // MOCK | LIVE
+  status        String    @default("RUNNING") // RUNNING | DONE | FAILED
+  docsFound     Int       @default(0)
+  docsSaved     Int       @default(0)
+  ultNsu        String?
+  maxNsu        String?
+  cStat         String?
+  xMotivo       String?
+  errorMessage  String?
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+
+  firm        Firm         @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  certificate Certificate? @relation(fields: [certificateId], references: [id], onDelete: SetNull)
+
+  @@index([firmId, startedAt])
 }

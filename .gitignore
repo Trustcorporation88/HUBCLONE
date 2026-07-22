@@ -53,3 +53,9 @@ next-env.d.ts
 
 # OS
 Desktop.ini
+
+# SEFAZ secrets & captured XML
+/data/certs/
+/data/xml/
+*.pfx
+*.p12
