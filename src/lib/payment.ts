@@ -157,7 +157,7 @@ export async function confirmGuidePayment(opts: {
   await writeFile(
     path.join(path.dirname(proofPath), `${payment.id}.meta.txt`),
     [
-      "COMPROVANTE REGISTRADO — ProContador OS",
+      "COMPROVANTE REGISTRADO — ProContador Office",
       `Ref: ${payment.providerRef}`,
       `Método: ${payment.method}`,
       `Valor: ${formatBrl(payment.amountCents)}`,

@@ -52,8 +52,8 @@ export default async function AppShellLayout({
         <div className="px-5 py-6 border-b border-border">
           <div className="flex items-center gap-3">
             <Image
-              src="/brand/procontador-os-logo.png"
-              alt="ProContador OS"
+              src="/brand/procontador-office-logo.png"
+              alt="ProContador Office"
               width={48}
               height={48}
               className="rounded-sm object-contain shrink-0"
@@ -67,7 +67,7 @@ export default async function AppShellLayout({
                 className="mt-0.5 text-lg font-semibold tracking-tight leading-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                ProContador OS
+                ProContador Office
               </div>
               <p className="mt-1 text-xs text-text-muted leading-relaxed truncate">
                 {session.name} · {session.role}

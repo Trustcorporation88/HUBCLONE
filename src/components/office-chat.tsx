@@ -16,7 +16,7 @@ export function OfficeChat({ compact = false }: { compact?: boolean }) {
     {
       role: "assistant",
       content:
-        "Olá! Sou o assistente do ProContador OS. Pergunte sobre qualquer serviço do escritório — Painel, Guias, XML, Autopilot, Integrações…",
+        "Olá! Sou o assistente do ProContador Office. Pergunte sobre qualquer serviço do escritório — Painel, Guias, XML, Autopilot, Integrações…",
     },
   ]);
   const [input, setInput] = useState("");

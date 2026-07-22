@@ -14,8 +14,8 @@ export default async function HomePage() {
       <header className="border-b border-border px-6 md:px-10 py-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Image
-            src="/brand/procontador-os-logo.png"
-            alt="ProContador OS"
+            src="/brand/procontador-office-logo.png"
+            alt="ProContador Office"
             width={44}
             height={44}
             className="rounded-sm object-contain"
@@ -29,7 +29,7 @@ export default async function HomePage() {
               className="text-xl md:text-2xl font-semibold tracking-tight"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              ProContador OS
+              ProContador Office
             </div>
           </div>
         </div>
@@ -106,8 +106,8 @@ export default async function HomePage() {
               }}
             />
             <Image
-              src="/brand/procontador-os-logo.png"
-              alt="Logotipo ProContador OS"
+              src="/brand/procontador-office-logo.png"
+              alt="Logotipo ProContador Office"
               width={560}
               height={560}
               priority

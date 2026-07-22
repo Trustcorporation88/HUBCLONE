@@ -2,7 +2,7 @@
   "name": "procontador-os",
   "version": "0.1.0",
   "private": true,
-  "description": "ProContador OS — practice management + fiscal autopilot for Brazilian accounting firms",
+  "description": "ProContador Office — practice management + fiscal autopilot for Brazilian accounting firms",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

@@ -79,15 +79,15 @@ export default function SetupPage() {
       <div className="w-full max-w-lg rounded-lg border border-border bg-bg-elevated p-8">
         <div className="flex items-center gap-3">
           <Image
-            src="/brand/procontador-os-logo.png"
-            alt="ProContador OS"
+            src="/brand/procontador-office-logo.png"
+            alt="ProContador Office"
             width={48}
             height={48}
             className="rounded-sm object-contain"
             priority
           />
           <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
-            ProContador OS
+            ProContador Office
           </div>
         </div>
         <h1 className="mt-2 text-2xl font-semibold">Criar escritório</h1>

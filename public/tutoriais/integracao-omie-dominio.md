@@ -1,8 +1,8 @@
-# ProContador OS — Tutorial de integração
+# ProContador Office — Tutorial de integração
 ## ProContador · Omie · Domínio
 
-**Versão:** 1.1  
-**Produto:** ProContador OS (`contabil.trustcorp.com.br`)  
+**Versão:** 1.2  
+**Produto:** ProContador Office (`office.procontador.com.br`)  
 **SaaS irmão:** [www.procontador.com.br](https://www.procontador.com.br) (`contador-saas`)  
 **Objetivo:** conectar o escritório e importar clientes/empresas sem dados fictícios.
 

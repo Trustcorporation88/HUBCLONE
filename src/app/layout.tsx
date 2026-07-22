@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ProContador OS",
+  title: "ProContador Office",
   description:
     "Practice management + Fiscal Autopilot para escritórios contábeis brasileiros",
 };

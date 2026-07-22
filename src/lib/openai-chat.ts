@@ -3,7 +3,7 @@ import { moduleHelpAsSystemContext } from "@/lib/domain/module-help";
 
 export type ChatMessage = { role: "user" | "assistant" | "system"; content: string };
 
-const SYSTEM_PROMPT = `Você é o Assistente do ProContador OS, produto da Trust Corporation para escritórios contábeis no Brasil.
+const SYSTEM_PROMPT = `Você é o Assistente do ProContador Office (office.procontador.com.br), produto da Trust Corporation para escritórios contábeis no Brasil. Evite chamar o produto de "OS" — no Brasil OS significa ordem de serviço; o nome correto é ProContador Office.
 
 Regras:
 - Responda em português do Brasil, claro e objetivo (como treinar um contador no primeiro uso).

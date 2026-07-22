@@ -20,7 +20,7 @@ export default async function HelpPage() {
       <header>
         <h1 className="text-2xl font-semibold">Ajuda do escritório</h1>
         <p className="mt-1 max-w-2xl text-sm text-text-muted">
-          Explicação de cada serviço para o contador operar o ProContador OS —
+          Explicação de cada serviço para o contador operar o ProContador Office —
           e um assistente com OpenAI para tirar dúvidas na hora.
         </p>
       </header>
