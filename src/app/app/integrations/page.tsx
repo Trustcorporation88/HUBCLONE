@@ -1,19 +1,24 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { INTEGRATION_PROVIDERS } from "@/lib/integrations";
 import { IntegrationConnectForm } from "@/components/integration-connect-form";
+import {
+  DominioCsvImport,
+  OmieSyncButton,
+} from "@/components/integration-sync";
 
 export const dynamic = "force-dynamic";
 
 const LABELS: Record<string, { title: string; desc: string }> = {
   DOMINIO: {
     title: "Domínio Sistemas",
-    desc: "ERP contábil — exige baseUrl + apiToken do parceiro",
+    desc: "Import CSV agora · API parceiro quando houver token Thomson/Onvio",
   },
   OMIE: {
     title: "Omie",
-    desc: "ERP — app_key + app_secret (API oficial)",
+    desc: "Conecte App Key/Secret e importe clientes pela API oficial",
   },
   CLICKSIGN: {
     title: "ClickSign",
@@ -41,17 +46,35 @@ export default async function IntegrationsPage() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-2xl font-semibold">Marketplace de integrações</h1>
-        <p className="text-sm text-text-muted mt-1">
-          Conectores reais — sem credencial = desconectado (zero mock)
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Marketplace de integrações</h1>
+          <p className="text-sm text-text-muted mt-1">
+            Conectores reais — sem credencial = desconectado (zero mock)
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/app/integrations/tutorial"
+            className="rounded-md border border-border px-4 py-2 text-sm hover:bg-bg-soft"
+          >
+            Ver tutorial
+          </Link>
+          <a
+            href="/tutoriais/integracao-omie-dominio.md"
+            download="ProContador-OS-Tutorial-Omie-Dominio.md"
+            className="rounded-md bg-accent text-bg px-4 py-2 text-sm font-medium"
+          >
+            Baixar tutorial
+          </a>
+        </div>
       </header>
 
       <div className="grid md:grid-cols-2 gap-4">
         {INTEGRATION_PROVIDERS.map((provider) => {
           const row = byProvider.get(provider);
           const meta = LABELS[provider];
+          const connected = row?.status === "CONNECTED";
           return (
             <section
               key={provider}
@@ -69,7 +92,32 @@ export default async function IntegrationsPage() {
               {row?.lastError && (
                 <p className="text-xs text-danger mt-2">{row.lastError}</p>
               )}
-              <IntegrationConnectForm provider={provider} />
+              {row?.lastSyncAt && (
+                <p className="text-xs text-text-muted mt-1">
+                  Último sync: {row.lastSyncAt.toISOString()}
+                </p>
+              )}
+              {provider !== "DOMINIO" && (
+                <IntegrationConnectForm provider={provider} />
+              )}
+              {provider === "OMIE" && (
+                <OmieSyncButton
+                  enabled={Boolean(connected || row?.credentialsEnc)}
+                />
+              )}
+              {provider === "DOMINIO" && (
+                <>
+                  <DominioCsvImport />
+                  <details className="mt-3 text-xs text-text-muted">
+                    <summary className="cursor-pointer text-accent">
+                      Tenho API parceiro Domínio?
+                    </summary>
+                    <div className="mt-2">
+                      <IntegrationConnectForm provider="DOMINIO" />
+                    </div>
+                  </details>
+                </>
+              )}
             </section>
           );
         })}
