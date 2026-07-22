@@ -36,7 +36,9 @@ npm run db:setup
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) → **Abrir escritório**.
+Abra [http://localhost:3000](http://localhost:3000) → **Entrar**.
+
+Demo: `owner@trust.demo` / `hub123` (ou `fiscal@trust.demo` / `hub123`)
 
 ## Segurança — GitHub token
 

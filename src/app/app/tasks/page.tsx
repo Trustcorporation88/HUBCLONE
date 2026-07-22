@@ -1,11 +1,21 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function TasksPage() {
+  let session;
+  try {
+    session = await requireSession();
+  } catch {
+    redirect("/login");
+  }
+
   const tasks = await prisma.task.findMany({
+    where: { firmId: session.firmId },
     include: { client: true, assignee: true },
     orderBy: [{ status: "asc" }, { dueAt: "asc" }],
   });

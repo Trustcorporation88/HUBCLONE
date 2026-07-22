@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { LayoutDashboard, ListTodo, Receipt, FileCode2, Workflow, BookOpen } from "lucide-react";
+import {
+  LayoutDashboard,
+  ListTodo,
+  Receipt,
+  FileCode2,
+  Workflow,
+  BookOpen,
+} from "lucide-react";
+import { readSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { LogoutButton } from "@/components/logout-button";
 
 const NAV = [
   { href: "/app", label: "Painel", icon: LayoutDashboard },
@@ -10,21 +20,24 @@ const NAV = [
   { href: "/app/knowledge", label: "Benchmark", icon: BookOpen },
 ];
 
-export default function AppShellLayout({
+export default async function AppShellLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await readSession();
+  if (!session) redirect("/login");
+
   return (
     <div className="min-h-screen flex bg-bg text-text">
       <aside className="w-60 shrink-0 border-r border-border bg-bg-elevated flex flex-col">
         <div className="px-5 py-6 border-b border-border">
           <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
-            Trust · Contábil OS
+            {session.firmName}
           </div>
           <div className="mt-1 text-xl font-semibold tracking-tight">HUB</div>
           <p className="mt-2 text-xs text-text-muted leading-relaxed">
-            Melhor que qualquer concorrente — um pipeline, não 8 softwares.
+            {session.name} · {session.role}
           </p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
@@ -39,8 +52,9 @@ export default function AppShellLayout({
             </Link>
           ))}
         </nav>
-        <div className="p-4 border-t border-border text-xs text-text-muted">
-          Piloto: DAS Simples · Fase 1
+        <div className="p-4 border-t border-border flex items-center justify-between">
+          <span className="text-xs text-text-muted">Piloto DAS</span>
+          <LogoutButton />
         </div>
       </aside>
       <main className="flex-1 min-w-0 overflow-auto">

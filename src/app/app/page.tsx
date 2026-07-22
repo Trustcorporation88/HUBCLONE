@@ -1,38 +1,50 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
 import { formatBrl } from "@/lib/utils";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [tasks, obligations, xmls, pipelines, clients] = await Promise.all([
-    prisma.task.count(),
-    prisma.obligation.count(),
-    prisma.xmlDocument.count(),
-    prisma.fiscalPipeline.findMany({
-      include: { client: true },
-      orderBy: { updatedAt: "desc" },
-      take: 5,
-    }),
-    prisma.client.count(),
-  ]);
+  let session;
+  try {
+    session = await requireSession();
+  } catch {
+    redirect("/login");
+  }
 
-  const openTasks = await prisma.task.count({
-    where: { status: { in: ["PENDING", "IN_PROGRESS", "BLOCKED"] } },
-  });
-  const overdueGuides = await prisma.obligation.count({
-    where: { status: { in: ["READY", "SENT", "OVERDUE"] } },
-  });
-  const xmlWarnings = await prisma.xmlDocument.count({
-    where: { status: { in: ["WARNING", "ERROR"] } },
-  });
+  const firmId = session.firmId;
+
+  const [tasks, obligations, xmls, pipelines, clients, openTasks, overdueGuides, xmlWarnings] =
+    await Promise.all([
+      prisma.task.count({ where: { firmId } }),
+      prisma.obligation.count({ where: { firmId } }),
+      prisma.xmlDocument.count({ where: { firmId } }),
+      prisma.fiscalPipeline.findMany({
+        where: { firmId },
+        include: { client: true },
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+      }),
+      prisma.client.count({ where: { firmId } }),
+      prisma.task.count({
+        where: { firmId, status: { in: ["PENDING", "IN_PROGRESS", "BLOCKED"] } },
+      }),
+      prisma.obligation.count({
+        where: { firmId, status: { in: ["READY", "SENT", "OVERDUE"] } },
+      }),
+      prisma.xmlDocument.count({
+        where: { firmId, status: { in: ["WARNING", "ERROR"] } },
+      }),
+    ]);
 
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Painel do escritório</h1>
         <p className="text-text-muted mt-1 text-sm">
-          Visão operacional · {clients} clientes · demo Trust Contabilidade
+          Visão operacional · {clients} clientes · {session.firmName}
         </p>
       </header>
 

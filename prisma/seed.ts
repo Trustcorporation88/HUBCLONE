@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +13,8 @@ async function main() {
   await prisma.client.deleteMany();
   await prisma.firm.deleteMany();
 
+  const passwordHash = await bcrypt.hash("hub123", 10);
+
   const firm = await prisma.firm.create({
     data: {
       name: "Trust Contabilidade Demo",
@@ -22,11 +25,13 @@ async function main() {
             email: "owner@trust.demo",
             name: "Ana Owner",
             role: "OWNER",
+            passwordHash,
           },
           {
             email: "fiscal@trust.demo",
             name: "Bruno Fiscal",
             role: "STAFF",
+            passwordHash,
           },
         ],
       },
@@ -188,7 +193,7 @@ async function main() {
   });
 
   console.log("Seed OK — firm:", firm.slug);
-  console.log("Login demo: owner@trust.demo / fiscal@trust.demo (sem senha no MVP)");
+  console.log("Login: owner@trust.demo / hub123  ou  fiscal@trust.demo / hub123");
 }
 
 main()

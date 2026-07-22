@@ -1,11 +1,21 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
 import { formatBrl } from "@/lib/utils";
 import { format } from "date-fns";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function XmlPage() {
+  let session;
+  try {
+    session = await requireSession();
+  } catch {
+    redirect("/login");
+  }
+
   const docs = await prisma.xmlDocument.findMany({
+    where: { firmId: session.firmId },
     include: { client: true },
     orderBy: { issuedAt: "desc" },
   });

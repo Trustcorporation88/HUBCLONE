@@ -25,14 +25,15 @@ model Firm {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  firmId    String
-  email     String
-  name      String
-  role      String   @default("STAFF") // OWNER | MANAGER | STAFF | CLIENT
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  firmId       String
+  email        String
+  name         String
+  passwordHash String   @default("")
+  role         String   @default("STAFF") // OWNER | MANAGER | STAFF | CLIENT
+  createdAt    DateTime @default(now())
 
-  firm         Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  firm          Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
   assignedTasks Task[] @relation("TaskAssignee")
 
   @@unique([firmId, email])

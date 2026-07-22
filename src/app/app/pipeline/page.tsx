@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
 import {
   PIPELINE_STAGES,
   STAGE_LABELS,
@@ -6,11 +7,20 @@ import {
   stageIndex,
 } from "@/lib/domain/pipeline";
 import { AdvancePipelineButton } from "./advance-button";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function PipelinePage() {
+  let session;
+  try {
+    session = await requireSession();
+  } catch {
+    redirect("/login");
+  }
+
   const pipelines = await prisma.fiscalPipeline.findMany({
+    where: { firmId: session.firmId },
     include: { client: true, task: true },
     orderBy: { updatedAt: "desc" },
   });

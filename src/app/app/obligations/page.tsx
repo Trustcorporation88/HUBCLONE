@@ -1,12 +1,22 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
 import { formatBrl } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function ObligationsPage() {
+  let session;
+  try {
+    session = await requireSession();
+  } catch {
+    redirect("/login");
+  }
+
   const items = await prisma.obligation.findMany({
+    where: { firmId: session.firmId },
     include: { client: true },
     orderBy: { dueAt: "asc" },
   });

@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { readSession } from "@/lib/auth";
 import { nextStage } from "@/lib/domain/pipeline";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(_req: Request, ctx: Ctx) {
+  const session = await readSession();
+  if (!session) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
   const { id } = await ctx.params;
 
-  const pipeline = await prisma.fiscalPipeline.findUnique({
-    where: { id },
+  const pipeline = await prisma.fiscalPipeline.findFirst({
+    where: { id, firmId: session.firmId },
     include: { task: true },
   });
 

@@ -11,10 +11,10 @@ export default function HomePage() {
           <div className="text-2xl font-semibold mt-1">HUB Contábil OS</div>
         </div>
         <Link
-          href="/app"
+          href="/login"
           className="rounded-md bg-accent text-bg px-4 py-2 text-sm font-medium hover:opacity-90"
         >
-          Abrir escritório
+          Entrar
         </Link>
       </header>
 
@@ -40,10 +40,10 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/app/pipeline"
+              href="/login"
               className="rounded-md bg-accent text-bg px-5 py-2.5 text-sm font-medium"
             >
-              Ver Fiscal Autopilot
+              Entrar no escritório
             </Link>
             <Link
               href="/app/knowledge"
