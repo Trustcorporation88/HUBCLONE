@@ -4,6 +4,10 @@ import { formatBrl } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { redirect } from "next/navigation";
+import {
+  MarkViewedButton,
+  SendGuideButtons,
+} from "@/components/send-guide-buttons";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +21,10 @@ export default async function ObligationsPage() {
 
   const items = await prisma.obligation.findMany({
     where: { firmId: session.firmId },
-    include: { client: true },
+    include: {
+      client: true,
+      deliveries: { orderBy: { createdAt: "desc" }, take: 4 },
+    },
     orderBy: { dueAt: "asc" },
   });
 
@@ -26,47 +33,108 @@ export default async function ObligationsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Guias & obrigações</h1>
         <p className="text-sm text-text-muted mt-1">
-          MonitorHub+ : gerar, enviar, rastrear visualização — e depois pagar
-          (Dootax-level).
+          Envie por e-mail e WhatsApp, rastreie entrega e leitura — ConnectHub /
+          Confi level. Provider atual: mock (troca por API real via env).
         </p>
       </header>
 
-      <div className="rounded-lg border border-border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-bg-soft text-text-muted text-left">
-            <tr>
-              <th className="px-4 py-3 font-medium">Tipo</th>
-              <th className="px-4 py-3 font-medium">Cliente</th>
-              <th className="px-4 py-3 font-medium">Competência</th>
-              <th className="px-4 py-3 font-medium">Valor</th>
-              <th className="px-4 py-3 font-medium">Vencimento</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((o) => (
-              <tr key={o.id} className="border-t border-border">
-                <td className="px-4 py-3 font-medium">{o.type}</td>
-                <td className="px-4 py-3">
-                  {o.client.tradeName ?? o.client.legalName}
-                </td>
-                <td className="px-4 py-3 tabular-nums">{o.competence}</td>
-                <td className="px-4 py-3 tabular-nums">
+      <div className="space-y-4">
+        {items.map((o) => (
+          <article
+            key={o.id}
+            className="rounded-lg border border-border bg-bg-elevated p-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-medium">
+                    {o.type} · {o.competence}
+                  </h2>
+                  <StatusBadge status={o.status} />
+                </div>
+                <p className="text-sm text-text-muted mt-1">
+                  {o.client.tradeName ?? o.client.legalName} ·{" "}
                   {formatBrl(o.amountCents)}
-                </td>
-                <td className="px-4 py-3 tabular-nums">
                   {o.dueAt
-                    ? format(o.dueAt, "dd/MM/yyyy", { locale: ptBR })
-                    : "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-warning">{o.status}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    ? ` · vence ${format(o.dueAt, "dd/MM/yyyy", { locale: ptBR })}`
+                    : null}
+                </p>
+                <p className="text-xs text-text-muted mt-1">
+                  E-mail: {o.client.email ?? "—"} · WhatsApp:{" "}
+                  {o.client.whatsapp ?? "—"}
+                </p>
+              </div>
+              <SendGuideButtons
+                obligationId={o.id}
+                hasEmail={Boolean(o.client.email)}
+                hasWhatsapp={Boolean(o.client.whatsapp)}
+                disabled={["PAID", "CANCELLED"].includes(o.status)}
+              />
+            </div>
+
+            {o.deliveries.length > 0 && (
+              <div className="mt-4 border-t border-border pt-3">
+                <div className="text-xs text-text-muted mb-2">
+                  Histórico de envio
+                </div>
+                <ul className="space-y-1.5">
+                  {o.deliveries.map((d) => (
+                    <li
+                      key={d.id}
+                      className="flex flex-wrap items-center justify-between gap-2 text-xs"
+                    >
+                      <span>
+                        <span className="font-medium">{d.channel}</span>
+                        {" → "}
+                        {d.toAddress || "(sem destino)"}
+                        {" · "}
+                        <DeliveryStatus status={d.status} />
+                        {d.sentAt
+                          ? ` · ${format(d.sentAt, "dd/MM HH:mm", { locale: ptBR })}`
+                          : null}
+                        {d.errorMessage ? (
+                          <span className="text-danger"> — {d.errorMessage}</span>
+                        ) : null}
+                      </span>
+                      {d.status === "SENT" || d.status === "DELIVERED" ? (
+                        <MarkViewedButton deliveryId={d.id} />
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </article>
+        ))}
+
+        {items.length === 0 && (
+          <p className="text-sm text-text-muted">Nenhuma guia nesta carteira.</p>
+        )}
       </div>
     </div>
   );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const tone =
+    status === "PAID" || status === "VIEWED"
+      ? "text-success"
+      : status === "SENT"
+        ? "text-accent"
+        : status === "OVERDUE"
+          ? "text-danger"
+          : "text-warning";
+  return <span className={`text-xs font-medium ${tone}`}>{status}</span>;
+}
+
+function DeliveryStatus({ status }: { status: string }) {
+  const tone =
+    status === "VIEWED" || status === "DELIVERED"
+      ? "text-success"
+      : status === "FAILED"
+        ? "text-danger"
+        : status === "SENT"
+          ? "text-accent"
+          : "text-text-muted";
+  return <span className={tone}>{status}</span>;
 }

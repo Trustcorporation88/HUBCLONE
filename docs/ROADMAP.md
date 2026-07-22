@@ -6,8 +6,8 @@
 - [x] Domínio: Firm, Client, Task, Obligation, XmlDocument, FiscalPipeline
 - [x] UI: painel, tarefas, guias, XML, autopilot, knowledge
 - [x] API: avançar estágio do pipeline (aprovação humana)
-- [ ] Auth multi-tenant real
-- [ ] WhatsApp API oficial (envio de guia)
+- [x] Auth multi-tenant real
+- [x] WhatsApp/e-mail envio de guia (mock + rastreio VIEWED)
 - [ ] Captura SEFAZ real (certificado A1)
 
 ## Fase 2 — 6 meses

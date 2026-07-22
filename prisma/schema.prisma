@@ -22,6 +22,7 @@ model Firm {
   obligations Obligation[]
   xmlDocs     XmlDocument[]
   pipelines   FiscalPipeline[]
+  deliveries  Delivery[]
 }
 
 model User {
@@ -132,9 +133,32 @@ model Obligation {
   firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   task   Task?  @relation(fields: [taskId], references: [id])
+  deliveries Delivery[]
 
   @@index([firmId, status])
   @@index([clientId, competence])
+}
+
+/// Envio de guia (ConnectHub / Confi): e-mail + WhatsApp com rastreio
+model Delivery {
+  id            String    @id @default(cuid())
+  firmId        String
+  obligationId  String
+  channel       String    // EMAIL | WHATSAPP
+  toAddress     String
+  status        String    @default("QUEUED") // QUEUED | SENT | DELIVERED | VIEWED | FAILED
+  providerMsgId String?
+  bodyPreview   String?
+  errorMessage  String?
+  sentAt        DateTime?
+  viewedAt      DateTime?
+  createdAt     DateTime  @default(now())
+
+  firm       Firm       @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  obligation Obligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+
+  @@index([obligationId])
+  @@index([firmId, status])
 }
 
 /// XML fiscal compra/venda (XMLHub + Qive-level model)
