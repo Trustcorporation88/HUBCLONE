@@ -19,7 +19,11 @@ Nenhum caminho inventa SEFAZ, PIX, boleto ou e-mail.
 | Integrações | Domínio/Omie/ClickSign só com credencial testada |
 | Auth | `/setup` cria o 1º escritório real; login com slug |
 
-`ALLOW_DEMO=false` em produção. Health: `GET /api/health`
+## Banco (produção)
+
+Use **PostgreSQL no Railway**. Veja o passo a passo: [docs/POSTGRES-RAILWAY.md](docs/POSTGRES-RAILWAY.md).
+
+`DATABASE_URL` deve ser a referência do plugin Postgres — nunca `file:./dev.db` em produção.
 
 ## Serviços (escritório + portal)
 
