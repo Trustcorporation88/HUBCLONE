@@ -1,4 +1,4 @@
-# HUB Contábil OS
+# ProContador OS
 
 Sistema para escritórios de contabilidade — practice management + fiscal nativo + execução financeira num único fluxo:
 

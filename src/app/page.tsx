@@ -13,7 +13,7 @@ export default async function HomePage() {
       <header className="border-b border-border px-8 py-5 flex items-center justify-between">
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
-            Trust Corporation
+            ProContador
           </div>
           <div className="text-2xl font-semibold mt-1">ProContador OS</div>
         </div>

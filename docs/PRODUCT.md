@@ -1,4 +1,4 @@
-# Product vision — HUB Contábil OS
+# Product vision — ProContador OS
 
 ## Problema
 
@@ -6,7 +6,7 @@ Escritórios brasileiros usam 5–8 ferramentas (XML + guias + tarefas + WhatsAp
 
 ## Solução
 
-Um **Contábil OS** com três moats:
+O **ProContador OS** com três moats:
 
 1. **Fiscal Autopilot** — pipeline ponta a ponta com humano no loop
 2. **Firm OS + Client OS** — operação interna e experiência do cliente no mesmo sistema

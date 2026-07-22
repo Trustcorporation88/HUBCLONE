@@ -54,7 +54,7 @@ export function buildGuideFileContent(
     `Vencimento: ${due}`,
     o.barcode ? `Código de barras: ${o.barcode}` : null,
     "".padEnd(48, "-"),
-    "Arquivo gerado pelo HUB Contábil OS.",
+    "Arquivo gerado pelo ProContador OS.",
     "Anexe este arquivo no WhatsApp e envie ao cliente.",
     `Gerado em: ${new Date().toLocaleString("pt-BR")}`,
   ]
@@ -232,7 +232,7 @@ export async function sendObligationGuide(opts: {
 
     const tip =
       `${body}\n\n` +
-      `Segue a guia em anexo (baixe no HUB e anexe aqui).`;
+      `Segue a guia em anexo (baixe no ProContador OS e anexe aqui).`;
 
     const delivery = await prisma.delivery.create({
       data: {

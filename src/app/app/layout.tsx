@@ -49,7 +49,9 @@ export default async function AppShellLayout({
           <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
             {session.firmName}
           </div>
-          <div className="mt-1 text-xl font-semibold tracking-tight">HUB</div>
+          <div className="mt-1 text-xl font-semibold tracking-tight">
+            ProContador OS
+          </div>
           <p className="mt-2 text-xs text-text-muted leading-relaxed">
             {session.name} · {session.role}
           </p>

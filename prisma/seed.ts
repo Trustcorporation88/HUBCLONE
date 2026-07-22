@@ -29,9 +29,9 @@ async function main() {
 
   const firm = await prisma.firm.create({
     data: {
-      name: "Trust Contabilidade Demo",
+      name: "ProContador OS Demo",
       slug: "trust-demo",
-      brandName: "Trust Contabilidade",
+      brandName: "ProContador OS",
       brandTagline: "Seu escritório no bolso",
       users: {
         create: [
