@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   ListTodo,
@@ -46,15 +47,30 @@ export default async function AppShellLayout({
     <div className="min-h-screen flex bg-bg text-text">
       <aside className="w-60 shrink-0 border-r border-border bg-bg-elevated flex flex-col">
         <div className="px-5 py-6 border-b border-border">
-          <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
-            {session.firmName}
+          <div className="flex items-center gap-3">
+            <Image
+              src="/brand/procontador-os-logo.png"
+              alt="ProContador OS"
+              width={48}
+              height={48}
+              className="rounded-sm object-contain shrink-0"
+              priority
+            />
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted truncate">
+                {session.firmName}
+              </div>
+              <div
+                className="mt-0.5 text-lg font-semibold tracking-tight leading-tight"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                ProContador OS
+              </div>
+              <p className="mt-1 text-xs text-text-muted leading-relaxed truncate">
+                {session.name} · {session.role}
+              </p>
+            </div>
           </div>
-          <div className="mt-1 text-xl font-semibold tracking-tight">
-            ProContador OS
-          </div>
-          <p className="mt-2 text-xs text-text-muted leading-relaxed">
-            {session.name} · {session.role}
-          </p>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => (

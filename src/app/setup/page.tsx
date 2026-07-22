@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -76,8 +77,18 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg rounded-lg border border-border bg-bg-elevated p-8">
-        <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
-          ProContador OS
+        <div className="flex items-center gap-3">
+          <Image
+            src="/brand/procontador-os-logo.png"
+            alt="ProContador OS"
+            width={48}
+            height={48}
+            className="rounded-sm object-contain"
+            priority
+          />
+          <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
+            ProContador OS
+          </div>
         </div>
         <h1 className="mt-2 text-2xl font-semibold">Criar escritório</h1>
         <p className="mt-2 text-sm text-text-muted">
