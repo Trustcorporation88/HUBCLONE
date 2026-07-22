@@ -19,7 +19,8 @@
 ## 3. Redeploy
 
 1. Deployments → **Redeploy** (ou push neste repo)
-2. No build roda `prisma db push` e cria as tabelas no Postgres
+2. No **start** (não no build) o app roda `prisma db push` e cria as tabelas.
+   O host `*.railway.internal` **não funciona no build** — só em runtime.
 
 ## 4. Depois do deploy
 
