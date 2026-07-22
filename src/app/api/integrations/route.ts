@@ -36,7 +36,7 @@ export async function GET() {
 }
 
 const connectSchema = z.object({
-  provider: z.enum(["DOMINIO", "OMIE", "CLICKSIGN", "OPENAI"]),
+  provider: z.enum(["PROCONTADOR", "DOMINIO", "OMIE", "CLICKSIGN", "OPENAI"]),
   credentials: z.record(z.string()),
   test: z.boolean().default(true),
 });

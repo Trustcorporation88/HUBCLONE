@@ -3,6 +3,58 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+export function ProContadorSyncButton({ enabled }: { enabled: boolean }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/integrations/procontador/sync", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Falha no import");
+      setMsg(
+        `ProContador: ${data.created} novos · ${data.updated} atualizados · ${data.skipped} ignorados`,
+      );
+      router.refresh();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-1">
+      <button
+        type="button"
+        disabled={!enabled || loading}
+        onClick={run}
+        className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-bg-soft disabled:opacity-50"
+      >
+        {loading ? "Importando ProContador…" : "Importar empresas ProContador"}
+      </button>
+      <p className="text-[11px] text-text-muted">
+        Fonte:{" "}
+        <a
+          href="https://www.procontador.com.br"
+          target="_blank"
+          rel="noreferrer"
+          className="text-accent underline"
+        >
+          www.procontador.com.br
+        </a>{" "}
+        → clientes do OS (por CNPJ)
+      </p>
+      {msg && <p className="text-xs text-text-muted">{msg}</p>}
+    </div>
+  );
+}
+
 export function OmieSyncButton({ enabled }: { enabled: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

@@ -20,7 +20,7 @@ export default async function IntegracoesTutorialPage() {
           Tutorial
         </p>
         <h1 className="text-2xl font-semibold">
-          Integrar Omie e Domínio no ProContador OS
+          Integrar ProContador, Omie e Domínio
         </h1>
         <p className="text-sm text-text-muted">
           Guia operacional para o escritório piloto. Sem passos fictícios.
@@ -48,6 +48,28 @@ export default async function IntegracoesTutorialPage() {
           </Link>
         </div>
       </header>
+
+      <section className="space-y-3 text-sm leading-relaxed">
+        <h2 className="text-lg font-medium">ProContador (www.procontador.com.br)</h2>
+        <ol className="list-decimal pl-5 space-y-2 text-text-muted">
+          <li>
+            Use um usuário <strong className="text-text">admin sem MFA</strong>{" "}
+            do SaaS.
+          </li>
+          <li>
+            Em Integrações → ProContador, informe e-mail e senha e clique em{" "}
+            <strong className="text-text">Conectar e testar</strong>.
+          </li>
+          <li>
+            Com status CONNECTED, clique em{" "}
+            <strong className="text-text">Importar empresas ProContador</strong>.
+          </li>
+          <li>
+            Empresas do SaaS viram clientes do OS (upsert por CNPJ via{" "}
+            <code className="text-accent">GET /api/v1/companies</code>).
+          </li>
+        </ol>
+      </section>
 
       <section className="space-y-3 text-sm leading-relaxed">
         <h2 className="text-lg font-medium">Omie</h2>

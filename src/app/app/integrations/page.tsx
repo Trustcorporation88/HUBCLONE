@@ -7,11 +7,16 @@ import { IntegrationConnectForm } from "@/components/integration-connect-form";
 import {
   DominioCsvImport,
   OmieSyncButton,
+  ProContadorSyncButton,
 } from "@/components/integration-sync";
 
 export const dynamic = "force-dynamic";
 
 const LABELS: Record<string, { title: string; desc: string }> = {
+  PROCONTADOR: {
+    title: "ProContador",
+    desc: "www.procontador.com.br — importa empresas do SaaS para o OS",
+  },
   DOMINIO: {
     title: "Domínio Sistemas",
     desc: "Import CSV agora · API parceiro quando houver token Thomson/Onvio",
@@ -99,6 +104,11 @@ export default async function IntegrationsPage() {
               )}
               {provider !== "DOMINIO" && (
                 <IntegrationConnectForm provider={provider} />
+              )}
+              {provider === "PROCONTADOR" && (
+                <ProContadorSyncButton
+                  enabled={Boolean(connected || row?.credentialsEnc)}
+                />
               )}
               {provider === "OMIE" && (
                 <OmieSyncButton

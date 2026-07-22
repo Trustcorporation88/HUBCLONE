@@ -4,6 +4,11 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const FIELDS: Record<string, Array<{ key: string; label: string }>> = {
+  PROCONTADOR: [
+    { key: "email", label: "E-mail admin (procontador.com.br)" },
+    { key: "password", label: "Senha" },
+    { key: "baseUrl", label: "API URL (opcional)" },
+  ],
   OPENAI: [{ key: "apiKey", label: "API Key" }],
   OMIE: [
     { key: "appKey", label: "App Key" },
@@ -62,7 +67,19 @@ export function IntegrationConnectForm({ provider }: { provider: string }) {
         <label key={f.key} className="block text-xs">
           <span className="text-text-muted">{f.label}</span>
           <input
-            type={f.key.toLowerCase().includes("secret") || f.key.includes("Token") || f.key.includes("Key") ? "password" : "text"}
+            type={
+              f.key === "password" ||
+              f.key.toLowerCase().includes("secret") ||
+              f.key.includes("Token") ||
+              f.key.includes("Key")
+                ? "password"
+                : "text"
+            }
+            placeholder={
+              provider === "PROCONTADOR" && f.key === "baseUrl"
+                ? "https://api.procontador.com.br/api/v1"
+                : undefined
+            }
             value={values[f.key] ?? ""}
             onChange={(e) =>
               setValues((v) => ({ ...v, [f.key]: e.target.value }))

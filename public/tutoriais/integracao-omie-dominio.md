@@ -1,9 +1,51 @@
 # ProContador OS — Tutorial de integração
-## Omie e Domínio Sistemas
+## ProContador · Omie · Domínio
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Produto:** ProContador OS (`contabil.trustcorp.com.br`)  
-**Objetivo:** conectar o escritório e importar clientes sem dados fictícios.
+**SaaS irmão:** [www.procontador.com.br](https://www.procontador.com.br) (`contador-saas`)  
+**Objetivo:** conectar o escritório e importar clientes/empresas sem dados fictícios.
+
+---
+
+## 0. Integração ProContador (prioridade)
+
+O **ProContador OS** e o site **www.procontador.com.br** são produtos irmãos.  
+Esta integração traz as **empresas** do SaaS para a base de **clientes** do OS (upsert por CNPJ).
+
+### 0.1 Pré-requisitos
+
+1. Conta **admin** em [www.procontador.com.br](https://www.procontador.com.br) **sem MFA** (MFA bloqueia o login da API de sync).
+2. API online em `https://api.procontador.com.br/api/v1` (override via `PROCONTADOR_API_URL` no Railway se necessário).
+
+### 0.2 Conectar no OS
+
+1. Login no OS → menu **Integrações**.
+2. Card **ProContador**:
+   - E-mail admin  
+   - Senha  
+   - API URL (opcional; deixe em branco para o default)
+3. **Conectar e testar** → status **CONNECTED**.
+
+### 0.3 Importar empresas
+
+1. Clique em **Importar empresas ProContador**.
+2. O OS chama `POST /auth/login` e depois `GET /companies` (paginado).
+3. Cada empresa ativa com CNPJ/CPF válido vira `Client` no escritório:
+   - novo CNPJ → cria  
+   - mesmo CNPJ → atualiza razão, e-mail, telefone, regime  
+4. Reexecute quando quiser; não duplica CNPJ.
+
+### 0.4 Problemas comuns (ProContador)
+
+| Sintoma | O que fazer |
+|--------|-------------|
+| MFA Required | Usar admin sem MFA |
+| Login HTTP 401 | Conferir e-mail/senha no SaaS |
+| GET /companies falhou | Token inválido ou API fora; checar `api.procontador.com.br` |
+| 0 importados | Empresas inativas ou sem CNPJ válido |
+
+> SSO bidirecional (entrar no OS com sessão do SaaS) fica para a próxima etapa. Agora o fluxo é **sync de empresas → clientes**.
 
 ---
 
@@ -11,7 +53,7 @@
 
 1. Entre no escritório: `/login` (slug + e-mail + senha).
 2. No menu lateral, abra **Integrações**.
-3. Escolha o card **Omie** ou **Domínio Sistemas**.
+3. Escolha o card **ProContador**, **Omie** ou **Domínio Sistemas**.
 
 ---
 

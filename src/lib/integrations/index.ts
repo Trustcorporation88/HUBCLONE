@@ -1,6 +1,8 @@
 import { decryptSecret, encryptSecret } from "@/lib/crypto-secret";
+import { testProContador } from "@/lib/integrations/procontador";
 
 export const INTEGRATION_PROVIDERS = [
+  "PROCONTADOR",
   "DOMINIO",
   "OMIE",
   "CLICKSIGN",
@@ -28,6 +30,10 @@ export async function testIntegration(
   provider: IntegrationProvider,
   creds: ProviderCreds,
 ): Promise<{ ok: boolean; detail: string }> {
+  if (provider === "PROCONTADOR") {
+    return testProContador(creds);
+  }
+
   if (provider === "OPENAI") {
     const key = creds.apiKey || process.env.OPENAI_API_KEY;
     if (!key) return { ok: false, detail: "OPENAI_API_KEY ausente" };
