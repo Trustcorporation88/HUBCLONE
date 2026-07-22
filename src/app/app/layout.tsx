@@ -6,6 +6,13 @@ import {
   FileCode2,
   Workflow,
   BookOpen,
+  Gauge,
+  LineChart,
+  Timer,
+  Puzzle,
+  FileSignature,
+  Inbox,
+  ShieldAlert,
 } from "lucide-react";
 import { readSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -14,9 +21,16 @@ import { LogoutButton } from "@/components/logout-button";
 const NAV = [
   { href: "/app", label: "Painel", icon: LayoutDashboard },
   { href: "/app/tasks", label: "Tarefas", icon: ListTodo },
+  { href: "/app/capacity", label: "Fila", icon: Gauge },
+  { href: "/app/pnl", label: "P&L", icon: LineChart },
+  { href: "/app/sla", label: "SLA", icon: Timer },
   { href: "/app/obligations", label: "Guias", icon: Receipt },
   { href: "/app/xml", label: "XML", icon: FileCode2 },
   { href: "/app/pipeline", label: "Autopilot", icon: Workflow },
+  { href: "/app/contracts", label: "Contratos", icon: FileSignature },
+  { href: "/app/inbox", label: "Inbox", icon: Inbox },
+  { href: "/app/health", label: "Saúde", icon: ShieldAlert },
+  { href: "/app/integrations", label: "Integrações", icon: Puzzle },
   { href: "/app/knowledge", label: "Benchmark", icon: BookOpen },
 ];
 
@@ -40,7 +54,7 @@ export default async function AppShellLayout({
             {session.name} · {session.role}
           </p>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
@@ -53,7 +67,7 @@ export default async function AppShellLayout({
           ))}
         </nav>
         <div className="p-4 border-t border-border flex items-center justify-between">
-          <span className="text-xs text-text-muted">Piloto DAS</span>
+          <span className="text-xs text-text-muted">Operacional</span>
           <LogoutButton />
         </div>
       </aside>

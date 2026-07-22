@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
 import { nextStage } from "@/lib/domain/pipeline";
+import { clientHasBlockingXml } from "@/lib/xml-audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -26,9 +27,23 @@ export async function POST(_req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Já finalizado" }, { status: 400 });
   }
 
+  const xmlBlocked = await clientHasBlockingXml({
+    firmId: session.firmId,
+    clientId: pipeline.clientId,
+  });
+
   const nxt = nextStage(pipeline.stage);
 
   if (!nxt) {
+    if (xmlBlocked) {
+      return NextResponse.json(
+        {
+          error:
+            "XML inconsistente bloqueante. Audite e corrija antes de fechar.",
+        },
+        { status: 400 },
+      );
+    }
     if (pipeline.taskId) {
       const unpaid = await prisma.obligation.count({
         where: {
@@ -65,6 +80,16 @@ export async function POST(_req: Request, ctx: Ctx) {
     return NextResponse.json({ stage: "CLOSE", stageStatus: "DONE" });
   }
 
+  if (pipeline.stage === "AUDIT" && xmlBlocked) {
+    return NextResponse.json(
+      {
+        error:
+          "Há XML com inconsistência bloqueante. Rode a auditoria e corrija antes de avançar.",
+      },
+      { status: 400 },
+    );
+  }
+
   if (pipeline.stage === "GUIDE" && pipeline.taskId) {
     await prisma.obligation.updateMany({
       where: { taskId: pipeline.taskId, status: "PENDING" },
@@ -89,6 +114,16 @@ export async function POST(_req: Request, ctx: Ctx) {
         { status: 400 },
       );
     }
+  }
+
+  if (pipeline.stage === "PROVE" && xmlBlocked) {
+    return NextResponse.json(
+      {
+        error:
+          "XML inconsistente bloqueia o fechamento. Corrija os achados de auditoria.",
+      },
+      { status: 400 },
+    );
   }
 
   const updated = await prisma.fiscalPipeline.update({

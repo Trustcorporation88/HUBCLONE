@@ -12,17 +12,26 @@
 - [x] Captura SEFAZ DistDFe NF-e + CT-e live (A1 mTLS); NFS-e ADN live
 - [x] Pagamento: só código oficial (`barcode` / `pixPayload`) + comprovante
 - [x] Política zero-mock: sem fallback inventado em SEFAZ, e-mail ou pagamento
+- [x] Capacidade e fila por setor
+- [x] P&L interno (horas × margem)
+- [x] SLA monitorado WhatsApp/e-mail
+- [x] Bloqueio de fechamento com XML inconsistente
+- [x] Marketplace Domínio / Omie / ClickSign / OpenAI
+- [x] Assinatura digital (PDF assinado)
+- [x] Inbox foto/PDF + OpenAI
+- [x] Saúde fiscal (CND/certificado/atrasos/XML)
+- [x] Dashboard advisory no portal
 
 ## Fase 2 — 6 meses
 
-- [ ] Auditoria pré-SPED com regras
+- [ ] Auditoria pré-SPED com regras avançadas
 - [ ] Apuração assistida DAS/ICMS
 - [ ] Integração PSP bancário (opcional, além do código oficial)
-- [ ] E-sign + propostas no app cliente
+- [ ] ClickSign end-to-end (além do conector)
 
 ## Fase 3 — 12 meses
 
-- [ ] Firm P&L (horas × margem × risco)
-- [ ] Advisory automático
+- [ ] Firm P&L com risco + pricing
+- [ ] Advisory prescritivo (recomendações)
 - [ ] CBS/IBS + split payment
 - [ ] Agente IA de fechamento

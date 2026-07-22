@@ -17,17 +17,24 @@ model Firm {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  users       User[]
-  clients     Client[]
-  processes   ProcessTemplate[]
-  tasks       Task[]
-  obligations Obligation[]
-  xmlDocs     XmlDocument[]
-  pipelines   FiscalPipeline[]
-  deliveries  Delivery[]
+  users        User[]
+  clients      Client[]
+  processes    ProcessTemplate[]
+  tasks        Task[]
+  obligations  Obligation[]
+  xmlDocs      XmlDocument[]
+  pipelines    FiscalPipeline[]
+  deliveries   Delivery[]
   certificates Certificate[]
   captureRuns  CaptureRun[]
   payments     Payment[]
+  timeEntries  TimeEntry[]
+  slaPolicies  SlaPolicy[]
+  xmlFindings  XmlAuditFinding[]
+  integrations Integration[]
+  contracts    Contract[]
+  inboxItems   InboxItem[]
+  fiscalAlerts FiscalAlert[]
 }
 
 model User {
@@ -43,6 +50,7 @@ model User {
   firm          Firm    @relation(fields: [firmId], references: [id], onDelete: Cascade)
   client        Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
   assignedTasks Task[]  @relation("TaskAssignee")
+  timeEntries   TimeEntry[]
 
   @@unique([firmId, email])
   @@index([clientId])
@@ -70,6 +78,10 @@ model Client {
   pipelines    FiscalPipeline[]
   certificates Certificate[]
   captureRuns  CaptureRun[]
+  timeEntries  TimeEntry[]
+  contracts    Contract[]
+  inboxItems   InboxItem[]
+  fiscalAlerts FiscalAlert[]
 
   @@unique([firmId, cnpj])
   @@index([firmId])
@@ -110,15 +122,17 @@ model Task {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  firm       Firm             @relation(fields: [firmId], references: [id], onDelete: Cascade)
-  client     Client?          @relation(fields: [clientId], references: [id])
-  template   ProcessTemplate? @relation(fields: [templateId], references: [id])
-  assignee   User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  obligation Obligation?
-  pipeline   FiscalPipeline?
+  firm        Firm             @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client      Client?          @relation(fields: [clientId], references: [id])
+  template    ProcessTemplate? @relation(fields: [templateId], references: [id])
+  assignee    User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  obligation  Obligation?
+  pipeline    FiscalPipeline?
+  timeEntries TimeEntry[]
 
   @@index([firmId, status])
   @@index([firmId, dueAt])
+  @@index([firmId, department])
 }
 
 /// Guia / obrigação fiscal (MonitorHub+)
@@ -218,8 +232,9 @@ model XmlDocument {
   schemaSource  String?  // SEFAZ_DISTDFE | MOCK | UPLOAD
   createdAt     DateTime @default(now())
 
-  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  firm     Firm              @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client   Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  findings XmlAuditFinding[]
 
   @@unique([firmId, accessKey])
   @@index([clientId, direction])
@@ -297,4 +312,146 @@ model CaptureRun {
   certificate Certificate? @relation(fields: [certificateId], references: [id], onDelete: SetNull)
 
   @@index([firmId, startedAt])
+}
+
+/// Horas lançadas — P&L interno por cliente
+model TimeEntry {
+  id              String   @id @default(cuid())
+  firmId          String
+  clientId        String
+  userId          String
+  taskId          String?
+  minutes         Int
+  hourlyRateCents Int      @default(0)
+  costRateCents   Int      @default(0)
+  billable        Boolean  @default(true)
+  note            String?
+  workedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  firm   Firm  @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task   Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([firmId, clientId])
+  @@index([firmId, workedAt])
+}
+
+/// SLA de resposta/envio por canal
+model SlaPolicy {
+  id          String   @id @default(cuid())
+  firmId      String
+  channel     String   // EMAIL | WHATSAPP
+  department  String   @default("ALL")
+  targetHours Int      @default(24)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@unique([firmId, channel, department])
+}
+
+/// Achados de auditoria XML (bloqueiam fechamento se blocking)
+model XmlAuditFinding {
+  id            String   @id @default(cuid())
+  firmId        String
+  xmlDocumentId String
+  severity      String   // INFO | WARNING | ERROR
+  code          String
+  message       String
+  blocking      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  firm        Firm        @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  xmlDocument XmlDocument @relation(fields: [xmlDocumentId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, blocking])
+  @@index([xmlDocumentId])
+}
+
+/// Marketplace de integrações (credenciais criptografadas)
+model Integration {
+  id             String    @id @default(cuid())
+  firmId         String
+  provider       String    // DOMINIO | OMIE | CLICKSIGN | OPENAI
+  status         String    @default("DISCONNECTED") // DISCONNECTED | CONNECTED | ERROR
+  credentialsEnc String?
+  metaJson       String    @default("{}")
+  lastSyncAt     DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@unique([firmId, provider])
+}
+
+/// Contrato / OS — assinatura por upload de PDF assinado
+model Contract {
+  id             String    @id @default(cuid())
+  firmId         String
+  clientId       String
+  title          String
+  kind           String    @default("OS") // CONTRACT | OS
+  status         String    @default("DRAFT") // DRAFT | SENT | SIGNED | REJECTED
+  originalPath   String?
+  signedPdfPath  String?
+  notes          String?
+  sentAt         DateTime?
+  signedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, status])
+  @@index([clientId])
+}
+
+/// Inbox inteligente — classificação OpenAI
+model InboxItem {
+  id             String    @id @default(cuid())
+  firmId         String
+  clientId       String
+  uploadedById   String?
+  filename       String
+  mimeType       String
+  filePath       String
+  classification String?   // DAS | NFE | CONTRACT | PROOF | OTHER
+  confidence     Float?
+  rawAiJson      String?
+  status         String    @default("PENDING") // PENDING | CLASSIFIED | TRIAGED | REJECTED
+  note           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, status])
+  @@index([clientId])
+}
+
+/// Saúde fiscal — alertas derivados de dados reais
+model FiscalAlert {
+  id         String    @id @default(cuid())
+  firmId     String
+  clientId   String
+  type       String    // CERT_EXPIRING | CND_MISSING | OVERDUE | XML_ERROR
+  severity   String    @default("WARNING") // INFO | WARNING | CRITICAL
+  message    String
+  metaJson   String    @default("{}")
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, resolvedAt])
+  @@index([clientId, type])
 }

@@ -29,7 +29,8 @@ export default async function PortalGuiasPage() {
       <header>
         <h1 className="text-2xl font-semibold">Minhas guias</h1>
         <p className="text-sm text-text-muted mt-1">
-          Emitidas por {session.brandName}. Pague por PIX ou boleto.
+          Pague com código oficial da guia (PIX/boleto) e anexe o comprovante.
+          Sem código cadastrado pelo escritório, o pagamento fica bloqueado.
         </p>
       </header>
 

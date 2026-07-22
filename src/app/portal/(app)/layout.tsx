@@ -7,6 +7,10 @@ const NAV = [
   { href: "/portal", label: "Início" },
   { href: "/portal/guias", label: "Guias" },
   { href: "/portal/xml", label: "Notas" },
+  { href: "/portal/assinaturas", label: "Assinaturas" },
+  { href: "/portal/inbox", label: "Inbox" },
+  { href: "/portal/saude", label: "Saúde" },
+  { href: "/portal/advisory", label: "Advisory" },
 ];
 
 export default async function PortalAppLayout({
@@ -38,7 +42,7 @@ export default async function PortalAppLayout({
             <LogoutButton />
           </div>
         </div>
-        <nav className="max-w-3xl mx-auto px-5 pb-3 flex gap-1">
+        <nav className="max-w-3xl mx-auto px-5 pb-3 flex gap-1 flex-wrap">
           {NAV.map((item) => (
             <Link
               key={item.href}

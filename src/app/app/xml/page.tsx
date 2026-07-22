@@ -4,6 +4,7 @@ import { formatBrl } from "@/lib/utils";
 import { format } from "date-fns";
 import { redirect } from "next/navigation";
 import { CaptureButton, CertUploadForm } from "@/components/sefaz-capture";
+import { AuditXmlButton } from "@/components/audit-xml-button";
 
 export const dynamic = "force-dynamic";
 
@@ -92,10 +93,13 @@ export default async function XmlPage() {
                 </div>
                 <div className="text-xs text-text-muted">{c.cnpj}</div>
               </div>
-              <CaptureButton
-                clientId={c.id}
-                clientLabel={c.tradeName ?? c.legalName}
-              />
+              <div className="flex flex-wrap items-center gap-2">
+                <AuditXmlButton clientId={c.id} />
+                <CaptureButton
+                  clientId={c.id}
+                  clientLabel={c.tradeName ?? c.legalName}
+                />
+              </div>
             </div>
           ))}
         </div>

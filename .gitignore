@@ -59,5 +59,7 @@ Desktop.ini
 /data/xml/
 /data/proofs/
 /data/guides/
+/data/inbox/
+/data/signatures/
 *.pfx
 *.p12

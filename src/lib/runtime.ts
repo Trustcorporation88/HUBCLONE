@@ -71,6 +71,14 @@ export function getOpsStatus(): OpsStatus {
     detail: process.env.DATABASE_URL ? "ok" : "ausente",
   });
 
+  checks.push({
+    key: "OPENAI_API_KEY",
+    ok: Boolean(process.env.OPENAI_API_KEY?.trim()),
+    detail: process.env.OPENAI_API_KEY?.trim()
+      ? "ok (inbox IA)"
+      : "ausente — inbox com IA falhará até configurar",
+  });
+
   const critical = checks.filter((c) =>
     ["AUTH_SECRET", "DATABASE_URL", "SMTP"].includes(c.key),
   );
