@@ -78,6 +78,8 @@ export default async function ObligationsPage() {
                   obligationId={o.id}
                   disabled={["CANCELLED", "DRAFT"].includes(o.status)}
                   payments={o.payments}
+                  canPayPix={Boolean(o.pixPayload)}
+                  canPayBoleto={Boolean(o.barcode)}
                 />
               </div>
             </div>

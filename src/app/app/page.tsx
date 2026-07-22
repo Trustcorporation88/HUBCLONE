@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { formatBrl } from "@/lib/utils";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -88,7 +87,7 @@ export default async function DashboardPage() {
               {pipelines.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center text-text-muted">
-                    Rode <code className="text-accent">npm run db:setup</code> para popular o demo.
+                    Nenhum pipeline ainda. Crie tarefas e obrigações reais para iniciar.
                   </td>
                 </tr>
               )}
@@ -99,7 +98,7 @@ export default async function DashboardPage() {
 
       <section className="grid md:grid-cols-3 gap-4">
         <QuickLink href="/app/tasks" title="Tarefas" desc="Processos, prazos, OS — nível Karbon/TaskHub" />
-        <QuickLink href="/app/obligations" title="Guias" desc={`Envio + status · ${formatBrl(184750)} exemplo DAS`} />
+        <QuickLink href="/app/obligations" title="Guias" desc="Envio real (SMTP) + pagamento com código oficial e comprovante" />
         <QuickLink href="/app/xml" title="XML" desc="Compra/venda com auditoria pré-lançamento" />
       </section>
     </div>

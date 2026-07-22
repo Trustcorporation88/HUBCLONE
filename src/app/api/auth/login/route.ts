@@ -10,7 +10,7 @@ import { z } from "zod";
 const bodySchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-  firmSlug: z.string().min(1).default("trust-demo"),
+  firmSlug: z.string().min(1),
 });
 
 export async function POST(req: Request) {

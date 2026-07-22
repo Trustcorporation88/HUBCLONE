@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
+import path from "path";
 import { readSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
@@ -27,11 +28,23 @@ export async function GET(_req: Request, ctx: Ctx) {
   }
 
   try {
-    const content = await readFile(payment.proofPath, "utf8");
-    return new NextResponse(content, {
+    const buf = await readFile(payment.proofPath);
+    const ext = path.extname(payment.proofPath).toLowerCase();
+    const type =
+      ext === ".pdf"
+        ? "application/pdf"
+        : ext === ".png"
+          ? "image/png"
+          : ext === ".webp"
+            ? "image/webp"
+            : ext === ".jpg" || ext === ".jpeg"
+              ? "image/jpeg"
+              : "application/octet-stream";
+
+    return new NextResponse(buf, {
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Content-Disposition": `inline; filename="comprovante-${payment.id}.txt"`,
+        "Content-Type": type,
+        "Content-Disposition": `inline; filename="comprovante-${payment.id}${ext}"`,
       },
     });
   } catch {

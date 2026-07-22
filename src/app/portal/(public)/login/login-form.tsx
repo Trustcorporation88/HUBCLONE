@@ -9,8 +9,9 @@ export default function PortalLoginForm() {
   const params = useSearchParams();
   const next = params.get("next") ?? "/portal";
 
-  const [email, setEmail] = useState("financeiro@alpha.demo");
-  const [password, setPassword] = useState("hub123");
+  const [firmSlug, setFirmSlug] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,11 +23,7 @@ export default function PortalLoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          firmSlug: "trust-demo",
-        }),
+        body: JSON.stringify({ email, password, firmSlug }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha no login");
@@ -48,14 +45,23 @@ export default function PortalLoginForm() {
         <div className="text-xs uppercase tracking-[0.2em] text-text-muted">
           Portal do cliente
         </div>
-        <h1 className="mt-2 text-2xl font-semibold">Trust Contabilidade</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Acesso do cliente</h1>
         <p className="mt-2 text-sm text-text-muted">
-          White-label do escritório. Demo:{" "}
-          <code className="text-accent">financeiro@alpha.demo</code> /{" "}
-          <code className="text-accent">hub123</code>
+          Use o slug do escritório e as credenciais que você recebeu.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          <label className="block text-sm">
+            <span className="text-text-muted">Slug do escritório</span>
+            <input
+              type="text"
+              value={firmSlug}
+              onChange={(e) => setFirmSlug(e.target.value.toLowerCase())}
+              placeholder="ex.: trust-contabilidade"
+              className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 outline-none focus:border-accent"
+              required
+            />
+          </label>
           <label className="block text-sm">
             <span className="text-text-muted">E-mail</span>
             <input

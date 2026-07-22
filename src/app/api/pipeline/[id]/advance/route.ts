@@ -26,10 +26,28 @@ export async function POST(_req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Já finalizado" }, { status: 400 });
   }
 
-  // Complete current stage, move to next (human-in-the-loop approval)
   const nxt = nextStage(pipeline.stage);
 
   if (!nxt) {
+    if (pipeline.taskId) {
+      const unpaid = await prisma.obligation.count({
+        where: {
+          taskId: pipeline.taskId,
+          status: { not: "PAID" },
+          NOT: { status: "CANCELLED" },
+        },
+      });
+      if (unpaid > 0) {
+        return NextResponse.json(
+          {
+            error:
+              "Há guias sem pagamento confirmado (com comprovante). Não é possível fechar.",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     await prisma.$transaction([
       prisma.fiscalPipeline.update({
         where: { id },
@@ -43,26 +61,34 @@ export async function POST(_req: Request, ctx: Ctx) {
             }),
           ]
         : []),
-      prisma.obligation.updateMany({
-        where: { taskId: pipeline.taskId ?? undefined },
-        data: { status: "PAID", paidAt: new Date() },
-      }),
     ]);
     return NextResponse.json({ stage: "CLOSE", stageStatus: "DONE" });
   }
 
-  // Side effects by stage transition (simplified MVP)
   if (pipeline.stage === "GUIDE" && pipeline.taskId) {
     await prisma.obligation.updateMany({
-      where: { taskId: pipeline.taskId },
+      where: { taskId: pipeline.taskId, status: "PENDING" },
       data: { status: "SENT", sentAt: new Date() },
     });
   }
+
   if (pipeline.stage === "PAY" && pipeline.taskId) {
-    await prisma.obligation.updateMany({
-      where: { taskId: pipeline.taskId },
-      data: { status: "PAID", paidAt: new Date(), proofUrl: "demo://comprovante" },
+    const unpaid = await prisma.obligation.count({
+      where: {
+        taskId: pipeline.taskId,
+        status: { not: "PAID" },
+        NOT: { status: "CANCELLED" },
+      },
     });
+    if (unpaid > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Confirme o pagamento com comprovante anexado antes de avançar. Não há confirmação automática/mock.",
+        },
+        { status: 400 },
+      );
+    }
   }
 
   const updated = await prisma.fiscalPipeline.update({

@@ -55,6 +55,8 @@ export default async function PortalGuiasPage() {
               obligationId={o.id}
               disabled={["CANCELLED", "DRAFT"].includes(o.status)}
               payments={o.payments}
+              canPayPix={Boolean(o.pixPayload)}
+              canPayBoleto={Boolean(o.barcode)}
             />
           </article>
         ))}

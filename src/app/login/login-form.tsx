@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -9,10 +9,19 @@ export default function LoginForm() {
   const params = useSearchParams();
   const next = params.get("next") ?? "/app";
 
-  const [email, setEmail] = useState("owner@trust.demo");
-  const [password, setPassword] = useState("hub123");
+  const [firmSlug, setFirmSlug] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [needsBootstrap, setNeedsBootstrap] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/bootstrap")
+      .then((r) => r.json())
+      .then((d) => setNeedsBootstrap(Boolean(d.needsBootstrap)))
+      .catch(() => {});
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,11 +31,7 @@ export default function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          firmSlug: "trust-demo",
-        }),
+        body: JSON.stringify({ email, password, firmSlug }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha no login");
@@ -47,12 +52,30 @@ export default function LoginForm() {
         </div>
         <h1 className="mt-2 text-2xl font-semibold">Entrar no escritório</h1>
         <p className="mt-2 text-sm text-text-muted">
-          Multi-tenant por escritório. Demo:{" "}
-          <code className="text-accent">owner@trust.demo</code> /{" "}
-          <code className="text-accent">hub123</code>
+          Acesso operacional multi-tenant. Sem contas demo.
         </p>
 
+        {needsBootstrap && (
+          <p className="mt-3 rounded-md border border-accent/40 bg-accent/10 px-3 py-2 text-sm">
+            Nenhum escritório cadastrado.{" "}
+            <Link href="/setup" className="text-accent underline">
+              Criar o primeiro agora
+            </Link>
+          </p>
+        )}
+
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          <label className="block text-sm">
+            <span className="text-text-muted">Slug do escritório</span>
+            <input
+              type="text"
+              value={firmSlug}
+              onChange={(e) => setFirmSlug(e.target.value.toLowerCase())}
+              placeholder="ex.: trust-contabilidade"
+              className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 outline-none focus:border-accent"
+              required
+            />
+          </label>
           <label className="block text-sm">
             <span className="text-text-muted">E-mail</span>
             <input

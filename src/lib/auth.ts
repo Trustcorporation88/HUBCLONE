@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { requireAuthSecret } from "@/lib/runtime";
 
 export const SESSION_COOKIE = "hub_session";
 
@@ -17,8 +18,7 @@ export type SessionPayload = {
 };
 
 function secretKey() {
-  const secret = process.env.AUTH_SECRET ?? "hub-dev-secret-change-me";
-  return new TextEncoder().encode(secret);
+  return new TextEncoder().encode(requireAuthSecret());
 }
 
 export async function hashPassword(password: string) {

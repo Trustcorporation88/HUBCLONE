@@ -4,8 +4,7 @@ import type { DistDfeDoc, DistDfeResult } from "@/lib/sefaz/dist-dfe";
 
 /**
  * NFS-e Sistema Nacional (ADN) — distribuição por NSU.
- * Live: GET {NFSE_ADN_BASE_URL}/DFe/{ultNSU} com mTLS A1.
- * Default mock quando sem base URL ou SEFAZ_MODE=mock.
+ * Live only: GET {NFSE_ADN_BASE_URL}/DFe/{ultNSU} com mTLS A1.
  */
 function padNsu(nsu: string) {
   return nsu.replace(/\D/g, "").padStart(15, "0").slice(-15);
@@ -120,42 +119,4 @@ export async function nfseAdnLive(opts: {
       ],
     };
   }
-}
-
-export function nfseAdnMock(opts: { cnpj: string; ultNsu: string }): DistDfeResult {
-  const dig = opts.cnpj.replace(/\D/g, "").padStart(14, "0").slice(0, 14);
-  const base = Number(opts.ultNsu.replace(/\D/g, "") || "0");
-  const docs: DistDfeDoc[] = [];
-  for (let i = 1; i <= 2; i++) {
-    const accessKey = `NFS${dig}${String(base + i).padStart(15, "0")}`.padEnd(44, "0").slice(0, 44);
-    const v = (800 * i + 55).toFixed(2);
-    const xml =
-      `<?xml version="1.0"?>` +
-      `<NFSe><infNFSe Id="${accessKey}">` +
-      `<prestador><CNPJ>${dig}</CNPJ></prestador>` +
-      `<tomador><CNPJ>11222333000144</CNPJ></tomador>` +
-      `<valores><vServico>${v}</vServico></valores>` +
-      `<dhEmi>${new Date().toISOString()}</dhEmi>` +
-      `</infNFSe></NFSe>`;
-    docs.push({
-      nsu: padNsu(String(base + i)),
-      schema: "NFSe_ADN",
-      xml,
-      accessKey,
-      docType: "OTHER",
-      direction: "OUT",
-      issuerCnpj: dig,
-      recipientCnpj: "11222333000144",
-      amountCents: Math.round(Number(v) * 100),
-      issuedAt: new Date(),
-    });
-  }
-  const ult = padNsu(String(base + 2));
-  return {
-    cStat: "138",
-    xMotivo: "Documento localizado (MOCK NFS-e ADN)",
-    ultNsu: ult,
-    maxNsu: ult,
-    docs,
-  };
 }

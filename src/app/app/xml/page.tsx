@@ -43,15 +43,13 @@ export default async function XmlPage() {
     label: `${c.tradeName ?? c.legalName} (${c.cnpj})`,
   }));
 
-  const mode = process.env.SEFAZ_MODE ?? "auto";
-
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-semibold">XML compra & venda</h1>
         <p className="text-sm text-text-muted mt-1">
-          DistDFe NF-e + CT-e · NFS-e ADN · modo{" "}
-          <code className="text-accent">{mode}</code> · marque os tipos e capture
+          DistDFe NF-e + CT-e · NFS-e ADN · captura 100% live (certificado A1
+          obrigatório)
         </p>
       </header>
 
@@ -59,8 +57,8 @@ export default async function XmlPage() {
         <div>
           <h2 className="font-medium">Certificado A1</h2>
           <p className="text-xs text-text-muted mt-1">
-            Upload do .pfx do cliente. Em <code>SEFAZ_MODE=live|auto</code> a
-            captura chama o Ambiente Nacional; sem cert cai no mock.
+            Upload do .pfx do cliente. Sem certificado a captura é bloqueada —
+            não há fallback mock.
           </p>
         </div>
         <CertUploadForm clients={clientOpts} />

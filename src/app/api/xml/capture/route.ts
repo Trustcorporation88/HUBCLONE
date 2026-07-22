@@ -5,7 +5,6 @@ import { runXmlCapture, type CaptureKind } from "@/lib/sefaz/capture";
 
 const bodySchema = z.object({
   clientId: z.string().min(1),
-  forceMock: z.boolean().optional(),
   kinds: z
     .array(z.enum(["NFE", "CTE", "NFSE"]))
     .min(1)
@@ -30,12 +29,15 @@ export async function POST(req: Request) {
   const result = await runXmlCapture({
     firmId: session.firmId,
     clientId: parsed.data.clientId,
-    forceMock: parsed.data.forceMock,
     kinds: parsed.data.kinds as CaptureKind[] | undefined,
   });
 
   if ("error" in result && result.error && result.status === 404) {
     return NextResponse.json({ error: result.error }, { status: 404 });
+  }
+
+  if ("error" in result && result.error && result.status === 400) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
   if ("error" in result && result.error) {

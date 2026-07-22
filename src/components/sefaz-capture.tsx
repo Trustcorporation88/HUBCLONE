@@ -111,7 +111,7 @@ export function CaptureButton({
   const [error, setError] = useState<string | null>(null);
   const [kinds, setKinds] = useState({ NFE: true, CTE: true, NFSE: true });
 
-  async function capture(forceMock?: boolean) {
+  async function capture() {
     setLoading(true);
     setInfo(null);
     setError(null);
@@ -129,7 +129,6 @@ export function CaptureButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clientId,
-          forceMock,
           kinds: selected,
         }),
       });
@@ -137,7 +136,7 @@ export function CaptureButton({
       if (!res.ok) throw new Error(data.error ?? "Falha na captura");
       const run = data.run;
       setInfo(
-        `${clientLabel}: ${run.mode} · ${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}`,
+        `${clientLabel}: LIVE · ${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}`,
       );
       router.refresh();
     } catch (e) {
@@ -163,24 +162,14 @@ export function CaptureButton({
           </label>
         ))}
       </div>
-      <div className="flex gap-1">
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => capture(false)}
-          className="rounded-md bg-accent text-bg px-2 py-1 text-[11px] font-medium disabled:opacity-50"
-        >
-          {loading ? "…" : "Capturar"}
-        </button>
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => capture(true)}
-          className="rounded border border-border px-2 py-1 text-[11px] disabled:opacity-50"
-        >
-          Mock
-        </button>
-      </div>
+      <button
+        type="button"
+        disabled={loading}
+        onClick={() => capture()}
+        className="rounded-md bg-accent text-bg px-2 py-1 text-[11px] font-medium disabled:opacity-50"
+      >
+        {loading ? "…" : "Capturar SEFAZ"}
+      </button>
       {info && (
         <span className="text-[10px] text-success max-w-xs text-right">{info}</span>
       )}

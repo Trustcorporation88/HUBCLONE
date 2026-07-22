@@ -4,6 +4,14 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.ALLOW_DEMO !== "true") {
+    console.error(
+      "Seed bloqueado: ALLOW_DEMO!=true. Produção não usa dados fictícios.",
+    );
+    process.exit(1);
+  }
+
+  console.warn("⚠ Seed DEMO — apenas desenvolvimento local (ALLOW_DEMO=true)");
   await prisma.payment.deleteMany();
   await prisma.captureRun.deleteMany();
   await prisma.certificate.deleteMany();
@@ -135,6 +143,9 @@ async function main() {
         dueAt,
         sentAt: client.tradeName === "Alpha Store" ? new Date() : null,
         sourcePortal: "e-CAC",
+        barcode: "23793381286000000000300000000171234567890",
+        pixPayload:
+          "00020126580014BR.GOV.BCB.PIX0136123e4567-e12b-12d1-a456-42665544000052040000530398654041.005802BR5913Trust Demo6009SAO PAULO62070503***6304ABCD",
       },
     });
 

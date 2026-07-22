@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "crypto";
+import { createHash } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
@@ -6,53 +6,26 @@ import { formatBrl } from "@/lib/utils";
 
 export type PayMethod = "PIX" | "BOLETO";
 
-function pad(n: number, len: number) {
-  return String(n).padStart(len, "0");
-}
-
-function mockPixPayload(opts: {
-  amountCents: number;
-  txid: string;
-  firmName: string;
-}) {
-  // EMV-like demo payload (not a real BR Code — for UX/demo only)
-  const amount = (opts.amountCents / 100).toFixed(2);
-  return (
-    `00020126580014BR.GOV.BCB.PIX0136${opts.txid}` +
-    `520400005303986540${amount.length}${amount}` +
-    `5802BR5913${opts.firmName.slice(0, 13).padEnd(13, "X")}` +
-    `6009SAO PAULO62070503***6304ABCD`
-  );
-}
-
-function mockBoleto(amountCents: number) {
-  const bank = "001";
-  const currency = "9";
-  const value = pad(amountCents, 10);
-  const field =
-    `${bank}${currency}9${randomBytes(4).toString("hex").slice(0, 5)}` +
-    `${randomBytes(10).toString("hex")}`.slice(0, 25) +
-    value;
-  const barcode = field.replace(/\D/g, "").padEnd(44, "0").slice(0, 44);
-  const digitable = `${barcode.slice(0, 5)}.${barcode.slice(5, 10)} ${barcode.slice(10, 15)}.${barcode.slice(15, 21)} ${barcode.slice(21, 26)}.${barcode.slice(26, 32)} ${barcode.slice(32, 33)} ${barcode.slice(33)}`;
-  return { barcode, digitable };
-}
-
 async function writeProof(opts: {
   firmId: string;
   paymentId: string;
-  content: string;
+  buffer: Buffer;
+  ext: string;
 }) {
   const dir = path.join(process.cwd(), "data", "proofs", opts.firmId);
   await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, `${opts.paymentId}.txt`);
-  await writeFile(filePath, content, "utf8");
+  const filePath = path.join(dir, `${opts.paymentId}.${extSafe(opts.ext)}`);
+  await writeFile(filePath, opts.buffer);
   return filePath;
 }
 
+function extSafe(ext: string) {
+  return ext.replace(/[^a-z0-9]/gi, "") || "bin";
+}
+
 /**
- * Provider de pagamento de tributos.
- * MOCK hoje; hooks para PSP real (Pag Útil / Open Finance) via PAYMENT_MODE=live.
+ * Pagamento operacional: NÃO inventa PIX/boleto.
+ * Usa apenas código oficial já gravado na guia (barcode / pixPayload).
  */
 export async function createGuidePayment(opts: {
   firmId: string;
@@ -80,6 +53,21 @@ export async function createGuidePayment(opts: {
     return { error: "Guia sem valor para pagamento", status: 400 as const };
   }
 
+  if (opts.method === "PIX" && !obligation.pixPayload) {
+    return {
+      error:
+        "Guia sem PIX oficial (pixPayload). Importe/emita a guia real antes de cobrar.",
+      status: 400 as const,
+    };
+  }
+  if (opts.method === "BOLETO" && !obligation.barcode) {
+    return {
+      error:
+        "Guia sem código de barras oficial. Importe/emita a guia real antes de cobrar.",
+      status: 400 as const,
+    };
+  }
+
   const existing = await prisma.payment.findFirst({
     where: {
       obligationId: obligation.id,
@@ -92,29 +80,13 @@ export async function createGuidePayment(opts: {
     return { payment: existing, reused: true };
   }
 
-  const mode = process.env.PAYMENT_MODE ?? "mock";
   const txid = createHash("sha256")
     .update(`${obligation.id}:${Date.now()}`)
     .digest("hex")
     .slice(0, 32);
-  const providerRef = `${mode}_${opts.method.toLowerCase()}_${txid.slice(0, 12)}`;
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
-
-  let pixCopyPaste: string | null = null;
-  let boletoBarcode: string | null = null;
-  let boletoDigitable: string | null = null;
-
-  if (opts.method === "PIX") {
-    pixCopyPaste = mockPixPayload({
-      amountCents: obligation.amountCents,
-      txid,
-      firmName: opts.firmName,
-    });
-  } else {
-    const b = mockBoleto(obligation.amountCents);
-    boletoBarcode = b.barcode;
-    boletoDigitable = b.digitable;
-  }
+  const providerRef = `official_${opts.method.toLowerCase()}_${txid.slice(0, 12)}`;
+  const expiresAt =
+    obligation.dueAt ?? new Date(Date.now() + 1000 * 60 * 60 * 24);
 
   const payment = await prisma.payment.create({
     data: {
@@ -123,28 +95,23 @@ export async function createGuidePayment(opts: {
       method: opts.method,
       status: "PENDING",
       amountCents: obligation.amountCents,
-      pixCopyPaste,
-      boletoBarcode,
-      boletoDigitable,
+      pixCopyPaste: opts.method === "PIX" ? obligation.pixPayload : null,
+      boletoBarcode: opts.method === "BOLETO" ? obligation.barcode : null,
+      boletoDigitable: opts.method === "BOLETO" ? obligation.barcode : null,
       providerRef,
       expiresAt,
-    },
-  });
-
-  await prisma.obligation.update({
-    where: { id: obligation.id },
-    data: {
-      barcode: boletoBarcode ?? obligation.barcode,
     },
   });
 
   return { payment, reused: false };
 }
 
+/** Confirma pagamento somente com comprovante anexado (arquivo real). */
 export async function confirmGuidePayment(opts: {
   firmId: string;
   paymentId: string;
   clientId?: string | null;
+  proof: { buffer: Buffer; filename: string };
 }) {
   const payment = await prisma.payment.findFirst({
     where: {
@@ -161,24 +128,46 @@ export async function confirmGuidePayment(opts: {
   if (!payment) return { error: "Pagamento não encontrado", status: 404 as const };
   if (payment.status === "PAID") return { payment, already: true };
 
-  const now = new Date();
-  const proof = [
-    "COMPROVANTE DE PAGAMENTO DE TRIBUTO — HUB Contábil OS",
-    `Ref: ${payment.providerRef}`,
-    `Método: ${payment.method}`,
-    `Valor: ${formatBrl(payment.amountCents)}`,
-    `Guia: ${payment.obligation.type} ${payment.obligation.competence}`,
-    `Cliente: ${payment.obligation.client.tradeName ?? payment.obligation.client.legalName}`,
-    `CNPJ: ${payment.obligation.client.cnpj}`,
-    `Pago em: ${now.toISOString()}`,
-    "Status: CONFIRMADO (provider mock — substituível por PSP real)",
-  ].join("\n");
+  if (!opts.proof?.buffer?.length) {
+    return {
+      error: "Envie o comprovante de pagamento (PDF/JPG/PNG).",
+      status: 400 as const,
+    };
+  }
 
+  const ext =
+    opts.proof.filename.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+    "bin";
+  const allowed = ["pdf", "jpg", "jpeg", "png", "webp"];
+  if (!allowed.includes(ext)) {
+    return {
+      error: "Comprovante deve ser PDF, JPG ou PNG.",
+      status: 400 as const,
+    };
+  }
+
+  const now = new Date();
   const proofPath = await writeProof({
     firmId: opts.firmId,
     paymentId: payment.id,
-    content: proof,
+    buffer: opts.proof.buffer,
+    ext,
   });
+
+  await writeFile(
+    path.join(path.dirname(proofPath), `${payment.id}.meta.txt`),
+    [
+      "COMPROVANTE REGISTRADO — HUB Contábil OS",
+      `Ref: ${payment.providerRef}`,
+      `Método: ${payment.method}`,
+      `Valor: ${formatBrl(payment.amountCents)}`,
+      `Guia: ${payment.obligation.type} ${payment.obligation.competence}`,
+      `Cliente: ${payment.obligation.client.tradeName ?? payment.obligation.client.legalName}`,
+      `Arquivo: ${opts.proof.filename}`,
+      `Registrado em: ${now.toISOString()}`,
+    ].join("\n"),
+    "utf8",
+  );
 
   const updated = await prisma.$transaction(async (tx) => {
     const p = await tx.payment.update({

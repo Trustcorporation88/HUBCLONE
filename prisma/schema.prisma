@@ -131,6 +131,7 @@ model Obligation {
   competence    String    // YYYY-MM
   amountCents   Int?
   barcode       String?
+  pixPayload    String?
   status        String    @default("DRAFT") // DRAFT | READY | SENT | VIEWED | PAID | OVERDUE | CANCELLED
   dueAt         DateTime?
   sentAt        DateTime?

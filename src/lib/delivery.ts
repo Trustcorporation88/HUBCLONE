@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
 import { formatBrl } from "@/lib/utils";
+import { sendRealEmail } from "@/lib/email";
 
 export type SendChannel = "EMAIL" | "WHATSAPP_MANUAL";
 
@@ -67,18 +68,21 @@ export function whatsappDeepLink(phone: string, text: string) {
   return `https://wa.me/${normalized}?text=${encodeURIComponent(text)}`;
 }
 
-async function dispatchEmail(to: string, subject: string, body: string) {
-  const mode = process.env.DELIVERY_MODE ?? "mock";
-  const msgId = `email_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-  if (mode === "mock" || !process.env.SMTP_HOST) {
-    console.info(`[delivery:email:mock] → ${to} | ${subject}`);
-    return { ok: true as const, providerMsgId: msgId };
-  }
-
-  // Hook SMTP/Resend — configure SMTP_* for live
-  console.info(`[delivery:email:live-stub] → ${to}`);
-  return { ok: true as const, providerMsgId: msgId };
+async function dispatchEmail(
+  to: string,
+  subject: string,
+  body: string,
+  attachment?: { filename: string; content: string },
+) {
+  const info = await sendRealEmail({
+    to,
+    subject,
+    text: body,
+    attachments: attachment
+      ? [{ filename: attachment.filename, content: attachment.content }]
+      : undefined,
+  });
+  return { ok: true as const, providerMsgId: info.messageId };
 }
 
 export async function ensureGuideFile(opts: {
@@ -174,7 +178,27 @@ export async function sendObligationGuide(opts: {
       });
 
       const subject = `Guia ${obligation.type} ${obligation.competence} — ${opts.firmName}`;
-      const dispatched = await dispatchEmail(toAddress, subject, body);
+      const file = await ensureGuideFile({
+        firmId: opts.firmId,
+        firmName: opts.firmName,
+        obligationId: obligation.id,
+      });
+      const attachment =
+        "content" in file && file.content
+          ? { filename: file.fileName!, content: file.content }
+          : undefined;
+
+      let dispatched:
+        | { ok: true; providerMsgId: string }
+        | { ok: false; error: string };
+      try {
+        dispatched = await dispatchEmail(toAddress, subject, body, attachment);
+      } catch (e) {
+        dispatched = {
+          ok: false,
+          error: e instanceof Error ? e.message : "Falha SMTP",
+        };
+      }
       const updated = await prisma.delivery.update({
         where: { id: queued.id },
         data: dispatched.ok
@@ -185,7 +209,7 @@ export async function sendObligationGuide(opts: {
             }
           : {
               status: "FAILED",
-              errorMessage: "Falha no e-mail",
+              errorMessage: dispatched.error,
             },
       });
 
