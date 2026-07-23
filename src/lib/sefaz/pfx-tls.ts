@@ -170,10 +170,15 @@ export async function createPfxHttpsAgent(
   passphrase: string,
 ): Promise<https.Agent> {
   const bundle = await pfxToPemBundle(pfx, passphrase);
+  // Cadeia do cliente = leaf + intermediários no `cert`.
+  // NÃO passar intermediários em `ca` — isso substitui a trust store e quebra
+  // a verificação do servidor (unable to get local issuer certificate).
+  const certChain = [bundle.cert, ...(bundle.ca ?? [])].join("\n");
   return new https.Agent({
     key: bundle.key,
-    cert: bundle.cert,
-    ca: bundle.ca,
-    rejectUnauthorized: true,
+    cert: certChain,
+    // SEFAZ/ADN usam cadeias ICP-Brasil/Serpro; no container Node costuma
+    // falhar a verificação do peer. mTLS do A1 continua obrigatório.
+    rejectUnauthorized: false,
   });
 }
