@@ -19,9 +19,12 @@ const CTE_SOAP_ACTION =
 function buildDistXml(cnpj: string, tpAmb: string, ultNsu: string) {
   const dig = cnpj.replace(/\D/g, "");
   const nsu = padNsu(ultNsu);
+  // cUFAutor é obrigatório no schema CT-e DistDFe (falta → cStat 243 XML mal formado)
   return (
     `<distDFeInt xmlns="http://www.portalfiscal.inf.br/cte" versao="1.00">` +
-    `<tpAmb>${tpAmb}</tpAmb><CNPJ>${dig}</CNPJ>` +
+    `<tpAmb>${tpAmb}</tpAmb>` +
+    `<cUFAutor>91</cUFAutor>` +
+    `<CNPJ>${dig}</CNPJ>` +
     `<distNSU><ultNSU>${nsu}</ultNSU></distNSU></distDFeInt>`
   );
 }

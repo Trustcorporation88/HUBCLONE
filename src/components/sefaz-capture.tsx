@@ -135,10 +135,10 @@ export function CaptureButton({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha na captura");
       const run = data.run;
-      const warn = data.warning ? ` · aviso: ${data.warning}` : "";
-      setInfo(
-        `${clientLabel}: LIVE · ${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}${warn}`,
-      );
+      const detail =
+        data.message ??
+        `${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}`;
+      setInfo(`${clientLabel}: OK · ${detail}`);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro");

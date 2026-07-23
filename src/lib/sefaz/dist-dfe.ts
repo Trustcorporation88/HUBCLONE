@@ -40,9 +40,12 @@ const NFE_SOAP_ACTION =
 function buildDistXml(cnpj: string, tpAmb: string, ultNsu: string) {
   const dig = cnpj.replace(/\D/g, "");
   const nsu = padNsu(ultNsu);
+  // cUFAutor 91 = Ambiente Nacional (serviço DistDFe é AN)
   return (
     `<distDFeInt xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.01">` +
-    `<tpAmb>${tpAmb}</tpAmb><CNPJ>${dig}</CNPJ>` +
+    `<tpAmb>${tpAmb}</tpAmb>` +
+    `<cUFAutor>91</cUFAutor>` +
+    `<CNPJ>${dig}</CNPJ>` +
     `<distNSU><ultNSU>${nsu}</ultNSU></distNSU></distDFeInt>`
   );
 }

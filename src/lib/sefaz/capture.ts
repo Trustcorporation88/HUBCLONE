@@ -5,6 +5,10 @@ import { distDfeLive, type DistDfeResult } from "@/lib/sefaz/dist-dfe";
 import { cteDistDfeLive } from "@/lib/sefaz/cte-dist-dfe";
 import { nfseAdnLive } from "@/lib/sefaz/nfse-adn";
 import { mapTlsError } from "@/lib/sefaz/pfx-tls";
+import {
+  classifySefazStat,
+  formatCaptureSummary,
+} from "@/lib/sefaz/sefaz-status";
 
 export type CaptureKind = "NFE" | "CTE" | "NFSE";
 
@@ -160,10 +164,12 @@ export async function runXmlCapture(opts: {
             ultNsu: cert.lastNsu,
             tls,
           });
-          await prisma.certificate.update({
-            where: { id: cert.id },
-            data: { lastNsu: result.ultNsu },
-          });
+          if (classifySefazStat(result.cStat).ok) {
+            await prisma.certificate.update({
+              where: { id: cert.id },
+              data: { lastNsu: result.ultNsu },
+            });
+          }
         } else if (kind === "CTE") {
           result = await cteDistDfeLive({
             cnpj,
@@ -171,20 +177,24 @@ export async function runXmlCapture(opts: {
             ultNsu: cert.lastNsuCte,
             tls,
           });
-          await prisma.certificate.update({
-            where: { id: cert.id },
-            data: { lastNsuCte: result.ultNsu },
-          });
+          if (classifySefazStat(result.cStat).ok) {
+            await prisma.certificate.update({
+              where: { id: cert.id },
+              data: { lastNsuCte: result.ultNsu },
+            });
+          }
         } else {
           result = await nfseAdnLive({
             cnpj,
             ultNsu: cert.lastNsuNfse,
             tls,
           });
-          await prisma.certificate.update({
-            where: { id: cert.id },
-            data: { lastNsuNfse: result.ultNsu },
-          });
+          if (classifySefazStat(result.cStat).ok) {
+            await prisma.certificate.update({
+              where: { id: cert.id },
+              data: { lastNsuNfse: result.ultNsu },
+            });
+          }
         }
 
         docsFound += result.docs.length;
@@ -200,6 +210,12 @@ export async function runXmlCapture(opts: {
           xMotivo: result.xMotivo,
           ultNsu: result.ultNsu,
         });
+        if (!classifySefazStat(result.cStat).ok) {
+          const cls = classifySefazStat(result.cStat);
+          failures.push(
+            `${kind}: ${cls.label}${result.xMotivo ? ` — ${result.xMotivo}` : ""}`,
+          );
+        }
       } catch (kindErr) {
         const message = mapTlsError(kindErr);
         failures.push(`${kind}: ${message}`);
@@ -213,7 +229,8 @@ export async function runXmlCapture(opts: {
     }
 
     const allFailed =
-      summaries.length > 0 && summaries.every((s) => s.cStat === "ERR");
+      summaries.length > 0 &&
+      summaries.every((s) => !classifySefazStat(s.cStat).ok);
 
     await prisma.fiscalPipeline.updateMany({
       where: {
@@ -241,7 +258,7 @@ export async function runXmlCapture(opts: {
     if (allFailed) {
       return {
         run: finished,
-        error: failures.join(" | ") || "Falha na captura",
+        error: formatCaptureSummary(summaries) || "Falha na captura",
         status: 502 as const,
       };
     }
@@ -249,6 +266,7 @@ export async function runXmlCapture(opts: {
     return {
       run: finished,
       summaries,
+      message: formatCaptureSummary(summaries),
       warning: failures.length ? failures.join(" | ") : undefined,
     };
   } catch (e) {
