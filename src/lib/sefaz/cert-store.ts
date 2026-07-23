@@ -117,3 +117,33 @@ export async function saveXmlFile(
 export async function readPfx(filePath: string) {
   return readFile(filePath);
 }
+
+/**
+ * Carrega o .pfx: primeiro do banco (pfxEnc), depois do disco legado.
+ * No Railway o disco é efêmero — por isso o blob deve viver no Postgres.
+ */
+export async function loadCertificatePfx(cert: {
+  pfxEnc?: string | null;
+  pfxPath?: string | null;
+}): Promise<Buffer> {
+  if (cert.pfxEnc) {
+    const { decryptBytes } = await import("@/lib/crypto-secret");
+    return decryptBytes(cert.pfxEnc);
+  }
+  if (cert.pfxPath) {
+    try {
+      return await readFile(cert.pfxPath);
+    } catch (e) {
+      const code = (e as NodeJS.ErrnoException)?.code;
+      if (code === "ENOENT") {
+        throw new Error(
+          "Certificado A1 não encontrado no servidor (arquivo perdido após deploy). Envie o .pfx novamente na tela XML.",
+        );
+      }
+      throw e;
+    }
+  }
+  throw new Error(
+    "Certificado A1 sem arquivo. Envie o .pfx novamente na tela XML.",
+  );
+}

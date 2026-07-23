@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { decryptSecret, onlyDigits } from "@/lib/crypto-secret";
-import { readPfx, saveXmlFile } from "@/lib/sefaz/cert-store";
+import { loadCertificatePfx, saveXmlFile } from "@/lib/sefaz/cert-store";
 import { distDfeLive, type DistDfeResult } from "@/lib/sefaz/dist-dfe";
 import { cteDistDfeLive } from "@/lib/sefaz/cte-dist-dfe";
 import { nfseAdnLive } from "@/lib/sefaz/nfse-adn";
@@ -113,7 +113,7 @@ export async function runXmlCapture(opts: {
   try {
     const cnpj = onlyDigits(cert.cnpj);
     const tpAmb = (cert.environment === "1" ? "1" : "2") as "1" | "2";
-    const pfx = await readPfx(cert.pfxPath);
+    const pfx = await loadCertificatePfx(cert);
     const passphrase = decryptSecret(cert.passwordEnc);
 
     let docsFound = 0;

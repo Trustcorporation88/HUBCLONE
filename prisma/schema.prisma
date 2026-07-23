@@ -269,7 +269,10 @@ model Certificate {
   clientId         String?
   cnpj             String
   label            String
-  pfxPath          String
+  /// Caminho legado em disco (efêmero no Railway). Preferir pfxEnc.
+  pfxPath          String    @default("")
+  /// .pfx criptografado (AES-GCM, base64 do binário) — persiste no Postgres
+  pfxEnc           String?
   passwordEnc      String
   environment      String    @default("2") // 1=prod 2=homolog
   lastNsu          String    @default("000000000000000")

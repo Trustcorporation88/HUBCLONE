@@ -25,6 +25,15 @@ export function decryptSecret(payload: string): string {
   return Buffer.concat([decipher.update(data), decipher.final()]).toString("utf8");
 }
 
+/** Encrypt binary (e.g. .pfx) at rest — AES-256-GCM over base64 payload. */
+export function encryptBytes(data: Buffer): string {
+  return encryptSecret(data.toString("base64"));
+}
+
+export function decryptBytes(payload: string): Buffer {
+  return Buffer.from(decryptSecret(payload), "base64");
+}
+
 export function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
 }

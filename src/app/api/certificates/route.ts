@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readSession } from "@/lib/auth";
-import { encryptSecret, onlyDigits } from "@/lib/crypto-secret";
+import { encryptBytes, encryptSecret, onlyDigits } from "@/lib/crypto-secret";
 import { inspectPfx, savePfxFile } from "@/lib/sefaz/cert-store";
 import { prisma } from "@/lib/db";
 
@@ -84,23 +84,47 @@ export async function POST(req: Request) {
     );
   }
 
-  const pfxPath = await savePfxFile(session.firmId, cnpj, buffer);
+  // Disco é cache opcional (some no redeploy Railway). Fonte da verdade: pfxEnc no Postgres.
+  let pfxPath = "";
+  try {
+    pfxPath = await savePfxFile(session.firmId, cnpj, buffer);
+  } catch {
+    pfxPath = "";
+  }
+  const pfxEnc = encryptBytes(buffer);
 
-  const cert = await prisma.certificate.create({
-    data: {
+  // Atualiza A1 ativo do mesmo CNPJ/cliente em vez de acumular órfãos
+  const existing = await prisma.certificate.findFirst({
+    where: {
       firmId: session.firmId,
-      clientId,
-      cnpj,
-      label,
-      pfxPath,
-      passwordEnc: encryptSecret(password),
-      environment,
-      validFrom: info.validFrom,
-      validTo: info.validTo,
-      subjectCn: info.subjectCn,
       active: true,
+      OR: [
+        ...(clientId ? [{ clientId }] : []),
+        { cnpj },
+      ],
     },
+    orderBy: { updatedAt: "desc" },
   });
+
+  const data = {
+    clientId,
+    cnpj,
+    label,
+    pfxPath,
+    pfxEnc,
+    passwordEnc: encryptSecret(password),
+    environment,
+    validFrom: info.validFrom,
+    validTo: info.validTo,
+    subjectCn: info.subjectCn,
+    active: true,
+  };
+
+  const cert = existing
+    ? await prisma.certificate.update({ where: { id: existing.id }, data })
+    : await prisma.certificate.create({
+        data: { firmId: session.firmId, ...data },
+      });
 
   return NextResponse.json({
     id: cert.id,
