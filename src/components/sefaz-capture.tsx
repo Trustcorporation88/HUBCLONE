@@ -76,11 +76,11 @@ export function CertUploadForm({ clients }: { clients: ClientOpt[] }) {
           <span className="text-text-muted text-xs">Ambiente SEFAZ</span>
           <select
             name="environment"
-            defaultValue="2"
+            defaultValue="1"
             className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2"
           >
-            <option value="2">Homologação</option>
             <option value="1">Produção</option>
+            <option value="2">Homologação</option>
           </select>
         </label>
       </div>
@@ -109,7 +109,7 @@ export function CaptureButton({
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [kinds, setKinds] = useState({ NFE: true, CTE: true, NFSE: true });
+  const [kinds, setKinds] = useState({ NFE: true, CTE: true, NFSE: false });
 
   async function capture() {
     setLoading(true);
@@ -135,8 +135,9 @@ export function CaptureButton({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Falha na captura");
       const run = data.run;
+      const warn = data.warning ? ` · aviso: ${data.warning}` : "";
       setInfo(
-        `${clientLabel}: LIVE · ${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}`,
+        `${clientLabel}: LIVE · ${run.docsSaved}/${run.docsFound} salvos · ${run.cStat ?? "—"}${warn}`,
       );
       router.refresh();
     } catch (e) {

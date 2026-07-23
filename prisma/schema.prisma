@@ -273,6 +273,9 @@ model Certificate {
   pfxPath          String    @default("")
   /// .pfx criptografado (AES-GCM, base64 do binário) — persiste no Postgres
   pfxEnc           String?
+  /// PEM chave/cert (criptografados) — evita reparse PKCS#12 na captura
+  pemKeyEnc        String?
+  pemCertEnc       String?
   passwordEnc      String
   environment      String    @default("2") // 1=prod 2=homolog
   lastNsu          String    @default("000000000000000")

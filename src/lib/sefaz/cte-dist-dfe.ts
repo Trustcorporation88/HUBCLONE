@@ -34,12 +34,11 @@ function buildSoap(cnpj: string, tpAmb: string, ultNsu: string) {
 async function httpsPost(opts: {
   url: string;
   body: string;
-  pfx: Buffer;
-  passphrase: string;
+  tls: import("@/lib/sefaz/cert-store").CertificateTls;
 }): Promise<{ status: number; text: string }> {
-  const { createPfxHttpsAgent } = await import("@/lib/sefaz/pfx-tls");
+  const { resolveSefazAgent } = await import("@/lib/sefaz/sefaz-agent");
   const u = new URL(opts.url);
-  const agent = await createPfxHttpsAgent(opts.pfx, opts.passphrase);
+  const agent = await resolveSefazAgent(opts.tls);
 
   return new Promise((resolve, reject) => {
     const req = https.request(
@@ -189,14 +188,12 @@ export async function cteDistDfeLive(opts: {
   cnpj: string;
   tpAmb: "1" | "2";
   ultNsu: string;
-  pfx: Buffer;
-  passphrase: string;
+  tls: import("@/lib/sefaz/cert-store").CertificateTls;
 }): Promise<DistDfeResult> {
   const { status, text } = await httpsPost({
     url: CTE_DISTDFE_URLS[opts.tpAmb],
     body: buildSoap(opts.cnpj, opts.tpAmb, opts.ultNsu),
-    pfx: opts.pfx,
-    passphrase: opts.passphrase,
+    tls: opts.tls,
   });
   if (status < 200 || status >= 300) {
     throw new Error(`CT-e DistDFe HTTP ${status}: ${text.slice(0, 400)}`);

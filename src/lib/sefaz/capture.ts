@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/db";
 import { decryptSecret, onlyDigits } from "@/lib/crypto-secret";
-import { loadCertificatePfx, saveXmlFile } from "@/lib/sefaz/cert-store";
+import { loadCertificateTls, saveXmlFile } from "@/lib/sefaz/cert-store";
 import { distDfeLive, type DistDfeResult } from "@/lib/sefaz/dist-dfe";
 import { cteDistDfeLive } from "@/lib/sefaz/cte-dist-dfe";
 import { nfseAdnLive } from "@/lib/sefaz/nfse-adn";
-import { requireEnv } from "@/lib/runtime";
+import { mapTlsError } from "@/lib/sefaz/pfx-tls";
 
 export type CaptureKind = "NFE" | "CTE" | "NFSE";
 
@@ -32,12 +32,17 @@ async function saveDocs(opts: {
       doc.accessKey ??
       `${opts.kind}-${doc.nsu}-${Date.now()}`.padEnd(44, "0").slice(0, 44);
 
-    const rawPath = await saveXmlFile(
-      opts.firmId,
-      opts.clientId,
-      `${opts.kind}-${accessKey}`,
-      doc.xml,
-    );
+    let rawPath: string | null = null;
+    try {
+      rawPath = await saveXmlFile(
+        opts.firmId,
+        opts.clientId,
+        `${opts.kind}-${accessKey}`,
+        doc.xml,
+      );
+    } catch {
+      rawPath = null;
+    }
 
     try {
       await prisma.xmlDocument.create({
@@ -95,8 +100,26 @@ export async function runXmlCapture(opts: {
     };
   }
 
-  if (kinds.includes("NFSE")) {
-    requireEnv("NFSE_ADN_BASE_URL");
+  if (!cert.pfxEnc && !cert.pemKeyEnc) {
+    return {
+      error:
+        "Este certificado precisa ser cadastrado de novo (versão antiga sem arquivo no banco). Envie o .pfx novamente.",
+      status: 400 as const,
+    };
+  }
+
+  const effectiveKinds = kinds.filter((k) => {
+    if (k === "NFSE" && !process.env.NFSE_ADN_BASE_URL?.trim()) return false;
+    return true;
+  });
+  if (!effectiveKinds.length) {
+    return {
+      error:
+        kinds.includes("NFSE") && !process.env.NFSE_ADN_BASE_URL?.trim()
+          ? "NFS-e exige NFSE_ADN_BASE_URL. Marque NF-e/CT-e ou configure a URL do ADN."
+          : "Selecione ao menos NF-e ou CT-e.",
+      status: 400 as const,
+    };
   }
 
   const run = await prisma.captureRun.create({
@@ -105,7 +128,7 @@ export async function runXmlCapture(opts: {
       clientId: client.id,
       certificateId: cert.id,
       mode: "LIVE",
-      kindsJson: JSON.stringify(kinds),
+      kindsJson: JSON.stringify(effectiveKinds),
       status: "RUNNING",
     },
   });
@@ -113,8 +136,8 @@ export async function runXmlCapture(opts: {
   try {
     const cnpj = onlyDigits(cert.cnpj);
     const tpAmb = (cert.environment === "1" ? "1" : "2") as "1" | "2";
-    const pfx = await loadCertificatePfx(cert);
     const passphrase = decryptSecret(cert.passwordEnc);
+    const tls = await loadCertificateTls(cert, passphrase);
 
     let docsFound = 0;
     let docsSaved = 0;
@@ -124,61 +147,73 @@ export async function runXmlCapture(opts: {
       xMotivo: string;
       ultNsu: string;
     }> = [];
+    const failures: string[] = [];
 
-    for (const kind of kinds) {
-      let result: DistDfeResult;
+    for (const kind of effectiveKinds) {
+      try {
+        let result: DistDfeResult;
 
-      if (kind === "NFE") {
-        result = await distDfeLive({
-          cnpj,
-          tpAmb,
-          ultNsu: cert.lastNsu,
-          pfx,
-          passphrase,
+        if (kind === "NFE") {
+          result = await distDfeLive({
+            cnpj,
+            tpAmb,
+            ultNsu: cert.lastNsu,
+            tls,
+          });
+          await prisma.certificate.update({
+            where: { id: cert.id },
+            data: { lastNsu: result.ultNsu },
+          });
+        } else if (kind === "CTE") {
+          result = await cteDistDfeLive({
+            cnpj,
+            tpAmb,
+            ultNsu: cert.lastNsuCte,
+            tls,
+          });
+          await prisma.certificate.update({
+            where: { id: cert.id },
+            data: { lastNsuCte: result.ultNsu },
+          });
+        } else {
+          result = await nfseAdnLive({
+            cnpj,
+            ultNsu: cert.lastNsuNfse,
+            tls,
+          });
+          await prisma.certificate.update({
+            where: { id: cert.id },
+            data: { lastNsuNfse: result.ultNsu },
+          });
+        }
+
+        docsFound += result.docs.length;
+        docsSaved += await saveDocs({
+          firmId: opts.firmId,
+          clientId: client.id,
+          kind,
+          result,
         });
-        await prisma.certificate.update({
-          where: { id: cert.id },
-          data: { lastNsu: result.ultNsu },
+        summaries.push({
+          kind,
+          cStat: result.cStat,
+          xMotivo: result.xMotivo,
+          ultNsu: result.ultNsu,
         });
-      } else if (kind === "CTE") {
-        result = await cteDistDfeLive({
-          cnpj,
-          tpAmb,
-          ultNsu: cert.lastNsuCte,
-          pfx,
-          passphrase,
-        });
-        await prisma.certificate.update({
-          where: { id: cert.id },
-          data: { lastNsuCte: result.ultNsu },
-        });
-      } else {
-        result = await nfseAdnLive({
-          cnpj,
-          ultNsu: cert.lastNsuNfse,
-          pfx,
-          passphrase,
-        });
-        await prisma.certificate.update({
-          where: { id: cert.id },
-          data: { lastNsuNfse: result.ultNsu },
+      } catch (kindErr) {
+        const message = mapTlsError(kindErr);
+        failures.push(`${kind}: ${message}`);
+        summaries.push({
+          kind,
+          cStat: "ERR",
+          xMotivo: message,
+          ultNsu: "000000000000000",
         });
       }
-
-      docsFound += result.docs.length;
-      docsSaved += await saveDocs({
-        firmId: opts.firmId,
-        clientId: client.id,
-        kind,
-        result,
-      });
-      summaries.push({
-        kind,
-        cStat: result.cStat,
-        xMotivo: result.xMotivo,
-        ultNsu: result.ultNsu,
-      });
     }
+
+    const allFailed =
+      summaries.length > 0 && summaries.every((s) => s.cStat === "ERR");
 
     await prisma.fiscalPipeline.updateMany({
       where: {
@@ -192,19 +227,32 @@ export async function runXmlCapture(opts: {
     const finished = await prisma.captureRun.update({
       where: { id: run.id },
       data: {
-        status: "DONE",
+        status: allFailed ? "FAILED" : "DONE",
         docsFound,
         docsSaved,
         ultNsu: summaries.map((s) => `${s.kind}:${s.ultNsu}`).join(","),
         cStat: summaries.map((s) => `${s.kind}:${s.cStat}`).join(","),
         xMotivo: summaries.map((s) => `${s.kind}:${s.xMotivo}`).join(" | "),
+        errorMessage: failures.length ? failures.join(" | ") : null,
         finishedAt: new Date(),
       },
     });
 
-    return { run: finished, summaries };
+    if (allFailed) {
+      return {
+        run: finished,
+        error: failures.join(" | ") || "Falha na captura",
+        status: 502 as const,
+      };
+    }
+
+    return {
+      run: finished,
+      summaries,
+      warning: failures.length ? failures.join(" | ") : undefined,
+    };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Falha na captura";
+    const message = mapTlsError(e);
     const finished = await prisma.captureRun.update({
       where: { id: run.id },
       data: {

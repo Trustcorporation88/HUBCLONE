@@ -12,12 +12,11 @@ function padNsu(nsu: string) {
 
 async function httpsGet(opts: {
   url: string;
-  pfx: Buffer;
-  passphrase: string;
+  tls: import("@/lib/sefaz/cert-store").CertificateTls;
 }): Promise<{ status: number; text: string }> {
-  const { createPfxHttpsAgent } = await import("@/lib/sefaz/pfx-tls");
+  const { resolveSefazAgent } = await import("@/lib/sefaz/sefaz-agent");
   const u = new URL(opts.url);
-  const agent = await createPfxHttpsAgent(opts.pfx, opts.passphrase);
+  const agent = await resolveSefazAgent(opts.tls);
 
   return new Promise((resolve, reject) => {
     const req = https.request(
@@ -54,8 +53,7 @@ async function httpsGet(opts: {
 export async function nfseAdnLive(opts: {
   cnpj: string;
   ultNsu: string;
-  pfx: Buffer;
-  passphrase: string;
+  tls: import("@/lib/sefaz/cert-store").CertificateTls;
 }): Promise<DistDfeResult> {
   const base = process.env.NFSE_ADN_BASE_URL;
   if (!base) {
@@ -67,8 +65,7 @@ export async function nfseAdnLive(opts: {
   const url = `${base.replace(/\/$/, "")}/DFe/${ult}`;
   const { status, text } = await httpsGet({
     url,
-    pfx: opts.pfx,
-    passphrase: opts.passphrase,
+    tls: opts.tls,
   });
   if (status < 200 || status >= 300) {
     throw new Error(`NFS-e ADN HTTP ${status}: ${text.slice(0, 400)}`);

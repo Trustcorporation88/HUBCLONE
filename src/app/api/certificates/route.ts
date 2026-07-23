@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { readSession } from "@/lib/auth";
 import { encryptBytes, encryptSecret, onlyDigits } from "@/lib/crypto-secret";
 import { inspectPfx, savePfxFile } from "@/lib/sefaz/cert-store";
+import { assertPfxTlsReady } from "@/lib/sefaz/pfx-tls";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
@@ -26,6 +27,7 @@ export async function GET() {
       validTo: c.validTo,
       subjectCn: c.subjectCn,
       active: c.active,
+      hasBlob: Boolean(c.pfxEnc || c.pemKeyEnc),
       clientName: c.client?.tradeName ?? c.client?.legalName ?? null,
     })),
   });
@@ -41,7 +43,8 @@ export async function POST(req: Request) {
   const file = form.get("pfx") as File | null;
   const password = String(form.get("password") ?? "");
   const clientId = String(form.get("clientId") ?? "") || null;
-  const environment = String(form.get("environment") ?? "2") === "1" ? "1" : "2";
+  // Produção por padrão — captura real DistDFe
+  const environment = String(form.get("environment") ?? "1") === "2" ? "2" : "1";
   const label = String(form.get("label") ?? "A1");
 
   if (!file || !password) {
@@ -53,8 +56,10 @@ export async function POST(req: Request) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   let info;
+  let pem;
   try {
     info = await inspectPfx(buffer, password);
+    pem = await assertPfxTlsReady(buffer, password);
   } catch (e) {
     return NextResponse.json(
       {
@@ -63,6 +68,13 @@ export async function POST(req: Request) {
             ? e.message
             : "Não foi possível ler o certificado (senha incorreta?)",
       },
+      { status: 400 },
+    );
+  }
+
+  if (info.validTo && info.validTo.getTime() < Date.now()) {
+    return NextResponse.json(
+      { error: "Certificado A1 vencido. Renove antes de cadastrar." },
       { status: 400 },
     );
   }
@@ -84,34 +96,21 @@ export async function POST(req: Request) {
     );
   }
 
-  // Disco é cache opcional (some no redeploy Railway). Fonte da verdade: pfxEnc no Postgres.
   let pfxPath = "";
   try {
     pfxPath = await savePfxFile(session.firmId, cnpj, buffer);
   } catch {
     pfxPath = "";
   }
-  const pfxEnc = encryptBytes(buffer);
-
-  // Atualiza A1 ativo do mesmo CNPJ/cliente em vez de acumular órfãos
-  const existing = await prisma.certificate.findFirst({
-    where: {
-      firmId: session.firmId,
-      active: true,
-      OR: [
-        ...(clientId ? [{ clientId }] : []),
-        { cnpj },
-      ],
-    },
-    orderBy: { updatedAt: "desc" },
-  });
 
   const data = {
     clientId,
     cnpj,
     label,
     pfxPath,
-    pfxEnc,
+    pfxEnc: encryptBytes(buffer),
+    pemKeyEnc: encryptSecret(pem.key),
+    pemCertEnc: encryptSecret(pem.cert),
     passwordEnc: encryptSecret(password),
     environment,
     validFrom: info.validFrom,
@@ -119,6 +118,15 @@ export async function POST(req: Request) {
     subjectCn: info.subjectCn,
     active: true,
   };
+
+  const existing = await prisma.certificate.findFirst({
+    where: {
+      firmId: session.firmId,
+      active: true,
+      OR: [...(clientId ? [{ clientId }] : []), { cnpj }],
+    },
+    orderBy: { updatedAt: "desc" },
+  });
 
   const cert = existing
     ? await prisma.certificate.update({ where: { id: existing.id }, data })

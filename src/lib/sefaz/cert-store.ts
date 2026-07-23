@@ -1,7 +1,7 @@
 import { mkdir, writeFile, readFile } from "fs/promises";
 import path from "path";
 import forge from "node-forge";
-import { onlyDigits } from "@/lib/crypto-secret";
+import { decryptSecret, onlyDigits } from "@/lib/crypto-secret";
 import { pfxToPemBundle } from "@/lib/sefaz/pfx-tls";
 
 const ROOT = path.join(process.cwd(), "data");
@@ -57,7 +57,7 @@ export async function inspectPfx(
   try {
     const der = forge.util.createBuffer(pfxBuffer.toString("binary"));
     const asn1 = forge.asn1.fromDer(der);
-    const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, password);
+    const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, password);
     const bags =
       p12.getBags({ bagType: forge.pki.oids.certBag })[
         forge.pki.oids.certBag
@@ -107,11 +107,19 @@ export async function saveXmlFile(
   accessKey: string,
   xml: string,
 ): Promise<string> {
+  const safeKey = accessKey.replace(/[^\w.-]+/g, "_").slice(0, 120);
   const dir = xmlDir(firmId, clientId);
-  await ensureDir(dir);
-  const filePath = path.join(dir, `${accessKey}.xml`);
-  await writeFile(filePath, xml, "utf8");
-  return filePath;
+  try {
+    await ensureDir(dir);
+    const filePath = path.join(dir, `${safeKey}.xml`);
+    await writeFile(filePath, xml, "utf8");
+    return filePath;
+  } catch {
+    const { tmpdir } = await import("os");
+    const filePath = path.join(tmpdir(), `pc-xml-${safeKey}.xml`);
+    await writeFile(filePath, xml, "utf8");
+    return filePath;
+  }
 }
 
 export async function readPfx(filePath: string) {
@@ -146,4 +154,29 @@ export async function loadCertificatePfx(cert: {
   throw new Error(
     "Certificado A1 sem arquivo. Envie o .pfx novamente na tela XML.",
   );
+}
+
+export type CertificateTls =
+  | { mode: "pem"; key: string; cert: string }
+  | { mode: "pfx"; pfx: Buffer; passphrase: string };
+
+/** Preferência: PEM já validado no upload; fallback: PFX do banco. */
+export async function loadCertificateTls(
+  cert: {
+    pemKeyEnc?: string | null;
+    pemCertEnc?: string | null;
+    pfxEnc?: string | null;
+    pfxPath?: string | null;
+  },
+  passphrase: string,
+): Promise<CertificateTls> {
+  if (cert.pemKeyEnc && cert.pemCertEnc) {
+    return {
+      mode: "pem",
+      key: decryptSecret(cert.pemKeyEnc),
+      cert: decryptSecret(cert.pemCertEnc),
+    };
+  }
+  const pfx = await loadCertificatePfx(cert);
+  return { mode: "pfx", pfx, passphrase };
 }
