@@ -10,17 +10,14 @@ function padNsu(nsu: string) {
   return nsu.replace(/\D/g, "").padStart(15, "0").slice(-15);
 }
 
-function httpsGet(opts: {
+async function httpsGet(opts: {
   url: string;
   pfx: Buffer;
   passphrase: string;
 }): Promise<{ status: number; text: string }> {
+  const { createPfxHttpsAgent } = await import("@/lib/sefaz/pfx-tls");
   const u = new URL(opts.url);
-  const agent = new https.Agent({
-    pfx: opts.pfx,
-    passphrase: opts.passphrase,
-    rejectUnauthorized: true,
-  });
+  const agent = await createPfxHttpsAgent(opts.pfx, opts.passphrase);
 
   return new Promise((resolve, reject) => {
     const req = https.request(

@@ -31,18 +31,15 @@ function buildSoap(cnpj: string, tpAmb: string, ultNsu: string) {
   );
 }
 
-function httpsPost(opts: {
+async function httpsPost(opts: {
   url: string;
   body: string;
   pfx: Buffer;
   passphrase: string;
 }): Promise<{ status: number; text: string }> {
+  const { createPfxHttpsAgent } = await import("@/lib/sefaz/pfx-tls");
   const u = new URL(opts.url);
-  const agent = new https.Agent({
-    pfx: opts.pfx,
-    passphrase: opts.passphrase,
-    rejectUnauthorized: true,
-  });
+  const agent = await createPfxHttpsAgent(opts.pfx, opts.passphrase);
 
   return new Promise((resolve, reject) => {
     const req = https.request(

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   const buffer = Buffer.from(await file.arrayBuffer());
   let info;
   try {
-    info = inspectPfx(buffer, password);
+    info = await inspectPfx(buffer, password);
   } catch (e) {
     return NextResponse.json(
       {

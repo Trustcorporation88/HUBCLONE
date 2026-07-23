@@ -2,6 +2,7 @@ import { mkdir, writeFile, readFile } from "fs/promises";
 import path from "path";
 import forge from "node-forge";
 import { onlyDigits } from "@/lib/crypto-secret";
+import { pfxToPemBundle } from "@/lib/sefaz/pfx-tls";
 
 const ROOT = path.join(process.cwd(), "data");
 
@@ -24,19 +25,7 @@ export type PfxInfo = {
   cnpjFromCert: string | null;
 };
 
-export function inspectPfx(pfxBuffer: Buffer, password: string): PfxInfo {
-  const der = forge.util.createBuffer(pfxBuffer.toString("binary"));
-  const asn1 = forge.asn1.fromDer(der);
-  const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, password);
-
-  const bags =
-    p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag] ??
-    [];
-  const cert = bags[0]?.cert;
-  if (!cert) {
-    throw new Error("Certificado A1 sem certificado utilizável no .pfx");
-  }
-
+function infoFromForgeCert(cert: forge.pki.Certificate): PfxInfo {
   const subjectCn =
     cert.subject.getField("CN")?.value?.toString() ??
     cert.subject.attributes.map((a) => `${a.shortName}=${a.value}`).join(", ");
@@ -53,6 +42,51 @@ export function inspectPfx(pfxBuffer: Buffer, password: string): PfxInfo {
     validTo: cert.validity.notAfter ? new Date(cert.validity.notAfter) : null,
     cnpjFromCert,
   };
+}
+
+function infoFromPemCert(certPem: string): PfxInfo {
+  const cert = forge.pki.certificateFromPem(certPem);
+  return infoFromForgeCert(cert);
+}
+
+/** Lê metadados do A1. Usa node-forge; se falhar (PFX legado/moderno), OpenSSL. */
+export async function inspectPfx(
+  pfxBuffer: Buffer,
+  password: string,
+): Promise<PfxInfo> {
+  try {
+    const der = forge.util.createBuffer(pfxBuffer.toString("binary"));
+    const asn1 = forge.asn1.fromDer(der);
+    const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, password);
+    const bags =
+      p12.getBags({ bagType: forge.pki.oids.certBag })[
+        forge.pki.oids.certBag
+      ] ?? [];
+    const cert = bags[0]?.cert;
+    if (!cert) {
+      throw new Error("Certificado A1 sem certificado utilizável no .pfx");
+    }
+    return infoFromForgeCert(cert);
+  } catch (forgeErr) {
+    try {
+      const bundle = await pfxToPemBundle(pfxBuffer, password);
+      return infoFromPemCert(bundle.cert);
+    } catch (opensslErr) {
+      const a =
+        forgeErr instanceof Error ? forgeErr.message : String(forgeErr);
+      const b =
+        opensslErr instanceof Error ? opensslErr.message : String(opensslErr);
+      if (/senha|password|mac verify/i.test(a + b)) {
+        throw new Error("Senha do certificado A1 incorreta.");
+      }
+      throw new Error(
+        `Não foi possível ler o .pfx A1 (formato PKCS#12). Confira a senha ou reexporte o certificado. ${b || a}`.slice(
+          0,
+          280,
+        ),
+      );
+    }
+  }
 }
 
 export async function savePfxFile(
