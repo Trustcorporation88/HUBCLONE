@@ -13,21 +13,44 @@ function padNsu(nsu: string) {
   return nsu.replace(/\D/g, "").padStart(15, "0").slice(-15);
 }
 
-function buildSoap(cnpj: string, tpAmb: string, ultNsu: string) {
+const CTE_SOAP_ACTION =
+  "http://www.portalfiscal.inf.br/cte/wsdl/CTeDistribuicaoDFe/cteDistDFeInteresse";
+
+function buildDistXml(cnpj: string, tpAmb: string, ultNsu: string) {
   const dig = cnpj.replace(/\D/g, "");
   const nsu = padNsu(ultNsu);
-  const dist =
+  return (
     `<distDFeInt xmlns="http://www.portalfiscal.inf.br/cte" versao="1.00">` +
     `<tpAmb>${tpAmb}</tpAmb><CNPJ>${dig}</CNPJ>` +
-    `<distNSU><ultNSU>${nsu}</ultNSU></distNSU></distDFeInt>`;
+    `<distNSU><ultNSU>${nsu}</ultNSU></distNSU></distDFeInt>`
+  );
+}
 
+function buildSoap12(cnpj: string, tpAmb: string, ultNsu: string) {
+  const dist = buildDistXml(cnpj, tpAmb, ultNsu);
   return (
     `<?xml version="1.0" encoding="utf-8"?>` +
-    `<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">` +
+    `<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
+    `xmlns:xsd="http://www.w3.org/2001/XMLSchema" ` +
+    `xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">` +
     `<soap12:Body>` +
     `<cteDistDFeInteresse xmlns="http://www.portalfiscal.inf.br/cte/wsdl/CTeDistribuicaoDFe">` +
-    `<cteDadosMsg><![CDATA[${dist}]]></cteDadosMsg>` +
+    `<cteDadosMsg>${dist}</cteDadosMsg>` +
     `</cteDistDFeInteresse></soap12:Body></soap12:Envelope>`
+  );
+}
+
+function buildSoap11(cnpj: string, tpAmb: string, ultNsu: string) {
+  const dist = buildDistXml(cnpj, tpAmb, ultNsu);
+  return (
+    `<?xml version="1.0" encoding="utf-8"?>` +
+    `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
+    `xmlns:xsd="http://www.w3.org/2001/XMLSchema" ` +
+    `xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">` +
+    `<soap:Body>` +
+    `<cteDistDFeInteresse xmlns="http://www.portalfiscal.inf.br/cte/wsdl/CTeDistribuicaoDFe">` +
+    `<cteDadosMsg>${dist}</cteDadosMsg>` +
+    `</cteDistDFeInteresse></soap:Body></soap:Envelope>`
   );
 }
 
@@ -35,10 +58,12 @@ async function httpsPost(opts: {
   url: string;
   body: string;
   tls: import("@/lib/sefaz/cert-store").CertificateTls;
+  headers: Record<string, string>;
 }): Promise<{ status: number; text: string }> {
   const { resolveSefazAgent } = await import("@/lib/sefaz/sefaz-agent");
   const u = new URL(opts.url);
   const agent = await resolveSefazAgent(opts.tls);
+  const bodyBuf = Buffer.from(opts.body, "utf8");
 
   return new Promise((resolve, reject) => {
     const req = https.request(
@@ -50,8 +75,8 @@ async function httpsPost(opts: {
         method: "POST",
         agent,
         headers: {
-          "Content-Type": "application/soap+xml; charset=utf-8",
-          "Content-Length": Buffer.byteLength(opts.body),
+          ...opts.headers,
+          "Content-Length": bodyBuf.length,
         },
         timeout: 60000,
       },
@@ -71,7 +96,7 @@ async function httpsPost(opts: {
       req.destroy();
       reject(new Error("Timeout CT-e DistDFe"));
     });
-    req.write(opts.body);
+    req.write(bodyBuf);
     req.end();
   });
 }
@@ -190,13 +215,39 @@ export async function cteDistDfeLive(opts: {
   ultNsu: string;
   tls: import("@/lib/sefaz/cert-store").CertificateTls;
 }): Promise<DistDfeResult> {
-  const { status, text } = await httpsPost({
-    url: CTE_DISTDFE_URLS[opts.tpAmb],
-    body: buildSoap(opts.cnpj, opts.tpAmb, opts.ultNsu),
-    tls: opts.tls,
-  });
-  if (status < 200 || status >= 300) {
-    throw new Error(`CT-e DistDFe HTTP ${status}: ${text.slice(0, 400)}`);
+  const url = CTE_DISTDFE_URLS[opts.tpAmb];
+  const attempts: Array<{ body: string; headers: Record<string, string> }> = [
+    {
+      body: buildSoap12(opts.cnpj, opts.tpAmb, opts.ultNsu),
+      headers: {
+        "Content-Type": `application/soap+xml; charset=utf-8; action="${CTE_SOAP_ACTION}"`,
+      },
+    },
+    {
+      body: buildSoap11(opts.cnpj, opts.tpAmb, opts.ultNsu),
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        SOAPAction: `"${CTE_SOAP_ACTION}"`,
+      },
+    },
+  ];
+
+  let lastStatus = 0;
+  let lastText = "";
+  for (const attempt of attempts) {
+    const { status, text } = await httpsPost({
+      url,
+      body: attempt.body,
+      tls: opts.tls,
+      headers: attempt.headers,
+    });
+    lastStatus = status;
+    lastText = text;
+    if (status >= 200 && status < 300) {
+      return extract(text, opts.cnpj);
+    }
+    if (status !== 404 && status !== 415) break;
   }
-  return extract(text, opts.cnpj);
+
+  throw new Error(`CT-e DistDFe HTTP ${lastStatus}: ${lastText.slice(0, 400)}`);
 }
