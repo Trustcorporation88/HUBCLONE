@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireSession } from "@/lib/auth";
+import { readSession, requireAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { INTEGRATION_PROVIDERS } from "@/lib/integrations";
 import { IntegrationConnectForm } from "@/components/integration-connect-form";
@@ -36,13 +36,18 @@ const LABELS: Record<string, { title: string; desc: string }> = {
 };
 
 export default async function IntegrationsPage() {
+  const raw = await readSession();
+  if (!raw) redirect("/login");
+  if (raw.role === "CLIENT") redirect("/portal");
+
+  // Credenciais de integração (Omie, ClickSign, ProContador, OpenAI) são
+  // sensíveis o bastante para exigir papel de sócio/gerente, não qualquer STAFF.
   let session;
   try {
-    session = await requireSession();
+    session = await requireAdminSession();
   } catch {
-    redirect("/login");
+    redirect("/app");
   }
-  if (session.role === "CLIENT") redirect("/portal");
 
   const existing = await prisma.integration.findMany({
     where: { firmId: session.firmId },

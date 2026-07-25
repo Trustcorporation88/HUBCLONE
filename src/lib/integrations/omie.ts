@@ -20,9 +20,10 @@ type OmieListResponse = {
   faultcode?: string;
 };
 
-function mapRegime(_c: OmieCliente): string {
-  return "SIMPLES";
-}
+// A resposta de ListarClientes da Omie não traz o regime tributário do
+// cliente. Nunca inventamos/assumimos SIMPLES para dados reais: na criação,
+// deixamos o valor padrão do sistema; numa atualização, preservamos o que o
+// contador já classificou manualmente (nunca sobrescrevemos silenciosamente).
 
 async function omieListPage(opts: {
   appKey: string;
@@ -118,11 +119,13 @@ export async function syncOmieClients(firmId: string) {
           legalName,
           tradeName: raw.nome_fantasia?.trim() || null,
           email: raw.email?.trim() || null,
-          regime: mapRegime(raw),
           active: true,
         };
 
         if (existing) {
+          // Nunca sobrescreve o regime tributário já classificado — a Omie
+          // não fornece esse dado, e sobrescrevê-lo corromperia a
+          // classificação fiscal real do cliente a cada sincronização.
           await prisma.client.update({
             where: { id: existing.id },
             data: payload,
@@ -134,6 +137,7 @@ export async function syncOmieClients(firmId: string) {
               firmId,
               cnpj,
               ...payload,
+              // regime: usa o default do schema (SIMPLES) — Omie não informa
             },
           });
           created += 1;

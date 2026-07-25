@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { requireAuthSecret } from "@/lib/runtime";
 
 const SESSION_COOKIE = "hub_session";
 
 function secretKey() {
-  const secret = process.env.AUTH_SECRET ?? "hub-dev-secret-change-me";
-  return new TextEncoder().encode(secret);
+  return new TextEncoder().encode(requireAuthSecret());
 }
 
 export async function middleware(request: NextRequest) {
@@ -15,7 +15,9 @@ export async function middleware(request: NextRequest) {
   const isPortal = pathname.startsWith("/portal") && !isPortalLogin;
   const isApp = pathname.startsWith("/app");
   const isApiProtected =
-    pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/");
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/auth/") &&
+    pathname !== "/api/health";
 
   if (!isApp && !isPortal && !isApiProtected) {
     return NextResponse.next();
@@ -60,15 +62,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/app/:path*",
-    "/portal",
-    "/portal/:path*",
-    "/api/pipeline/:path*",
-    "/api/obligations/:path*",
-    "/api/deliveries/:path*",
-    "/api/certificates/:path*",
-    "/api/xml/:path*",
-    "/api/payments/:path*",
-  ],
+  // Cobre TODAS as rotas de API (exceto /api/auth/* e /api/health, públicas)
+  // como rede de segurança — cada rota também faz sua própria checagem de
+  // sessão, mas uma rota nova que "esqueça" isso não fica exposta.
+  matcher: ["/app/:path*", "/portal", "/portal/:path*", "/api/:path*"],
 };

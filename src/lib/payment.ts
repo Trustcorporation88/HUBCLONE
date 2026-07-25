@@ -23,6 +23,32 @@ function extSafe(ext: string) {
   return ext.replace(/[^a-z0-9]/gi, "") || "bin";
 }
 
+const MIN_PROOF_BYTES = 512;
+
+/**
+ * Valida a assinatura binária (magic bytes) do comprovante — a extensão do
+ * nome do arquivo é fornecida pelo cliente e facilmente falsificável (ex.:
+ * renomear um arquivo de 1 byte para "comprovante.pdf" bastava antes).
+ */
+function matchesDeclaredExtension(buffer: Buffer, ext: string): boolean {
+  if (buffer.length < 8) return false;
+  const bytes = buffer.subarray(0, 12);
+  if (ext === "pdf") return bytes.subarray(0, 5).toString("ascii") === "%PDF-";
+  if (ext === "jpg" || ext === "jpeg") {
+    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (ext === "png") {
+    return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+  }
+  if (ext === "webp") {
+    return (
+      bytes.subarray(0, 4).toString("ascii") === "RIFF" &&
+      bytes.subarray(8, 12).toString("ascii") === "WEBP"
+    );
+  }
+  return false;
+}
+
 /**
  * Pagamento operacional: NÃO inventa PIX/boleto.
  * Usa apenas código oficial já gravado na guia (barcode / pixPayload).
@@ -142,6 +168,21 @@ export async function confirmGuidePayment(opts: {
   if (!allowed.includes(ext)) {
     return {
       error: "Comprovante deve ser PDF, JPG ou PNG.",
+      status: 400 as const,
+    };
+  }
+
+  if (opts.proof.buffer.length < MIN_PROOF_BYTES) {
+    return {
+      error: "Arquivo de comprovante muito pequeno para ser um documento válido.",
+      status: 400 as const,
+    };
+  }
+
+  if (!matchesDeclaredExtension(opts.proof.buffer, ext)) {
+    return {
+      error:
+        "O conteúdo do arquivo não corresponde ao tipo declarado. Envie um PDF/JPG/PNG/WEBP real.",
       status: 400 as const,
     };
   }

@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { readSession } from "@/lib/auth";
+import { requireStaffSession } from "@/lib/auth";
 import { nextStage } from "@/lib/domain/pipeline";
 import { clientHasBlockingXml } from "@/lib/xml-audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(_req: Request, ctx: Ctx) {
-  const session = await readSession();
-  if (!session) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  let session;
+  try {
+    session = await requireStaffSession();
+  } catch {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
   const { id } = await ctx.params;

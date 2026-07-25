@@ -3,6 +3,7 @@ import { z } from "zod";
 import { readSession } from "@/lib/auth";
 import { resolveOpenAiKey } from "@/lib/openai-key";
 import { askOfficeAssistant } from "@/lib/openai-chat";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   messages: z
@@ -23,6 +24,14 @@ export async function POST(req: Request) {
   }
   if (session.role === "CLIENT") {
     return NextResponse.json({ error: "Somente escritório" }, { status: 403 });
+  }
+
+  const rate = checkRateLimit(`chat:${session.userId}`, { limit: 20, windowMs: 60_000 });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Muitas mensagens. Aguarde um instante e tente novamente." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    );
   }
 
   const json = await req.json().catch(() => null);

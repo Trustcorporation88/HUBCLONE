@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { tmpdir } from "os";
 import { join } from "path";
 import { readFile, unlink, writeFile } from "fs/promises";
+import { readFileSync } from "fs";
 import https from "https";
 import tls from "tls";
 import forge from "node-forge";
@@ -192,7 +193,7 @@ export async function pfxToPemBundle(
 export function mapTlsError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
   if (/unable to get local issuer certificate/i.test(msg)) {
-    return "Falha TLS com a SEFAZ (cadeia do servidor). Tente novamente; se persistir, contate o suporte.";
+    return "Falha TLS com a SEFAZ: cadeia raiz ICP-Brasil não configurada no servidor. Configure SEFAZ_CA_BUNDLE_PATH (contate o suporte técnico) — não é seguro contornar essa verificação.";
   }
   if (/unsupported pkcs12|pkcs12 pfx/i.test(msg)) {
     return "Formato do .pfx incompatível. Reexporte o A1 e cadastre de novo.";
@@ -209,15 +210,47 @@ export function mapTlsError(err: unknown): string {
   return msg;
 }
 
+let extraCaCache: string[] | null = null;
+
+/**
+ * Cadeia raiz ICP-Brasil (AC-Raiz + intermediárias usadas pela SEFAZ/ADN).
+ * O bundle padrão do Node (Mozilla) NÃO inclui a ICP-Brasil, causando
+ * "unable to get local issuer certificate" mesmo com o servidor legítimo.
+ *
+ * Configure via SEFAZ_CA_BUNDLE_PATH apontando para um arquivo PEM com a
+ * cadeia oficial (disponível em https://www.gov.br/iti/pt-br). NUNCA
+ * desative a verificação do peer (rejectUnauthorized) como "solução" —
+ * isso permite que qualquer atacante na rede se passe pela SEFAZ.
+ */
+function loadExtraCa(): string[] {
+  if (extraCaCache) return extraCaCache;
+  const path = process.env.SEFAZ_CA_BUNDLE_PATH?.trim();
+  if (!path) {
+    extraCaCache = [];
+    return extraCaCache;
+  }
+  try {
+    const pem = readFileSync(path, "utf8");
+    extraCaCache = splitPemBlocks(pem).filter((b) => /CERTIFICATE/.test(b));
+  } catch {
+    extraCaCache = [];
+  }
+  return extraCaCache;
+}
+
 function agentFromPem(bundle: PemBundle): https.Agent {
-  // Não usar `ca` com intermediários do A1 — isso substitui a trust store.
+  // Cadeia do cliente (mTLS) = leaf + intermediários do A1, em `cert`.
+  // A verificação do SERVIDOR usa `ca` = raízes padrão do Node + ICP-Brasil
+  // (se configurada) — nunca `rejectUnauthorized: false`.
+  const extraCa = loadExtraCa();
   const secureContext = tls.createSecureContext({
     key: bundle.key,
     cert: bundle.cert,
+    ca: extraCa.length > 0 ? [...tls.rootCertificates, ...extraCa] : undefined,
   });
   return new https.Agent({
     secureContext,
-    rejectUnauthorized: false,
+    rejectUnauthorized: true,
     keepAlive: false,
     maxCachedSessions: 0,
   });

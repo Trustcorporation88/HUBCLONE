@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { readSession } from "@/lib/auth";
+import { requireStaffSession } from "@/lib/auth";
 import { markDeliveryViewed } from "@/lib/delivery";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Simula o cliente abrindo a guia (rastreio VIEWED) */
+/** Simula o cliente abrindo a guia (rastreio VIEWED) — ação da equipe interna */
 export async function POST(_req: Request, ctx: Ctx) {
-  const session = await readSession();
-  if (!session) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  let session;
+  try {
+    session = await requireStaffSession();
+  } catch {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
   const { id } = await ctx.params;

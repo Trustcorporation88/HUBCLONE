@@ -299,8 +299,14 @@ export async function markDeliveryViewed(opts: {
     where: { id: delivery.id },
     data: { status: "VIEWED", viewedAt: now },
   });
-  await prisma.obligation.update({
-    where: { id: delivery.obligationId },
+
+  // Não regride uma obrigação já paga/cancelada de volta para "visualizada"
+  // — só avança o status se ainda estiver antes de VIEWED no ciclo de vida.
+  await prisma.obligation.updateMany({
+    where: {
+      id: delivery.obligationId,
+      status: { in: ["DRAFT", "READY", "SENT"] },
+    },
     data: { status: "VIEWED", viewedAt: now },
   });
 

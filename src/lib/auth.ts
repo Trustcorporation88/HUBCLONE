@@ -67,6 +67,19 @@ export async function requireStaffSession(): Promise<SessionPayload> {
   return session;
 }
 
+/**
+ * Exige papel de sócio/gerente (OWNER | MANAGER) — usado para dados
+ * financeiros sensíveis do escritório (P&L, contratos, credenciais de
+ * integração) que não devem ficar acessíveis a qualquer funcionário STAFF.
+ */
+export async function requireAdminSession(): Promise<SessionPayload> {
+  const session = await requireStaffSession();
+  if (session.role !== "OWNER" && session.role !== "MANAGER") {
+    throw new Error("FORBIDDEN");
+  }
+  return session;
+}
+
 export async function requireClientSession(): Promise<SessionPayload> {
   const session = await requireSession();
   if (session.role !== "CLIENT" || !session.clientId) {

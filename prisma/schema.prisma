@@ -405,6 +405,9 @@ model Contract {
   status         String    @default("DRAFT") // DRAFT | SENT | SIGNED | REJECTED
   originalPath   String?
   signedPdfPath  String?
+  signedFileHash String?
+  signedByIp     String?
+  signedByUserAgent String?
   notes          String?
   sentAt         DateTime?
   signedAt       DateTime?

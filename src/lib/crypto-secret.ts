@@ -1,9 +1,8 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
+import { requireAuthSecret } from "@/lib/runtime";
 
 function keyFromSecret() {
-  return createHash("sha256")
-    .update(process.env.AUTH_SECRET ?? "hub-dev-secret-change-me")
-    .digest();
+  return createHash("sha256").update(requireAuthSecret()).digest();
 }
 
 /** Encrypt PFX passphrase at rest (AES-256-GCM). */

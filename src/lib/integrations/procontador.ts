@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { onlyDigits } from "@/lib/crypto-secret";
 import { decodeCreds } from "@/lib/integrations";
+import { assertPublicHttpsUrl } from "@/lib/ssrf-guard";
 
 const DEFAULT_API =
   process.env.PROCONTADOR_API_URL?.replace(/\/$/, "") ||
@@ -32,6 +33,7 @@ export async function loginProContador(creds: {
   password: string;
 }): Promise<{ accessToken: string; baseUrl: string }> {
   const baseUrl = (creds.baseUrl || DEFAULT_API).replace(/\/$/, "");
+  await assertPublicHttpsUrl(baseUrl);
   let res: Response;
   try {
     res = await fetch(`${baseUrl}/auth/login`, {

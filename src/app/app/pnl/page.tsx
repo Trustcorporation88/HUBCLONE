@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireSession } from "@/lib/auth";
+import { readSession, requireAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getClientPnl, entryRevenueCents, entryCostCents } from "@/lib/pnl";
 import { formatBrl } from "@/lib/utils";
@@ -9,13 +9,16 @@ import { format } from "date-fns";
 export const dynamic = "force-dynamic";
 
 export default async function PnlPage() {
+  const raw = await readSession();
+  if (!raw) redirect("/login");
+  if (raw.role === "CLIENT") redirect("/portal");
+
   let session;
   try {
-    session = await requireSession();
+    session = await requireAdminSession();
   } catch {
-    redirect("/login");
+    redirect("/app");
   }
-  if (session.role === "CLIENT") redirect("/portal");
 
   const [clients, pnl] = await Promise.all([
     prisma.client.findMany({

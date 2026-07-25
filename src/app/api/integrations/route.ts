@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { readSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/auth";
 import {
   INTEGRATION_PROVIDERS,
   decodeCreds,
@@ -11,9 +11,11 @@ import {
 } from "@/lib/integrations";
 
 export async function GET() {
-  const session = await readSession();
-  if (!session || session.role === "CLIENT") {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  let session;
+  try {
+    session = await requireAdminSession();
+  } catch {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
   const existing = await prisma.integration.findMany({
@@ -42,9 +44,11 @@ const connectSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await readSession();
-  if (!session || session.role === "CLIENT") {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  let session;
+  try {
+    session = await requireAdminSession();
+  } catch {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
   const json = await req.json().catch(() => null);

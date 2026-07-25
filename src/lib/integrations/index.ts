@@ -1,5 +1,6 @@
 import { decryptSecret, encryptSecret } from "@/lib/crypto-secret";
 import { testProContador } from "@/lib/integrations/procontador";
+import { assertPublicHttpsUrl, SsrfBlockedError } from "@/lib/ssrf-guard";
 
 export const INTEGRATION_PROVIDERS = [
   "PROCONTADOR",
@@ -77,6 +78,11 @@ export async function testIntegration(
     const base =
       creds.baseUrl?.replace(/\/$/, "") || "https://app.clicksign.com/api/v1";
     if (!token) return { ok: false, detail: "Informe accessToken ClickSign" };
+    try {
+      await assertPublicHttpsUrl(base);
+    } catch (e) {
+      return { ok: false, detail: e instanceof SsrfBlockedError ? e.message : "baseUrl inválida" };
+    }
     const res = await fetch(`${base}/accounts`, {
       headers: {
         Accept: "application/json",
@@ -97,6 +103,11 @@ export async function testIntegration(
         ok: false,
         detail: "Domínio exige baseUrl + apiToken (API do parceiro)",
       };
+    }
+    try {
+      await assertPublicHttpsUrl(base);
+    } catch (e) {
+      return { ok: false, detail: e instanceof SsrfBlockedError ? e.message : "baseUrl inválida" };
     }
     const res = await fetch(`${base}/health`, {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },

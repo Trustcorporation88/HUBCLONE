@@ -22,25 +22,55 @@ const ALLOWED: InboxClassification[] = [
   "OTHER",
 ];
 
+const CLASSIFY_PROMPT =
+  'Classifique o documento fiscal/contabil brasileiro em UMA categoria: ' +
+  'DAS | NFE | CONTRACT | PROOF | OTHER. ' +
+  'Responda APENAS JSON: {"classification":"...","confidence":0-1,"summary":"..."}';
+
 export async function classifyInboxWithOpenAI(opts: {
   filename: string;
   mimeType: string;
+  /** Texto extraido do PDF (quando disponivel) — usado como evidencia real. */
   textExcerpt?: string;
+  /** Bytes da imagem (jpg/png/webp) em base64 — enviados como visao real. */
+  imageBase64?: string;
   apiKey?: string;
 }): Promise<ClassifyResult> {
   const apiKey = opts.apiKey?.trim() || requireEnv("OPENAI_API_KEY");
   const model = process.env.OPENAI_MODEL?.trim() || "gpt-4.1";
 
-  const prompt = [
-    "Classifique o documento fiscal/contábil brasileiro em UMA categoria:",
-    "DAS | NFE | CONTRACT | PROOF | OTHER",
-    "Responda APENAS JSON: {\"classification\":\"...\",\"confidence\":0-1,\"summary\":\"...\"}",
-    `Arquivo: ${opts.filename}`,
-    `MIME: ${opts.mimeType}`,
-    opts.textExcerpt ? `Trecho: ${opts.textExcerpt.slice(0, 2000)}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  // Sem conteudo real (nem texto extraido, nem imagem), a classificacao seria
+  // um mero chute pelo nome do arquivo — melhor falhar de forma explicita do
+  // que fingir que a IA "leu" o documento.
+  if (!opts.textExcerpt?.trim() && !opts.imageBase64) {
+    throw new Error(
+      "Não foi possível extrair conteúdo do arquivo para classificação (nem texto, nem imagem). Envie um PDF com texto ou uma foto legível.",
+    );
+  }
+
+  const userContent: Array<
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string } }
+  > = [
+    {
+      type: "text",
+      text: [
+        CLASSIFY_PROMPT,
+        `Arquivo: ${opts.filename}`,
+        `MIME: ${opts.mimeType}`,
+        opts.textExcerpt ? `Texto extraído do documento:\n${opts.textExcerpt.slice(0, 4000)}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+  ];
+
+  if (opts.imageBase64) {
+    userContent.push({
+      type: "image_url",
+      image_url: { url: `data:${opts.mimeType};base64,${opts.imageBase64}` },
+    });
+  }
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -56,9 +86,9 @@ export async function classifyInboxWithOpenAI(opts: {
         {
           role: "system",
           content:
-            "Você classifica documentos para um escritório de contabilidade brasileiro.",
+            "Você classifica documentos para um escritório de contabilidade brasileiro com base no CONTEÚDO real fornecido (texto ou imagem) — nunca invente com base só no nome do arquivo.",
         },
-        { role: "user", content: prompt },
+        { role: "user", content: userContent },
       ],
     }),
   });

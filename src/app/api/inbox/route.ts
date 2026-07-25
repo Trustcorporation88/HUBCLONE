@@ -5,6 +5,17 @@ import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
 import { classifyInboxWithOpenAI } from "@/lib/openai-classify";
 import { resolveOpenAiKey } from "@/lib/openai-key";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+async function extractTextFromPdf(buffer: Buffer): Promise<string | undefined> {
+  try {
+    const pdfParse = (await import("pdf-parse")).default;
+    const result = await pdfParse(buffer);
+    return result.text?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function GET() {
   const session = await readSession();
@@ -33,6 +44,14 @@ export async function POST(req: Request) {
   const session = await readSession();
   if (!session) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
+  const rate = checkRateLimit(`inbox:${session.userId}`, { limit: 15, windowMs: 60_000 });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Muitos envios. Aguarde um instante e tente novamente." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    );
   }
 
   const form = await req.formData();
@@ -90,9 +109,20 @@ export async function POST(req: Request) {
 
   try {
     const apiKey = await resolveOpenAiKey(session.firmId);
+    const mimeType = file.type || "application/octet-stream";
+    const isImage = mimeType.startsWith("image/");
+    const isPdf = mimeType === "application/pdf" || /\.pdf$/i.test(file.name);
+
+    const textExcerpt = isPdf ? await extractTextFromPdf(buf) : undefined;
+    // Só envia a imagem em base64 se não conseguimos extrair texto (evita
+    // gastar tokens de visão quando o PDF já tem texto suficiente).
+    const imageBase64 = isImage && !textExcerpt ? buf.toString("base64") : undefined;
+
     const result = await classifyInboxWithOpenAI({
       filename: file.name,
-      mimeType: file.type || "application/octet-stream",
+      mimeType,
+      textExcerpt,
+      imageBase64,
       apiKey,
     });
     classification = result.classification;

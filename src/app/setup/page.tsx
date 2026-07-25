@@ -17,6 +17,7 @@ export default function SetupPage() {
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [bootstrapToken, setBootstrapToken] = useState("");
 
   useEffect(() => {
     fetch("/api/auth/bootstrap")
@@ -36,6 +37,7 @@ export default function SetupPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          bootstrapToken,
           firmName,
           firmSlug,
           brandName: brandName || undefined,
@@ -97,6 +99,17 @@ export default function SetupPage() {
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          <label className="block text-sm">
+            <span className="text-text-muted">Token de instalação</span>
+            <input
+              type="password"
+              value={bootstrapToken}
+              onChange={(e) => setBootstrapToken(e.target.value)}
+              placeholder="Valor de BOOTSTRAP_TOKEN no .env do servidor"
+              className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 outline-none focus:border-accent"
+              required
+            />
+          </label>
           <label className="block text-sm">
             <span className="text-text-muted">Nome do escritório</span>
             <input
