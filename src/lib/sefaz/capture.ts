@@ -153,37 +153,19 @@ export async function runXmlCapture(opts: {
     }> = [];
     const failures: string[] = [];
 
+    // O DistDFe entrega no máximo ~50 documentos por chamada. É preciso
+    // paginar (repetir com o ultNsu retornado) até esgotar o backlog
+    // (ultNsu >= maxNsu). MAX_PAGES é um teto de segurança contra loop infinito.
+    const MAX_PAGES = 50;
+
     for (const kind of effectiveKinds) {
       try {
         let result: DistDfeResult;
+        let pages = 0;
+        let backlogRemaining = false;
 
-        if (kind === "NFE") {
-          result = await distDfeLive({
-            cnpj,
-            tpAmb,
-            ultNsu: cert.lastNsu,
-            tls,
-          });
-          if (classifySefazStat(result.cStat).ok) {
-            await prisma.certificate.update({
-              where: { id: cert.id },
-              data: { lastNsu: result.ultNsu },
-            });
-          }
-        } else if (kind === "CTE") {
-          result = await cteDistDfeLive({
-            cnpj,
-            tpAmb,
-            ultNsu: cert.lastNsuCte,
-            tls,
-          });
-          if (classifySefazStat(result.cStat).ok) {
-            await prisma.certificate.update({
-              where: { id: cert.id },
-              data: { lastNsuCte: result.ultNsu },
-            });
-          }
-        } else {
+        // NFS-e (ADN) não usa o mesmo esquema de NSU/maxNSU do DistDFe — chamada única.
+        if (kind === "NFSE") {
           result = await nfseAdnLive({
             cnpj,
             ultNsu: cert.lastNsuNfse,
@@ -195,15 +177,56 @@ export async function runXmlCapture(opts: {
               data: { lastNsuNfse: result.ultNsu },
             });
           }
+          docsFound += result.docs.length;
+          docsSaved += await saveDocs({
+            firmId: opts.firmId,
+            clientId: client.id,
+            kind,
+            result,
+          });
+        } else {
+          let currentNsu = kind === "NFE" ? cert.lastNsu : cert.lastNsuCte;
+          let lastResult: DistDfeResult | null = null;
+
+          do {
+            const pageResult =
+              kind === "NFE"
+                ? await distDfeLive({ cnpj, tpAmb, ultNsu: currentNsu, tls })
+                : await cteDistDfeLive({ cnpj, tpAmb, ultNsu: currentNsu, tls });
+
+            lastResult = pageResult;
+            pages += 1;
+
+            if (!classifySefazStat(pageResult.cStat).ok) break;
+
+            docsFound += pageResult.docs.length;
+            docsSaved += await saveDocs({
+              firmId: opts.firmId,
+              clientId: client.id,
+              kind,
+              result: pageResult,
+            });
+
+            // Persiste o avanço do NSU a cada página — assim uma falha no meio
+            // do backlog não força reprocessar tudo na próxima execução.
+            await prisma.certificate.update({
+              where: { id: cert.id },
+              data:
+                kind === "NFE"
+                  ? { lastNsu: pageResult.ultNsu }
+                  : { lastNsuCte: pageResult.ultNsu },
+            });
+
+            currentNsu = pageResult.ultNsu;
+            const ult = Number(pageResult.ultNsu);
+            const max = Number(pageResult.maxNsu);
+            backlogRemaining =
+              Number.isFinite(ult) && Number.isFinite(max) && ult < max;
+          } while (backlogRemaining && pages < MAX_PAGES);
+
+          result = lastResult!;
         }
 
-        docsFound += result.docs.length;
-        docsSaved += await saveDocs({
-          firmId: opts.firmId,
-          clientId: client.id,
-          kind,
-          result,
-        });
         summaries.push({
           kind,
           cStat: result.cStat,
@@ -214,6 +237,11 @@ export async function runXmlCapture(opts: {
           const cls = classifySefazStat(result.cStat);
           failures.push(
             `${kind}: ${cls.label}${result.xMotivo ? ` — ${result.xMotivo}` : ""}`,
+          );
+        } else if (backlogRemaining && pages >= MAX_PAGES) {
+          // Não deixa passar silenciosamente que ainda há documentos pendentes.
+          failures.push(
+            `${kind}: backlog parcial — ${pages} páginas capturadas nesta execução, ainda há documentos pendentes na SEFAZ. Rode a captura novamente.`,
           );
         }
       } catch (kindErr) {

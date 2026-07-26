@@ -1,4 +1,5 @@
 import { requireEnv } from "@/lib/runtime";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 export type InboxClassification =
   | "DAS"
@@ -72,7 +73,7 @@ export async function classifyInboxWithOpenAI(opts: {
     });
   }
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -91,7 +92,7 @@ export async function classifyInboxWithOpenAI(opts: {
         { role: "user", content: userContent },
       ],
     }),
-  });
+  }, 45_000);
 
   const raw = await res.json().catch(() => null);
   if (!res.ok) {

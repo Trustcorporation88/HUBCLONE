@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { onlyDigits } from "@/lib/crypto-secret";
 import { decodeCreds } from "@/lib/integrations";
+import { isValidCpfCnpj } from "@/lib/br-doc";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 type OmieCliente = {
   cnpj_cpf?: string;
@@ -30,7 +32,7 @@ async function omieListPage(opts: {
   appSecret: string;
   pagina: number;
 }): Promise<OmieListResponse> {
-  const res = await fetch("https://app.omie.com.br/api/v1/geral/clientes/", {
+  const res = await fetchWithTimeout("https://app.omie.com.br/api/v1/geral/clientes/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -100,7 +102,7 @@ export async function syncOmieClients(firmId: string) {
           continue;
         }
         const cnpj = onlyDigits(raw.cnpj_cpf ?? "");
-        if (cnpj.length !== 14 && cnpj.length !== 11) {
+        if (!isValidCpfCnpj(cnpj)) {
           skipped += 1;
           continue;
         }

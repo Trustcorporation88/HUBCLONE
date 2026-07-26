@@ -2,6 +2,16 @@ import { prisma } from "@/lib/db";
 
 const OPEN_STATUSES = ["PENDING", "IN_PROGRESS", "BLOCKED"] as const;
 
+// priority é String no banco (LOW | NORMAL | HIGH | URGENT). Ordenar por
+// "desc" no SQL classificaria alfabeticamente (URGENT, NORMAL, LOW, HIGH),
+// jogando HIGH para o fim. Ranqueamos numericamente na aplicação.
+const PRIORITY_RANK: Record<string, number> = {
+  URGENT: 4,
+  HIGH: 3,
+  NORMAL: 2,
+  LOW: 1,
+};
+
 export async function getCapacityByDepartment(firmId: string) {
   const tasks = await prisma.task.findMany({
     where: {
@@ -12,7 +22,16 @@ export async function getCapacityByDepartment(firmId: string) {
       assignee: { select: { id: true, name: true } },
       client: { select: { id: true, tradeName: true, legalName: true } },
     },
-    orderBy: [{ dueAt: "asc" }, { priority: "desc" }],
+  });
+
+  // Ordena por prioridade (maior primeiro) e, dentro da mesma prioridade,
+  // pelo vencimento mais próximo.
+  tasks.sort((a, b) => {
+    const pr = (PRIORITY_RANK[b.priority] ?? 0) - (PRIORITY_RANK[a.priority] ?? 0);
+    if (pr !== 0) return pr;
+    const aDue = a.dueAt?.getTime() ?? Number.POSITIVE_INFINITY;
+    const bDue = b.dueAt?.getTime() ?? Number.POSITIVE_INFINITY;
+    return aDue - bDue;
   });
 
   const now = Date.now();

@@ -5,6 +5,7 @@ import {
   createSessionToken,
   verifyPassword,
 } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const bodySchema = z.object({
@@ -12,6 +13,8 @@ const bodySchema = z.object({
   password: z.string().min(1),
   firmSlug: z.string().min(1),
 });
+
+const INVALID_CREDS = "Escritório, e-mail ou senha inválidos";
 
 export async function POST(req: Request) {
   const json = await req.json().catch(() => null);
@@ -21,17 +24,30 @@ export async function POST(req: Request) {
   }
 
   const { email, password, firmSlug } = parsed.data;
-  const firm = await prisma.firm.findUnique({ where: { slug: firmSlug } });
-  if (!firm) {
-    return NextResponse.json({ error: "Escritório não encontrado" }, { status: 404 });
+
+  // Rate limit por escritório+e-mail para conter força bruta de senha.
+  const rate = checkRateLimit(`login:${firmSlug}:${email.toLowerCase()}`, {
+    limit: 8,
+    windowMs: 5 * 60_000,
+  });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { firmId_email: { firmId: firm.id, email: email.toLowerCase() } },
-  });
+  const firm = await prisma.firm.findUnique({ where: { slug: firmSlug } });
+  const user = firm
+    ? await prisma.user.findUnique({
+        where: { firmId_email: { firmId: firm.id, email: email.toLowerCase() } },
+      })
+    : null;
 
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return NextResponse.json({ error: "E-mail ou senha inválidos" }, { status: 401 });
+  // Resposta genérica para escritório inexistente OU credenciais erradas —
+  // não revela quais escritórios/e-mails existem (evita enumeração).
+  if (!firm || !user || !(await verifyPassword(password, user.passwordHash))) {
+    return NextResponse.json({ error: INVALID_CREDS }, { status: 401 });
   }
 
   const brandName = firm.brandName || firm.name;

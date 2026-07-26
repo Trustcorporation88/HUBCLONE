@@ -1,5 +1,6 @@
 import { openAiModel } from "@/lib/openai-key";
 import { moduleHelpAsSystemContext } from "@/lib/domain/module-help";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 export type ChatMessage = { role: "user" | "assistant" | "system"; content: string };
 
@@ -30,7 +31,7 @@ export async function askOfficeAssistant(opts: {
     throw new Error("Envie uma pergunta.");
   }
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${opts.apiKey}`,
@@ -41,7 +42,7 @@ export async function askOfficeAssistant(opts: {
       temperature: 0.3,
       messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmed],
     }),
-  });
+  }, 45_000);
 
   const raw = (await res.json().catch(() => null)) as {
     choices?: Array<{ message?: { content?: string } }>;

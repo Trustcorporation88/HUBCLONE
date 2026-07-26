@@ -1,6 +1,7 @@
 import { decryptSecret, encryptSecret } from "@/lib/crypto-secret";
 import { testProContador } from "@/lib/integrations/procontador";
 import { assertPublicHttpsUrl, SsrfBlockedError } from "@/lib/ssrf-guard";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 export const INTEGRATION_PROVIDERS = [
   "PROCONTADOR",
@@ -38,7 +39,7 @@ export async function testIntegration(
   if (provider === "OPENAI") {
     const key = creds.apiKey || process.env.OPENAI_API_KEY;
     if (!key) return { ok: false, detail: "OPENAI_API_KEY ausente" };
-    const res = await fetch("https://api.openai.com/v1/models", {
+    const res = await fetchWithTimeout("https://api.openai.com/v1/models", {
       headers: { Authorization: `Bearer ${key}` },
     });
     if (!res.ok) {
@@ -53,7 +54,7 @@ export async function testIntegration(
     if (!appKey || !appSecret) {
       return { ok: false, detail: "Informe appKey e appSecret Omie" };
     }
-    const res = await fetch("https://app.omie.com.br/api/v1/geral/empresas/", {
+    const res = await fetchWithTimeout("https://app.omie.com.br/api/v1/geral/empresas/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -83,7 +84,7 @@ export async function testIntegration(
     } catch (e) {
       return { ok: false, detail: e instanceof SsrfBlockedError ? e.message : "baseUrl inválida" };
     }
-    const res = await fetch(`${base}/accounts`, {
+    const res = await fetchWithTimeout(`${base}/accounts`, {
       headers: {
         Accept: "application/json",
         Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
@@ -109,7 +110,7 @@ export async function testIntegration(
     } catch (e) {
       return { ok: false, detail: e instanceof SsrfBlockedError ? e.message : "baseUrl inválida" };
     }
-    const res = await fetch(`${base}/health`, {
+    const res = await fetchWithTimeout(`${base}/health`, {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     }).catch(() => null);
     if (!res) {

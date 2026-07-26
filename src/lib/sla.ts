@@ -81,11 +81,10 @@ export async function getSlaMonitor(firmId: string) {
       d.status,
     );
     const onTime = terminal ? hoursElapsed <= target : null;
-    const late = hoursElapsed > target && !["VIEWED", "DELIVERED"].includes(d.status)
-      ? true
-      : terminal
-        ? hoursElapsed > target
-        : hoursElapsed > target;
+    // `end` já é o instante de conclusão (viewedAt/sentAt) para entregas
+    // terminais, ou "agora" para as pendentes — então hoursElapsed > target
+    // reflete corretamente o atraso real em ambos os casos.
+    const late = hoursElapsed > target;
 
     rows.push({
       deliveryId: d.id,

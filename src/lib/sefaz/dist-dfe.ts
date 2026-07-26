@@ -127,15 +127,21 @@ async function httpsPostSoap(opts: {
   });
 }
 
+// Um XML de NF-e raramente passa de algumas centenas de KB. Limitamos a saída
+// da descompressão a 8 MB para impedir "zip bomb" (payload minúsculo que
+// expande para gigabytes e derruba o processo).
+const MAX_XML_BYTES = 8 * 1024 * 1024;
+
 function decodeDocZip(b64: string): string {
   const buf = Buffer.from(b64, "base64");
   try {
-    return inflateRawSync(buf).toString("utf8");
+    return inflateRawSync(buf, { maxOutputLength: MAX_XML_BYTES }).toString("utf8");
   } catch {
     try {
-      return gunzipSync(buf).toString("utf8");
+      return gunzipSync(buf, { maxOutputLength: MAX_XML_BYTES }).toString("utf8");
     } catch {
-      return buf.toString("utf8");
+      // Não comprimido (ou estourou o limite): usa como texto, limitado.
+      return buf.subarray(0, MAX_XML_BYTES).toString("utf8");
     }
   }
 }

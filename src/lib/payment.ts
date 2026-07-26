@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { formatBrl } from "@/lib/utils";
 
@@ -21,6 +22,28 @@ async function writeProof(opts: {
 
 function extSafe(ext: string) {
   return ext.replace(/[^a-z0-9]/gi, "") || "bin";
+}
+
+/**
+ * Valida o BR Code do PIX (copia-e-cola, padrão EMV MPM do Bacen):
+ * começa com "000201" (Payload Format Indicator) e termina com o campo CRC16
+ * "6304" + 4 hexadecimais. Não recalcula o CRC (guias legítimas variam), mas
+ * rejeita strings claramente fora do padrão.
+ */
+function isValidPixPayload(payload: string): boolean {
+  const p = (payload || "").trim();
+  if (p.length < 30 || p.length > 512) return false;
+  if (!p.startsWith("000201")) return false;
+  return /6304[0-9A-Fa-f]{4}$/.test(p);
+}
+
+/**
+ * Valida código de barras / linha digitável de guia (DARF/GNRE/boleto):
+ * apenas dígitos, entre 44 (código de barras) e 48 (linha digitável).
+ */
+function isValidBoletoCode(code: string): boolean {
+  const digitsOnly = (code || "").replace(/\D/g, "");
+  return digitsOnly.length >= 44 && digitsOnly.length <= 48;
 }
 
 const MIN_PROOF_BYTES = 512;
@@ -79,31 +102,37 @@ export async function createGuidePayment(opts: {
     return { error: "Guia sem valor para pagamento", status: 400 as const };
   }
 
-  if (opts.method === "PIX" && !obligation.pixPayload) {
-    return {
-      error:
-        "Guia sem PIX oficial (pixPayload). Importe/emita a guia real antes de cobrar.",
-      status: 400 as const,
-    };
+  if (opts.method === "PIX") {
+    if (!obligation.pixPayload) {
+      return {
+        error:
+          "Guia sem PIX oficial (pixPayload). Importe/emita a guia real antes de cobrar.",
+        status: 400 as const,
+      };
+    }
+    if (!isValidPixPayload(obligation.pixPayload)) {
+      return {
+        error:
+          "PIX copia-e-cola da guia é inválido (BR Code fora do padrão EMV). Reimporte a guia oficial.",
+        status: 400 as const,
+      };
+    }
   }
-  if (opts.method === "BOLETO" && !obligation.barcode) {
-    return {
-      error:
-        "Guia sem código de barras oficial. Importe/emita a guia real antes de cobrar.",
-      status: 400 as const,
-    };
-  }
-
-  const existing = await prisma.payment.findFirst({
-    where: {
-      obligationId: obligation.id,
-      status: "PENDING",
-      method: opts.method,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  if (existing) {
-    return { payment: existing, reused: true };
+  if (opts.method === "BOLETO") {
+    if (!obligation.barcode) {
+      return {
+        error:
+          "Guia sem código de barras oficial. Importe/emita a guia real antes de cobrar.",
+        status: 400 as const,
+      };
+    }
+    if (!isValidBoletoCode(obligation.barcode)) {
+      return {
+        error:
+          "Código de barras da guia é inválido (esperado 44 a 48 dígitos). Reimporte a guia oficial.",
+        status: 400 as const,
+      };
+    }
   }
 
   const txid = createHash("sha256")
@@ -113,23 +142,58 @@ export async function createGuidePayment(opts: {
   const providerRef = `official_${opts.method.toLowerCase()}_${txid.slice(0, 12)}`;
   const expiresAt =
     obligation.dueAt ?? new Date(Date.now() + 1000 * 60 * 60 * 24);
+  const amountCents = obligation.amountCents; // já validado > 0 acima
 
-  const payment = await prisma.payment.create({
-    data: {
-      firmId: opts.firmId,
-      obligationId: obligation.id,
-      method: opts.method,
-      status: "PENDING",
-      amountCents: obligation.amountCents,
-      pixCopyPaste: opts.method === "PIX" ? obligation.pixPayload : null,
-      boletoBarcode: opts.method === "BOLETO" ? obligation.barcode : null,
-      boletoDigitable: opts.method === "BOLETO" ? obligation.barcode : null,
-      providerRef,
-      expiresAt,
-    },
-  });
-
-  return { payment, reused: false };
+  // Transação serializable: fecha a corrida entre dois cliques simultâneos —
+  // reaproveita o PENDING existente ou cria um único novo, sem gerar
+  // pagamentos duplicados para a mesma guia/método.
+  try {
+    const { payment, reused } = await prisma.$transaction(
+      async (tx) => {
+        const existing = await tx.payment.findFirst({
+          where: {
+            obligationId: obligation.id,
+            status: "PENDING",
+            method: opts.method,
+          },
+          orderBy: { createdAt: "desc" },
+        });
+        if (existing) {
+          return { payment: existing, reused: true };
+        }
+        const created = await tx.payment.create({
+          data: {
+            firmId: opts.firmId,
+            obligationId: obligation.id,
+            method: opts.method,
+            status: "PENDING",
+            amountCents,
+            pixCopyPaste: opts.method === "PIX" ? obligation.pixPayload : null,
+            boletoBarcode: opts.method === "BOLETO" ? obligation.barcode : null,
+            boletoDigitable: opts.method === "BOLETO" ? obligation.barcode : null,
+            providerRef,
+            expiresAt,
+          },
+        });
+        return { payment: created, reused: false };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+    return { payment, reused };
+  } catch {
+    // Se a serialização abortou por concorrência, o outro pedido já criou o
+    // PENDING — reaproveita em vez de duplicar.
+    const winner = await prisma.payment.findFirst({
+      where: {
+        obligationId: obligation.id,
+        status: "PENDING",
+        method: opts.method,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (winner) return { payment: winner, reused: true };
+    return { error: "Falha ao criar pagamento. Tente novamente.", status: 500 as const };
+  }
 }
 
 /** Confirma pagamento somente com comprovante anexado (arquivo real). */

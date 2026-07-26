@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { onlyDigits } from "@/lib/crypto-secret";
 import { decodeCreds } from "@/lib/integrations";
 import { assertPublicHttpsUrl } from "@/lib/ssrf-guard";
+import { isValidCpfCnpj } from "@/lib/br-doc";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 const DEFAULT_API =
   process.env.PROCONTADOR_API_URL?.replace(/\/$/, "") ||
@@ -36,7 +38,7 @@ export async function loginProContador(creds: {
   await assertPublicHttpsUrl(baseUrl);
   let res: Response;
   try {
-    res = await fetch(`${baseUrl}/auth/login`, {
+    res = await fetchWithTimeout(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
@@ -90,7 +92,7 @@ export async function testProContador(creds: Record<string, string>) {
       email,
       password,
     });
-    const res = await fetch(`${baseUrl}/companies?page=1&limit=1`, {
+    const res = await fetchWithTimeout(`${baseUrl}/companies?page=1&limit=1`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
@@ -149,7 +151,7 @@ export async function syncProContadorClients(firmId: string) {
     let totalPages = 1;
 
     while (page <= totalPages && page <= 50) {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `${baseUrl}/companies?page=${page}&limit=100`,
         {
           headers: {
@@ -180,7 +182,7 @@ export async function syncProContadorClients(firmId: string) {
           continue;
         }
         const cnpj = onlyDigits(row.cnpj ?? "");
-        if (cnpj.length !== 14 && cnpj.length !== 11) {
+        if (!isValidCpfCnpj(cnpj)) {
           skipped += 1;
           continue;
         }

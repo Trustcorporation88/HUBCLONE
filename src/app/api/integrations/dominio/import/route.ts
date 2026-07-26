@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
 import { onlyDigits } from "@/lib/crypto-secret";
+import { isValidCpfCnpj, parseCsvLine } from "@/lib/br-doc";
 
 /**
  * Importação operacional Domínio via CSV (export do sistema).
@@ -30,7 +31,7 @@ function parseCsv(text: string) {
   if (lines.length < 2) return [];
 
   const sep = lines[0]!.includes(";") ? ";" : ",";
-  const headers = lines[0]!.split(sep).map((h) =>
+  const headers = parseCsvLine(lines[0]!, sep).map((h) =>
     h.trim().toLowerCase().replace(/\s+/g, "_"),
   );
 
@@ -51,7 +52,7 @@ function parseCsv(text: string) {
 
   const rows = [];
   for (const line of lines.slice(1)) {
-    const cols = line.split(sep).map((c) => c.trim().replace(/^"|"$/g, ""));
+    const cols = parseCsvLine(line, sep);
     rows.push({
       cnpj: cols[iCnpj] ?? "",
       legalName: cols[iRazao] ?? "",
@@ -95,7 +96,9 @@ export async function POST(req: Request) {
 
   for (const raw of rawRows) {
     const cnpj = onlyDigits(raw.cnpj);
-    if (cnpj.length !== 14 && cnpj.length !== 11) {
+    // Rejeita documentos com dígito verificador inválido — importar um CNPJ/CPF
+    // errado quebraria a captura fiscal (chave de acesso, DistDFe) depois.
+    if (!isValidCpfCnpj(cnpj)) {
       skipped += 1;
       continue;
     }
