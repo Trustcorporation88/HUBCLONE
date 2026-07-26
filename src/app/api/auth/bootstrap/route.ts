@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createHash, timingSafeEqual } from "crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
   SESSION_COOKIE,
@@ -116,8 +117,7 @@ export async function POST(req: Request) {
           include: { users: true },
         });
       },
-      // SQLite usa lock exclusivo (serializable de facto).
-      // Em PostgreSQL, adicione: { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
   } catch (e) {
     if (e instanceof Error && e.message === "ALREADY_BOOTSTRAPPED") {

@@ -3,9 +3,7 @@ generator client {
 }
 
 datasource db {
-  // dev local: SQLite (file:./dev.db)
-  // produção Railway: mude para "postgresql" e ajuste DATABASE_URL
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
