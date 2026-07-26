@@ -217,24 +217,34 @@ let extraCaCache: string[] | null = null;
  * O bundle padrão do Node (Mozilla) NÃO inclui a ICP-Brasil, causando
  * "unable to get local issuer certificate" mesmo com o servidor legítimo.
  *
- * Configure via SEFAZ_CA_BUNDLE_PATH apontando para um arquivo PEM com a
- * cadeia oficial (disponível em https://www.gov.br/iti/pt-br). NUNCA
- * desative a verificação do peer (rejectUnauthorized) como "solução" —
+ * Ordem de resolução:
+ * 1. SEFAZ_CA_BUNDLE_PATH (se configurado no .env)
+ * 2. certs/icp-brasil-ca-bundle.pem embarcado no repo (gerado do
+ *    ACcompactado.zip oficial do ITI — scripts/build-icp-bundle.mjs)
+ *
+ * NUNCA desative a verificação do peer (rejectUnauthorized) como "solução" —
  * isso permite que qualquer atacante na rede se passe pela SEFAZ.
  */
 function loadExtraCa(): string[] {
   if (extraCaCache) return extraCaCache;
-  const path = process.env.SEFAZ_CA_BUNDLE_PATH?.trim();
-  if (!path) {
-    extraCaCache = [];
-    return extraCaCache;
+  const candidates = [
+    process.env.SEFAZ_CA_BUNDLE_PATH?.trim(),
+    join(process.cwd(), "certs", "icp-brasil-ca-bundle.pem"),
+  ].filter((p): p is string => Boolean(p));
+
+  for (const path of candidates) {
+    try {
+      const pem = readFileSync(path, "utf8");
+      const blocks = splitPemBlocks(pem).filter((b) => /CERTIFICATE/.test(b));
+      if (blocks.length > 0) {
+        extraCaCache = blocks;
+        return extraCaCache;
+      }
+    } catch {
+      // tenta o próximo candidato
+    }
   }
-  try {
-    const pem = readFileSync(path, "utf8");
-    extraCaCache = splitPemBlocks(pem).filter((b) => /CERTIFICATE/.test(b));
-  } catch {
-    extraCaCache = [];
-  }
+  extraCaCache = [];
   return extraCaCache;
 }
 

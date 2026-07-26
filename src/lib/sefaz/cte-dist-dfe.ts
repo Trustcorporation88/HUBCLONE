@@ -16,14 +16,30 @@ function padNsu(nsu: string) {
 const CTE_SOAP_ACTION =
   "http://www.portalfiscal.inf.br/cte/wsdl/CTeDistribuicaoDFe/cteDistDFeInteresse";
 
+// cUFAutor do CT-e DistDFe: o tipo TCodUfIBGE do schema CT-e só aceita
+// códigos de UF REAIS (11-53). O valor 91 (Ambiente Nacional), aceito na
+// NF-e, é REJEITADO aqui com "Falha no esquema xml". Default 35 (SP);
+// configurável via CTE_CUF_AUTOR no .env.
+const VALID_UF_CODES = new Set([
+  "11", "12", "13", "14", "15", "16", "17", // Norte
+  "21", "22", "23", "24", "25", "26", "27", "28", "29", // Nordeste
+  "31", "32", "33", "35", // Sudeste
+  "41", "42", "43", // Sul
+  "50", "51", "52", "53", // Centro-Oeste
+]);
+
+function cteCufAutor(): string {
+  const env = process.env.CTE_CUF_AUTOR?.trim();
+  return env && VALID_UF_CODES.has(env) ? env : "35";
+}
+
 function buildDistXml(cnpj: string, tpAmb: string, ultNsu: string) {
   const dig = cnpj.replace(/\D/g, "");
   const nsu = padNsu(ultNsu);
-  // cUFAutor é obrigatório no schema CT-e DistDFe (falta → cStat 243 XML mal formado)
   return (
     `<distDFeInt xmlns="http://www.portalfiscal.inf.br/cte" versao="1.00">` +
     `<tpAmb>${tpAmb}</tpAmb>` +
-    `<cUFAutor>91</cUFAutor>` +
+    `<cUFAutor>${cteCufAutor()}</cUFAutor>` +
     `<CNPJ>${dig}</CNPJ>` +
     `<distNSU><ultNSU>${nsu}</ultNSU></distNSU></distDFeInt>`
   );

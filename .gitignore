@@ -21,6 +21,8 @@
 # misc
 .DS_Store
 *.pem
+# exceção: cadeia pública ICP-Brasil (só certificados públicos, sem chaves)
+!certs/icp-brasil-ca-bundle.pem
 Thumbs.db
 
 # debug
