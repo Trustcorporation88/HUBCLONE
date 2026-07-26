@@ -3,6 +3,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
 
+/** Verifica se é sócio/gerente (dados financeiros sensiveis). */
+function isAdmin(role: string) {
+  return role === "OWNER" || role === "MANAGER";
+}
+
 const bodySchema = z.object({
   clientId: z.string().min(1),
   taskId: z.string().optional(),
@@ -34,7 +39,16 @@ export async function GET(req: Request) {
     take: 200,
   });
 
-  return NextResponse.json({ entries });
+  // STAFF vê apenas os próprios lançamentos sem dados de custo/valor
+  // (P&L interno: apenas OWNER/MANAGER).
+  const admin = isAdmin(session.role);
+  const safe = entries.map((e) => ({
+    ...e,
+    hourlyRateCents: admin ? e.hourlyRateCents : undefined,
+    costRateCents: admin ? e.costRateCents : undefined,
+  }));
+
+  return NextResponse.json({ entries: safe });
 }
 
 export async function POST(req: Request) {

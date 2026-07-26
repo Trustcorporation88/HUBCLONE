@@ -144,9 +144,8 @@ export async function createGuidePayment(opts: {
     obligation.dueAt ?? new Date(Date.now() + 1000 * 60 * 60 * 24);
   const amountCents = obligation.amountCents; // já validado > 0 acima
 
-  // Transação serializable: fecha a corrida entre dois cliques simultâneos —
-  // reaproveita o PENDING existente ou cria um único novo, sem gerar
-  // pagamentos duplicados para a mesma guia/método.
+  // SQLite usa lock exclusivo por transação (comportamento serializable de facto).
+  // Em PostgreSQL, adicione: { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
   try {
     const { payment, reused } = await prisma.$transaction(
       async (tx) => {
@@ -177,7 +176,6 @@ export async function createGuidePayment(opts: {
         });
         return { payment: created, reused: false };
       },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
     return { payment, reused };
   } catch (e) {
