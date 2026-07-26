@@ -55,19 +55,23 @@ export function isValidCpfCnpj(raw: string): boolean {
 }
 
 /**
- * Parser de CSV que respeita campos entre aspas duplas (inclusive com o
- * separador dentro das aspas e aspas escapadas como ""). O split ingenuo por
- * separador quebrava razoes sociais que contem virgula/ponto-e-virgula.
+ * Parser de CSV de documento COMPLETO (RFC 4180): respeita campos entre aspas
+ * com separador E quebra de linha embutidos, aspas escapadas ("") e CRLF.
+ * Retorna uma matriz de linhas x campos. Substitui o split("\n") ingenuo que
+ * corrompia registros com newline dentro de aspas (comum em export de ERP).
  */
-export function parseCsvLine(line: string, sep: string): string[] {
-  const out: string[] = [];
+export function parseCsvDocument(text: string, sep: string): string[][] {
+  const clean = text.replace(/^﻿/, "");
+  const rows: string[][] = [];
+  let row: string[] = [];
   let cur = "";
   let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+
+  for (let i = 0; i < clean.length; i++) {
+    const ch = clean[i];
     if (inQuotes) {
       if (ch === '"') {
-        if (line[i + 1] === '"') {
+        if (clean[i + 1] === '"') {
           cur += '"';
           i++;
         } else {
@@ -79,12 +83,23 @@ export function parseCsvLine(line: string, sep: string): string[] {
     } else if (ch === '"') {
       inQuotes = true;
     } else if (ch === sep) {
-      out.push(cur);
+      row.push(cur.trim());
       cur = "";
+    } else if (ch === "\n" || ch === "\r") {
+      // fim de registro (trata \r\n como um so)
+      if (ch === "\r" && clean[i + 1] === "\n") i++;
+      row.push(cur.trim());
+      cur = "";
+      if (row.some((c) => c !== "")) rows.push(row);
+      row = [];
     } else {
       cur += ch;
     }
   }
-  out.push(cur);
-  return out.map((c) => c.trim());
+  // ultimo campo/linha (arquivo sem newline final)
+  if (cur !== "" || row.length > 0) {
+    row.push(cur.trim());
+    if (row.some((c) => c !== "")) rows.push(row);
+  }
+  return rows;
 }

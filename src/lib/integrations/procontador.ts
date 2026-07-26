@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { onlyDigits } from "@/lib/crypto-secret";
 import { decodeCreds } from "@/lib/integrations";
-import { assertPublicHttpsUrl } from "@/lib/ssrf-guard";
+import { assertPublicHttpsUrl, ssrfSafeDispatcher } from "@/lib/ssrf-guard";
 import { isValidCpfCnpj } from "@/lib/br-doc";
 import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
@@ -38,14 +38,19 @@ export async function loginProContador(creds: {
   await assertPublicHttpsUrl(baseUrl);
   let res: Response;
   try {
-    res = await fetchWithTimeout(`${baseUrl}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        email: creds.email,
-        password: creds.password,
-      }),
-    });
+    res = await fetchWithTimeout(
+      `${baseUrl}/auth/login`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          email: creds.email,
+          password: creds.password,
+        }),
+      },
+      15_000,
+      ssrfSafeDispatcher(),
+    );
   } catch (e) {
     const reason = e instanceof Error ? e.message : "fetch failed";
     throw new Error(
@@ -92,12 +97,17 @@ export async function testProContador(creds: Record<string, string>) {
       email,
       password,
     });
-    const res = await fetchWithTimeout(`${baseUrl}/companies?page=1&limit=1`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
+    const res = await fetchWithTimeout(
+      `${baseUrl}/companies?page=1&limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json",
+        },
       },
-    });
+      15_000,
+      ssrfSafeDispatcher(),
+    );
     if (!res.ok) {
       return {
         ok: false,
@@ -159,6 +169,8 @@ export async function syncProContadorClients(firmId: string) {
             Accept: "application/json",
           },
         },
+        15_000,
+        ssrfSafeDispatcher(),
       );
       const json = (await res.json().catch(() => null)) as {
         data?: CompanyRow[];

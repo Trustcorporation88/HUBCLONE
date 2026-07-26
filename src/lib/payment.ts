@@ -180,9 +180,16 @@ export async function createGuidePayment(opts: {
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
     return { payment, reused };
-  } catch {
-    // Se a serialização abortou por concorrência, o outro pedido já criou o
-    // PENDING — reaproveita em vez de duplicar.
+  } catch (e) {
+    // Só tratamos como corrida quando o erro é REALMENTE falha de serialização
+    // (Prisma P2034). Qualquer outro erro é propagado — não mascaramos bug de
+    // código/conexão como "reaproveitamento de pagamento existente".
+    const isSerializationError =
+      e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2034";
+    if (!isSerializationError) {
+      throw e;
+    }
+    // A transação perdedora abortou — o vencedor já criou o PENDING; reaproveita.
     const winner = await prisma.payment.findFirst({
       where: {
         obligationId: obligation.id,

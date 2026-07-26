@@ -29,12 +29,28 @@ async function saveDocs(opts: {
   clientId: string;
   kind: CaptureKind;
   result: DistDfeResult;
-}) {
+}): Promise<{ saved: number; failed: number }> {
   let saved = 0;
+  let failed = 0;
   for (const doc of opts.result.docs) {
+    // Sem chave de acesso real, usa o NSU (único e monotônico por certificado)
+    // como identificador — evita colisão de dois docs capturados no mesmo
+    // milissegundo (o antigo Date.now() colidia e descartava documentos).
     const accessKey =
       doc.accessKey ??
-      `${opts.kind}-${doc.nsu}-${Date.now()}`.padEnd(44, "0").slice(0, 44);
+      `${opts.kind}-NSU${String(doc.nsu)}`.padEnd(44, "0").slice(0, 44);
+    const scopedKey = `${opts.kind}:${accessKey}`.slice(0, 60);
+
+    // Idempotência explícita: se já existe (recaptura), conta como salvo (não é
+    // falha) e segue. Assim só erros REAIS de gravação contam como `failed`.
+    const already = await prisma.xmlDocument.findFirst({
+      where: { firmId: opts.firmId, accessKey: scopedKey },
+      select: { id: true },
+    });
+    if (already) {
+      saved += 1;
+      continue;
+    }
 
     let rawPath: string | null = null;
     try {
@@ -53,7 +69,7 @@ async function saveDocs(opts: {
         data: {
           firmId: opts.firmId,
           clientId: opts.clientId,
-          accessKey: `${opts.kind}:${accessKey}`.slice(0, 60),
+          accessKey: scopedKey,
           docType: DOC_TYPE[opts.kind],
           direction: doc.direction ?? "IN",
           issuerCnpj: doc.issuerCnpj,
@@ -68,10 +84,12 @@ async function saveDocs(opts: {
       });
       saved += 1;
     } catch {
-      // duplicate access key
+      // Erro real de gravação (não duplicata, pois já checamos acima).
+      // Conta como falha para NÃO avançar o NSU e reprocessar na próxima rodada.
+      failed += 1;
     }
   }
-  return saved;
+  return { saved, failed };
 }
 
 /** Captura 100% live — exige certificado A1 do cliente. Sem mock. */
@@ -171,19 +189,27 @@ export async function runXmlCapture(opts: {
             ultNsu: cert.lastNsuNfse,
             tls,
           });
-          if (classifySefazStat(result.cStat).ok) {
-            await prisma.certificate.update({
-              where: { id: cert.id },
-              data: { lastNsuNfse: result.ultNsu },
-            });
-          }
           docsFound += result.docs.length;
-          docsSaved += await saveDocs({
+          const nfseSave = await saveDocs({
             firmId: opts.firmId,
             clientId: client.id,
             kind,
             result,
           });
+          docsSaved += nfseSave.saved;
+          // Só avança o cursor NSU se TODOS os documentos foram gravados —
+          // uma falha real de gravação deixaria doc fiscal para trás se
+          // avançássemos o NSU mesmo assim.
+          if (classifySefazStat(result.cStat).ok && nfseSave.failed === 0) {
+            await prisma.certificate.update({
+              where: { id: cert.id },
+              data: { lastNsuNfse: result.ultNsu },
+            });
+          } else if (nfseSave.failed > 0) {
+            failures.push(
+              `${kind}: ${nfseSave.failed} documento(s) não gravado(s) — cursor NSU mantido para reprocessar.`,
+            );
+          }
         } else {
           let currentNsu = kind === "NFE" ? cert.lastNsu : cert.lastNsuCte;
           let lastResult: DistDfeResult | null = null;
@@ -200,15 +226,25 @@ export async function runXmlCapture(opts: {
             if (!classifySefazStat(pageResult.cStat).ok) break;
 
             docsFound += pageResult.docs.length;
-            docsSaved += await saveDocs({
+            const pageSave = await saveDocs({
               firmId: opts.firmId,
               clientId: client.id,
               kind,
               result: pageResult,
             });
+            docsSaved += pageSave.saved;
 
-            // Persiste o avanço do NSU a cada página — assim uma falha no meio
-            // do backlog não força reprocessar tudo na próxima execução.
+            // Se algum documento desta página falhou ao gravar por erro REAL
+            // (não duplicata), NÃO avança o cursor: para o loop e mantém o NSU
+            // para reprocessar do ponto certo na próxima execução — evita
+            // perder documento fiscal permanentemente.
+            if (pageSave.failed > 0) {
+              failures.push(
+                `${kind}: ${pageSave.failed} documento(s) não gravado(s) na página ${pages} — cursor NSU mantido para reprocessar.`,
+              );
+              break;
+            }
+
             await prisma.certificate.update({
               where: { id: cert.id },
               data:
@@ -217,6 +253,9 @@ export async function runXmlCapture(opts: {
                   : { lastNsuCte: pageResult.ultNsu },
             });
 
+            // Proteção contra estagnação: se o NSU não avançou, para (evita
+            // repetir a mesma página indefinidamente por bug do WS).
+            if (pageResult.ultNsu === currentNsu) break;
             currentNsu = pageResult.ultNsu;
             const ult = Number(pageResult.ultNsu);
             const max = Number(pageResult.maxNsu);

@@ -9,15 +9,23 @@ function secretKey() {
   return new TextEncoder().encode(requireAuthSecret());
 }
 
+// Rotas de API deliberadamente públicas (sem sessão). Lista explícita — um
+// prefixo amplo como "/api/auth/" deixaria qualquer rota nova sob auth/*
+// automaticamente sem proteção (ponto cego). Rotas novas são protegidas por padrão.
+const PUBLIC_API_ROUTES = new Set([
+  "/api/auth/login",
+  "/api/auth/logout",
+  "/api/auth/bootstrap",
+  "/api/health",
+]);
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPortalLogin = pathname === "/portal/login";
   const isPortal = pathname.startsWith("/portal") && !isPortalLogin;
   const isApp = pathname.startsWith("/app");
   const isApiProtected =
-    pathname.startsWith("/api/") &&
-    !pathname.startsWith("/api/auth/") &&
-    pathname !== "/api/health";
+    pathname.startsWith("/api/") && !PUBLIC_API_ROUTES.has(pathname);
 
   if (!isApp && !isPortal && !isApiProtected) {
     return NextResponse.next();

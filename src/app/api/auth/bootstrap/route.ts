@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { createHash, timingSafeEqual } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
@@ -8,6 +9,15 @@ import {
   hashPassword,
 } from "@/lib/auth";
 import { requireAuthSecret } from "@/lib/runtime";
+
+/** Comparação em tempo constante (evita timing attack no token de instalação). */
+function tokensMatch(a: string, b: string): boolean {
+  // Hash antes de comparar: normaliza o tamanho (timingSafeEqual exige buffers
+  // de mesmo comprimento) sem vazar o tamanho do segredo.
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
 
 const bodySchema = z.object({
   bootstrapToken: z.string().min(1),
@@ -70,7 +80,7 @@ export async function POST(req: Request) {
   }
 
   const data = parsed.data;
-  if (data.bootstrapToken !== expectedToken) {
+  if (!tokensMatch(data.bootstrapToken, expectedToken)) {
     return NextResponse.json(
       { error: "Token de instalação inválido." },
       { status: 403 },

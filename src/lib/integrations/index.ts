@@ -1,6 +1,6 @@
 import { decryptSecret, encryptSecret } from "@/lib/crypto-secret";
 import { testProContador } from "@/lib/integrations/procontador";
-import { assertPublicHttpsUrl, SsrfBlockedError } from "@/lib/ssrf-guard";
+import { assertPublicHttpsUrl, ssrfSafeDispatcher, SsrfBlockedError } from "@/lib/ssrf-guard";
 import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 export const INTEGRATION_PROVIDERS = [
@@ -84,12 +84,17 @@ export async function testIntegration(
     } catch (e) {
       return { ok: false, detail: e instanceof SsrfBlockedError ? e.message : "baseUrl inválida" };
     }
-    const res = await fetchWithTimeout(`${base}/accounts`, {
-      headers: {
-        Accept: "application/json",
-        Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+    const res = await fetchWithTimeout(
+      `${base}/accounts`,
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+        },
       },
-    });
+      15_000,
+      ssrfSafeDispatcher(),
+    );
     if (!res.ok) {
       return { ok: false, detail: `ClickSign HTTP ${res.status}` };
     }
@@ -110,9 +115,12 @@ export async function testIntegration(
     } catch (e) {
       return { ok: false, detail: e instanceof SsrfBlockedError ? e.message : "baseUrl inválida" };
     }
-    const res = await fetchWithTimeout(`${base}/health`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-    }).catch(() => null);
+    const res = await fetchWithTimeout(
+      `${base}/health`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } },
+      15_000,
+      ssrfSafeDispatcher(),
+    ).catch(() => null);
     if (!res) {
       return {
         ok: false,

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
 import { onlyDigits } from "@/lib/crypto-secret";
-import { isValidCpfCnpj, parseCsvLine } from "@/lib/br-doc";
+import { isValidCpfCnpj, parseCsvDocument } from "@/lib/br-doc";
 
 /**
  * Importação operacional Domínio via CSV (export do sistema).
@@ -23,15 +23,16 @@ const rowSchema = z.object({
 });
 
 function parseCsv(text: string) {
-  const lines = text
-    .replace(/^\uFEFF/, "")
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (lines.length < 2) return [];
+  const clean = text.replace(/^﻿/, "");
+  const firstLine = clean.split(/\r?\n/, 1)[0] ?? "";
+  const sep = firstLine.includes(";") ? ";" : ",";
 
-  const sep = lines[0]!.includes(";") ? ";" : ",";
-  const headers = parseCsvLine(lines[0]!, sep).map((h) =>
+  // Documento completo (respeita quebra de linha dentro de aspas — evita
+  // corromper registros com newline embutido, comum em export de ERP).
+  const matrix = parseCsvDocument(clean, sep);
+  if (matrix.length < 2) return [];
+
+  const headers = matrix[0]!.map((h) =>
     h.trim().toLowerCase().replace(/\s+/g, "_"),
   );
 
@@ -51,8 +52,7 @@ function parseCsv(text: string) {
   }
 
   const rows = [];
-  for (const line of lines.slice(1)) {
-    const cols = parseCsvLine(line, sep);
+  for (const cols of matrix.slice(1)) {
     rows.push({
       cnpj: cols[iCnpj] ?? "",
       legalName: cols[iRazao] ?? "",
