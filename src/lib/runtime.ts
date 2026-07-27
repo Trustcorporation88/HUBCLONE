@@ -59,10 +59,13 @@ export function getOpsStatus(): OpsStatus {
 
   checks.push({
     key: "NFSE_ADN_BASE_URL",
-    ok: Boolean(process.env.NFSE_ADN_BASE_URL),
-    detail: process.env.NFSE_ADN_BASE_URL
-      ? "ok"
-      : "obrigatório para captura NFS-e ao vivo",
+    // Hosts oficiais do ADN (adn.nfse.gov.br/contribuintes em produção) já
+    // são o default no código — a variável só existe para sobrescrever em
+    // casos especiais, não é mais obrigatória para a captura de NFS-e.
+    ok: true,
+    detail: process.env.NFSE_ADN_BASE_URL?.trim()
+      ? `sobrescrito: ${process.env.NFSE_ADN_BASE_URL.trim()}`
+      : "ok (default: adn.nfse.gov.br/contribuintes)",
   });
 
   checks.push({
