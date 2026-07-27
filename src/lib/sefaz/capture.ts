@@ -130,16 +130,13 @@ export async function runXmlCapture(opts: {
     };
   }
 
-  const effectiveKinds = kinds.filter((k) => {
-    if (k === "NFSE" && !process.env.NFSE_ADN_BASE_URL?.trim()) return false;
-    return true;
-  });
+  // NFS-e usa hosts oficiais do ADN por padrão (adn.nfse.gov.br), sem exigir
+  // configuração — NFSE_ADN_BASE_URL/NFSE_ADN_BASE_URL_HOM só servem para
+  // sobrescrever em casos especiais (ver nfse-adn.ts).
+  const effectiveKinds = kinds;
   if (!effectiveKinds.length) {
     return {
-      error:
-        kinds.includes("NFSE") && !process.env.NFSE_ADN_BASE_URL?.trim()
-          ? "NFS-e exige NFSE_ADN_BASE_URL. Marque NF-e/CT-e ou configure a URL do ADN."
-          : "Selecione ao menos NF-e ou CT-e.",
+      error: "Selecione ao menos NF-e, CT-e ou NFS-e.",
       status: 400 as const,
     };
   }
@@ -186,6 +183,7 @@ export async function runXmlCapture(opts: {
         if (kind === "NFSE") {
           result = await nfseAdnLive({
             cnpj,
+            tpAmb,
             ultNsu: cert.lastNsuNfse,
             tls,
           });
