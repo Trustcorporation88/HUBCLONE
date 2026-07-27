@@ -122,9 +122,13 @@ function decodeDocZip(b64: string): string {
 }
 
 function parseCte(xml: string, interestedCnpj: string): Partial<DistDfeDoc> {
+  // parseTagValue:false — evita que CNPJ/chave de acesso (texto numérico)
+  // sejam convertidos para Number e percam precisão/zeros à esquerda
+  // (ver dist-dfe.ts parseNfeFields para o caso concreto que gerou o bug).
   const parser = new XMLParser({
     ignoreAttributes: false,
     removeNSPrefix: true,
+    parseTagValue: false,
   });
   try {
     const parsed = parser.parse(xml);
@@ -174,6 +178,7 @@ function extract(soapXml: string, cnpj: string): DistDfeResult {
     ignoreAttributes: false,
     removeNSPrefix: true,
     isArray: (name) => name === "docZip",
+    parseTagValue: false,
   });
   const parsed = parser.parse(soapXml);
   const ret = findRet(parsed) as Record<string, unknown> | null;

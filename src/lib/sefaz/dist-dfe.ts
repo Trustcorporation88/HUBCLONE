@@ -150,24 +150,47 @@ function decodeDocZip(b64: string): string {
 }
 
 function parseNfeFields(xml: string, interestedCnpj: string): Partial<DistDfeDoc> {
+  // parseTagValue:false — sem isso, o fast-xml-parser converte texto
+  // numérico em Number: CNPJ com zero à esquerda perde o zero, e chNFe
+  // (44 dígitos) estoura a precisão do float e vira algo como "3.5e+43"
+  // (chave de acesso corrompida). Convertendo manualmente (Number()/String())
+  // só onde precisamos de número, mantemos CNPJ/chave como string exata.
   const parser = new XMLParser({
     ignoreAttributes: false,
     removeNSPrefix: true,
+    parseTagValue: false,
   });
   try {
     const parsed = parser.parse(xml);
     const nfe = parsed.nfeProc?.NFe?.infNFe ?? parsed.NFe?.infNFe;
     if (!nfe) {
+      // resNFe: leiaute de resumo devolvido pelo DistDFe quando o interessado
+      // não é o emitente (o caso mais comum para captura "IN"). Não tem
+      // <dest>, mas TEM CNPJ do emitente, valor (vNF) e data de emissão
+      // (dhEmi) — sem isso, todo documento resumo caía em "sem valor",
+      // reprovando na auditoria (ZERO_AMOUNT) mesmo sendo um NF-e válido.
+      const res = parsed.resNFe;
+      if (res) {
+        const issuerCnpj = String(res.CNPJ ?? "");
+        const total = Number(res.vNF ?? 0);
+        const interested = interestedCnpj.replace(/\D/g, "");
+        const direction =
+          issuerCnpj.replace(/\D/g, "") === interested ? "OUT" : "IN";
+        return {
+          accessKey: String(res.chNFe ?? "") || undefined,
+          docType: "RESUMO",
+          issuerCnpj: issuerCnpj || undefined,
+          amountCents: Number.isFinite(total) ? Math.round(total * 100) : undefined,
+          issuedAt: res.dhEmi ? new Date(res.dhEmi) : undefined,
+          direction,
+        };
+      }
       const ch =
         xml.match(/Id="NFe(\d{44})"/)?.[1] ??
         xml.match(/<chNFe>(\d{44})<\/chNFe>/)?.[1];
       return {
         accessKey: ch,
-        docType: xml.includes("resNFe")
-          ? "RESUMO"
-          : xml.includes("procEvento")
-            ? "EVENT"
-            : "OTHER",
+        docType: xml.includes("procEvento") ? "EVENT" : "OTHER",
       };
     }
     const accessKey =
@@ -212,6 +235,7 @@ function extractRetDist(soapXml: string, interestedCnpj: string): DistDfeResult 
     ignoreAttributes: false,
     removeNSPrefix: true,
     isArray: (name) => name === "docZip",
+    parseTagValue: false,
   });
   const parsed = parser.parse(soapXml);
   const ret = findRetDist(parsed);
