@@ -2,6 +2,7 @@ import https from "https";
 import { XMLParser } from "fast-xml-parser";
 import { inflateRawSync, gunzipSync } from "zlib";
 import { URL } from "url";
+import { resolveCufAutor } from "@/lib/sefaz/cuf-autor";
 
 export const DISTDFE_URLS = {
   "1": "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx",
@@ -40,11 +41,13 @@ const NFE_SOAP_ACTION =
 function buildDistXml(cnpj: string, tpAmb: string, ultNsu: string) {
   const dig = cnpj.replace(/\D/g, "");
   const nsu = padNsu(ultNsu);
-  // cUFAutor 91 = Ambiente Nacional (serviço DistDFe é AN)
+  // cUFAutor é do tipo TCodUfIBGE — só aceita UF real (11-53). 91 ("Ambiente
+  // Nacional") não é um TCodUfIBGE válido aqui e é rejeitado com "215-Falha
+  // no esquema xml" (mesma regra do CT-e — ver cuf-autor.ts).
   return (
     `<distDFeInt xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.01">` +
     `<tpAmb>${tpAmb}</tpAmb>` +
-    `<cUFAutor>91</cUFAutor>` +
+    `<cUFAutor>${resolveCufAutor()}</cUFAutor>` +
     `<CNPJ>${dig}</CNPJ>` +
     `<distNSU><ultNSU>${nsu}</ultNSU></distNSU></distDFeInt>`
   );
