@@ -193,7 +193,19 @@ export async function pfxToPemBundle(
 export function mapTlsError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
   if (/unable to get local issuer certificate/i.test(msg)) {
-    return "Falha TLS com a SEFAZ: cadeia raiz ICP-Brasil não configurada no servidor. Configure SEFAZ_CA_BUNDLE_PATH (contate o suporte técnico) — não é seguro contornar essa verificação.";
+    // Os certificados atuais da SEFAZ (NF-e/CT-e) são emitidos por AC pública
+    // (ex.: GlobalSign), já confiável no store padrão do Node — por isso o
+    // bundle ICP-Brasil embarcado (certs/icp-brasil-ca-bundle.pem, usado
+    // automaticamente quando SEFAZ_CA_BUNDLE_PATH não está definido) resolve
+    // a maioria dos casos. Se ainda assim falhar, é rede/proxy/egress
+    // bloqueando ou reescrevendo o TLS — não um CA ausente no app.
+    const usingBundle = loadExtraCa().length > 0;
+    return (
+      `Falha TLS com a SEFAZ: não foi possível validar a cadeia de certificado do servidor` +
+      `${usingBundle ? " mesmo com o bundle de CAs carregado" : " (bundle de CAs não carregado)"}.` +
+      ` Verifique se a rede/proxy de saída não está interceptando TLS (MITM) e, se persistir,` +
+      ` contate o suporte com este detalhe: "${msg.slice(0, 200)}". NÃO contorne desativando a verificação do peer.`
+    );
   }
   if (/unsupported pkcs12|pkcs12 pfx/i.test(msg)) {
     return "Formato do .pfx incompatível. Reexporte o A1 e cadastre de novo.";
