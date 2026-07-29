@@ -24,6 +24,68 @@ const SOURCE: Record<CaptureKind, string> = {
   NFSE: "NFSE_ADN",
 };
 
+// cStat 656 ("Consumo indevido") é a própria SEFAZ dizendo, por regra oficial
+// (NT 2014.002 e NT do CT-e): "aguarde no mínimo 1h para consultar de novo se
+// não houver documento novo". Não existe forma de contornar isso do lado do
+// cliente — reenviar antes do prazo só reforça a rejeição. Por isso o app
+// passa a bloquear a chamada localmente (sem nem tentar a SEFAZ de novo)
+// até o prazo passar, e mostra a hora exata em que pode tentar de novo.
+const THROTTLE_COOLDOWN_MS = 60 * 60 * 1000;
+const LOCAL_GUARD_MARKER = "Bloqueio local";
+
+function parseKindValue(joined: string | null, kind: CaptureKind): string | null {
+  if (!joined) return null;
+  const sep = joined.includes("|") ? "|" : ",";
+  for (const part of joined.split(sep)) {
+    const idx = part.indexOf(":");
+    if (idx === -1) continue;
+    const k = part.slice(0, idx).trim();
+    if (k === kind) return part.slice(idx + 1).trim();
+  }
+  return null;
+}
+
+function formatBrasilia(date: Date): string {
+  return date.toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Olha as últimas capturas desse certificado e, se a última tentativa REAL
+ * (não um bloqueio local anterior) desse `kind` voltou 656 há menos de 1h,
+ * recusa a chamada aqui mesmo — sem gastar mais uma tentativa na SEFAZ.
+ */
+async function resolveThrottle(
+  certificateId: string,
+  kind: CaptureKind,
+): Promise<{ blocked: true; retryAt: Date } | { blocked: false }> {
+  const runs = await prisma.captureRun.findMany({
+    where: { certificateId, status: { in: ["DONE", "FAILED"] } },
+    orderBy: { startedAt: "desc" },
+    take: 20,
+    select: { cStat: true, xMotivo: true, finishedAt: true, startedAt: true },
+  });
+
+  for (const r of runs) {
+    const stat = parseKindValue(r.cStat, kind);
+    if (stat == null) continue; // esse kind não rodou nessa tentativa
+    const motivo = parseKindValue(r.xMotivo, kind) ?? "";
+    if (motivo.includes(LOCAL_GUARD_MARKER)) continue; // bloqueio local não conta como round-trip real
+    if (stat !== "656") return { blocked: false };
+    const ref = r.finishedAt ?? r.startedAt;
+    const retryAt = new Date(ref.getTime() + THROTTLE_COOLDOWN_MS);
+    return Date.now() < retryAt.getTime()
+      ? { blocked: true, retryAt }
+      : { blocked: false };
+  }
+  return { blocked: false };
+}
+
 async function saveDocs(opts: {
   firmId: string;
   clientId: string;
@@ -174,6 +236,28 @@ export async function runXmlCapture(opts: {
     const MAX_PAGES = 50;
 
     for (const kind of effectiveKinds) {
+      const throttle = await resolveThrottle(cert.id, kind);
+      if (throttle.blocked) {
+        const retryLabel = formatBrasilia(throttle.retryAt);
+        const motivo =
+          `${LOCAL_GUARD_MARKER}: a SEFAZ já rejeitou por "Consumo indevido" ` +
+          `nesta última 1h. Para não piorar o bloqueio, não consultamos de novo ` +
+          `antes de ${retryLabel} (horário de Brasília).`;
+        failures.push(`${kind}: Consumo indevido — aguarde até ${retryLabel} (Brasília) — ${motivo}`);
+        summaries.push({
+          kind,
+          cStat: "656",
+          xMotivo: motivo,
+          ultNsu:
+            kind === "NFE"
+              ? cert.lastNsu
+              : kind === "CTE"
+                ? cert.lastNsuCte
+                : cert.lastNsuNfse,
+        });
+        continue;
+      }
+
       try {
         let result: DistDfeResult;
         let pages = 0;
