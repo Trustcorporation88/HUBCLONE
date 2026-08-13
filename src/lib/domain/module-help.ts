@@ -100,14 +100,18 @@ export const MODULE_HELP: ModuleHelp[] = [
     nav: "XML",
     title: "XML compra e venda",
     summary:
-      "Captura live de NF-e/CT-e (DistDFe) e NFS-e (ADN) com certificado A1 do cliente. Auditoria de XML.",
+      "Importa NF-e, CT-e e NFS-e capturados pelo ProContador (dono do certificado A1) e audita o que entrou.",
     forWhom: "Fiscal / escrituração.",
     howToStart: [
-      "Cadastre o certificado A1 do cliente (arquivo + senha).",
-      "Rode a captura — sem mock: precisa de credencial real.",
-      "Revise alertas e erros no painel XML.",
+      "Conecte o ProContador em Integrações — o A1 e a consulta à SEFAZ vivem lá.",
+      "Rode a captura por cliente: ela busca no ProContador e importa o XML.",
+      "Rode Auditar XML e trate o que ficou bloqueante.",
     ],
-    tips: ["Sem A1 válido a captura falha de propósito (zero mock)."],
+    tips: [
+      "Resumo (resNFe) não dá para escriturar: falta a manifestação 210210, feita no ProContador.",
+      "Resumo e evento não bloqueiam — é o estado normal deles.",
+      "Um CNPJ consultado por dois sistemas leva cStat 656 e uma hora de bloqueio.",
+    ],
   },
   {
     href: "/app/pipeline",

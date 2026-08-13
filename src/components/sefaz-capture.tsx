@@ -169,7 +169,7 @@ export function CaptureButton({
         onClick={() => capture()}
         className="rounded-md bg-accent text-bg px-2 py-1 text-[11px] font-medium disabled:opacity-50"
       >
-        {loading ? "…" : "Capturar SEFAZ"}
+        {loading ? "…" : "Capturar XML"}
       </button>
       {info && (
         <span className="text-[10px] text-success max-w-xs text-right">{info}</span>

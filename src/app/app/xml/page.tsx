@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { redirect } from "next/navigation";
 import { CaptureButton, CertUploadForm } from "@/components/sefaz-capture";
 import { AuditXmlButton } from "@/components/audit-xml-button";
+import { XmlProcessGuide } from "@/components/xml-process-guide";
+import { captureOwner } from "@/lib/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -44,25 +46,31 @@ export default async function XmlPage() {
     label: `${c.tradeName ?? c.legalName} (${c.cnpj})`,
   }));
 
+  const dono = captureOwner();
+
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-semibold">XML compra & venda</h1>
         <p className="text-sm text-text-muted mt-1">
-          DistDFe NF-e + CT-e · NFS-e ADN · captura 100% live (certificado A1
-          obrigatório)
+          {dono === "saas"
+            ? "NF-e, CT-e e NFS-e capturados pelo ProContador, importados aqui com o XML completo"
+            : "DistDFe NF-e + CT-e · NFS-e ADN · captura direta na SEFAZ (certificado A1 obrigatório)"}
         </p>
       </header>
+
+      <XmlProcessGuide dono={dono} />
 
       <section className="rounded-lg border border-border bg-bg-elevated p-5 space-y-4">
         <div>
           <h2 className="font-medium">Certificado A1</h2>
           <p className="text-xs text-text-muted mt-1">
-            Upload do .pfx do cliente. Sem certificado a captura é bloqueada —
-            não há fallback mock.
+            {dono === "saas"
+              ? "O .pfx fica cadastrado no ProContador, que é quem consulta a SEFAZ. Abaixo, os certificados que este app ainda guarda do modelo anterior."
+              : "Upload do .pfx do cliente. Sem certificado a captura é bloqueada — não há fallback mock."}
           </p>
         </div>
-        <CertUploadForm clients={clientOpts} />
+        {dono === "local" && <CertUploadForm clients={clientOpts} />}
         {certs.length > 0 && (
           <ul className="text-xs space-y-1 border-t border-border pt-3">
             {certs.map((c) => (
