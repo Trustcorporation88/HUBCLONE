@@ -31,7 +31,17 @@ export function auditXmlDocument(doc: {
   // aquele tipo vira aviso, não bloqueio. O que continua bloqueando é
   // inconsistência de verdade (mesmo CNPJ nas duas pontas, documento marcado
   // com erro, chave malformada num XML completo).
-  const ehResumo = doc.docType === "RESUMO";
+  const issuerRaw = onlyDigits(doc.issuerCnpj ?? "");
+  const recipientRaw = onlyDigits(doc.recipientCnpj ?? "");
+
+  // O tipo gravado nem sempre e confiavel: a captura antiga escrevia "NFE" para
+  // tudo, jogando fora o que o parser tinha identificado. Entao o resumo tambem
+  // e reconhecido pelo FORMATO do dado — resNFe nao tem <dest> nem valor —, o
+  // que faz a regra valer para o acervo ja gravado sem precisar recapturar.
+  const pareceResumo =
+    !recipientRaw && (doc.amountCents == null || doc.amountCents <= 0);
+
+  const ehResumo = doc.docType === "RESUMO" || pareceResumo;
   const ehEvento = doc.docType === "EVENT";
   const parcial = ehResumo || ehEvento;
 
@@ -48,8 +58,8 @@ export function auditXmlDocument(doc: {
     });
   }
 
-  const issuer = onlyDigits(doc.issuerCnpj ?? "");
-  const recipient = onlyDigits(doc.recipientCnpj ?? "");
+  const issuer = issuerRaw;
+  const recipient = recipientRaw;
   if (issuer && recipient && issuer === recipient) {
     findings.push({
       severity: "ERROR",
@@ -110,14 +120,17 @@ export function auditXmlDocument(doc: {
     });
   }
 
-  if (doc.status === "ERROR") {
-    findings.push({
-      severity: "ERROR",
-      code: "STATUS_ERROR",
-      message: "Documento marcado com status ERROR",
-      blocking: true,
-    });
-  }
+  // REMOVIDA: a regra STATUS_ERROR.
+  //
+  // Ela lia `doc.status` e bloqueava quando valia "ERROR". So que "ERROR" e o
+  // que a PROPRIA auditoria grava no documento ao encontrar um bloqueio
+  // (runXmlAuditForClient, no fim deste arquivo). O resultado era circular:
+  // documento reprovado uma vez ganhava um achado bloqueante permanente por
+  // ter sido reprovado, e nunca mais voltava a passar, por melhor que a regra
+  // ficasse depois. Cada documento do acervo carregava esse achado extra.
+  //
+  // O status e SAIDA da auditoria, nao entrada. Falha real de captura ja
+  // aparece no CaptureRun e nos achados especificos.
 
   if (findings.length === 0) {
     findings.push({
