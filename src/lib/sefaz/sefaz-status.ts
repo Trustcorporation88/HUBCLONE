@@ -4,15 +4,24 @@ export function classifySefazStat(cStat: string): {
   empty: boolean;
   label: string;
 } {
-  const code = String(cStat).replace(/\D/g, "");
+  const bruto = String(cStat).trim().toUpperCase();
+  // ERR é um marcador interno (capture.ts usa quando a chamada nem chegou na
+  // SEFAZ). Precisa ser testado ANTES da limpeza: `replace(/\D/g,"")` apaga as
+  // letras e transformava "ERR" em string vazia, então o teste seguinte nunca
+  // batia e a tela mostrava "Rejeição SEFAZ " sem código nenhum.
+  if (bruto === "ERR") {
+    return { ok: false, empty: true, label: "Falha de comunicação" };
+  }
+
+  const code = bruto.replace(/\D/g, "");
   if (code === "137") {
     return { ok: true, empty: true, label: "Nenhum documento novo" };
   }
   if (code === "138") {
     return { ok: true, empty: false, label: "Documentos localizados" };
   }
-  if (code === "ERR") {
-    return { ok: false, empty: true, label: "Falha de comunicação" };
+  if (!code) {
+    return { ok: false, empty: true, label: "Resposta sem código da SEFAZ" };
   }
   const known: Record<string, string> = {
     "215": "Falha no schema XML",

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { requireStaffSession } from "@/lib/auth";
+import { requireAdminSession, requireStaffSession } from "@/lib/auth";
 import { encryptBytes, encryptSecret, onlyDigits } from "@/lib/crypto-secret";
-import { inspectPfx, savePfxFile } from "@/lib/sefaz/cert-store";
+import { inspectPfx } from "@/lib/sefaz/cert-store";
 import { assertPfxTlsReady } from "@/lib/sefaz/pfx-tls";
 import { prisma } from "@/lib/db";
 
@@ -100,18 +100,15 @@ export async function POST(req: Request) {
     );
   }
 
-  let pfxPath = "";
-  try {
-    pfxPath = await savePfxFile(session.firmId, cnpj, buffer);
-  } catch {
-    pfxPath = "";
-  }
-
+  // Nao gravamos mais o .pfx original no disco. O blob cifrado (pfxEnc) e o PEM
+  // ja validado bastam, e o arquivo em claro era chave privada do contribuinte
+  // exposta no filesystem. pfxPath fica vazio nos cadastros novos e continua
+  // sendo LIDO para os antigos.
   const data = {
     clientId,
     cnpj,
     label,
-    pfxPath,
+    pfxPath: "",
     pfxEnc: encryptBytes(buffer),
     pemKeyEnc: encryptSecret(pem.key),
     pemCertEnc: encryptSecret(pem.cert),
@@ -145,4 +142,58 @@ export async function POST(req: Request) {
     subjectCn: cert.subjectCn,
     environment: cert.environment,
   });
+}
+
+/**
+ * Remove o certificado e o material sensivel junto.
+ *
+ * Antes so existiam GET e POST: nao havia como tirar um A1 do sistema. Isso e
+ * problema de LGPD (o certificado e dado do cliente, e contrato acaba) e de
+ * resposta a incidente (nao da para revogar o que nao da para apagar).
+ *
+ * Restrito a OWNER/MANAGER: apagar certificado apaga junto a rastreabilidade
+ * das capturas que dependiam dele.
+ */
+export async function DELETE(req: Request) {
+  let session;
+  try {
+    session = await requireAdminSession();
+  } catch {
+    return NextResponse.json({ error: "Nao autorizado" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "id obrigatorio" }, { status: 400 });
+  }
+
+  const cert = await prisma.certificate.findFirst({
+    where: { id, firmId: session.firmId },
+    select: { id: true, cnpj: true, label: true },
+  });
+  if (!cert) {
+    return NextResponse.json(
+      { error: "Certificado nao encontrado" },
+      { status: 404 },
+    );
+  }
+
+  // Zera o material sensivel ANTES de apagar a linha: se o delete falhar por
+  // FK, a chave privada ja saiu do banco de qualquer forma.
+  await prisma.certificate.update({
+    where: { id: cert.id },
+    data: {
+      pfxEnc: null,
+      pemKeyEnc: null,
+      pemCertEnc: null,
+      passwordEnc: "",
+      pfxPath: "",
+      active: false,
+    },
+  });
+
+  await prisma.certificate.delete({ where: { id: cert.id } });
+
+  return NextResponse.json({ ok: true, cnpj: cert.cnpj, label: cert.label });
 }

@@ -21,12 +21,30 @@ export function auditXmlDocument(doc: {
   const findings: AuditFindingInput[] = [];
   const clientDigits = onlyDigits(doc.clientCnpj);
 
+  // As regras abaixo foram escritas supondo XML COMPLETO (nfeProc, com <dest>).
+  // Só que o DistDFe entrega, para nota emitida contra o cliente, o RESUMO
+  // (resNFe): sem <dest>, sem itens, sem impostos. E entrega eventos, que por
+  // natureza não têm valor. Com tudo bloqueante, os dois casos mais comuns da
+  // captura travavam o pipeline em AUDIT de forma permanente.
+  //
+  // Agora o tipo do documento decide a severidade: falta de dado ESPERADA para
+  // aquele tipo vira aviso, não bloqueio. O que continua bloqueando é
+  // inconsistência de verdade (mesmo CNPJ nas duas pontas, documento marcado
+  // com erro, chave malformada num XML completo).
+  const ehResumo = doc.docType === "RESUMO";
+  const ehEvento = doc.docType === "EVENT";
+  const parcial = ehResumo || ehEvento;
+
   if (doc.amountCents == null || doc.amountCents <= 0) {
     findings.push({
-      severity: "WARNING",
+      severity: parcial ? "INFO" : "WARNING",
       code: "ZERO_AMOUNT",
-      message: "Documento sem valor ou valor zerado",
-      blocking: true,
+      message: ehEvento
+        ? "Evento sem valor (esperado para procEvento)"
+        : ehResumo
+          ? "Resumo sem valor informado — confirme após baixar o XML completo"
+          : "Documento sem valor ou valor zerado",
+      blocking: !parcial,
     });
   }
 
@@ -44,21 +62,51 @@ export function auditXmlDocument(doc: {
   if (clientDigits.length === 14) {
     const involved = [issuer, recipient].filter((c) => c.length === 14);
     if (involved.length > 0 && !involved.includes(clientDigits)) {
+      // No resumo só vem o CNPJ do emitente (um terceiro), então "o CNPJ do
+      // cliente não aparece" é o estado NORMAL de toda nota de entrada. Só é
+      // divergência real quando o documento traz as duas pontas.
+      const temAsDuasPontas = Boolean(issuer) && Boolean(recipient);
       findings.push({
-        severity: "ERROR",
+        severity: temAsDuasPontas ? "ERROR" : "INFO",
         code: "CNPJ_MISMATCH",
-        message: "CNPJ do cliente não aparece como emitente nem destinatário",
-        blocking: true,
+        message: temAsDuasPontas
+          ? "CNPJ do cliente não aparece como emitente nem destinatário"
+          : "Documento parcial: só o emitente foi informado (destinatário vem no XML completo)",
+        blocking: temAsDuasPontas,
       });
     }
   }
 
-  if (doc.docType === "NFE" && doc.accessKey.replace(/\D/g, "").length !== 44) {
+  // A chave sintética gerada na captura quando o documento não traz chNFe
+  // (`NFE-NSU000...` completado com zeros) tem 37 dígitos, não 44 — a regra
+  // antiga reprovava todo documento sem chave. Só validamos quando existe
+  // chave de verdade e o documento é completo.
+  const chaveDigits = doc.accessKey.replace(/\D/g, "");
+  const chaveSintetica = /-NSU/i.test(doc.accessKey);
+  if (doc.docType === "NFE" && !chaveSintetica && chaveDigits.length !== 44) {
     findings.push({
       severity: "ERROR",
       code: "INVALID_KEY",
       message: "Chave de acesso NF-e inválida (esperado 44 dígitos)",
       blocking: true,
+    });
+  }
+  if (chaveSintetica) {
+    findings.push({
+      severity: "INFO",
+      code: "NO_ACCESS_KEY",
+      message: "Documento sem chave de acesso — identificado pelo NSU",
+      blocking: false,
+    });
+  }
+
+  if (ehResumo) {
+    findings.push({
+      severity: "WARNING",
+      code: "RESUMO_SEM_XML_COMPLETO",
+      message:
+        "Só o resumo (resNFe) foi entregue pela SEFAZ. O XML completo exige manifestação do destinatário (evento 210210) e é o que permite escriturar.",
+      blocking: false,
     });
   }
 

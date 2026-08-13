@@ -13,7 +13,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma db push",
     "db:setup:demo": "prisma db push && tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "certs:rekey": "tsx scripts/rekey-certificates.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

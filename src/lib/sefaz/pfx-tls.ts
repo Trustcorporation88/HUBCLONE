@@ -3,7 +3,7 @@ import { promisify } from "util";
 import { randomUUID } from "crypto";
 import { tmpdir } from "os";
 import { join } from "path";
-import { readFile, unlink, writeFile } from "fs/promises";
+import { chmod, mkdtemp, readFile, rm, unlink, writeFile } from "fs/promises";
 import { readFileSync } from "fs";
 import https from "https";
 import tls from "tls";
@@ -112,11 +112,18 @@ async function opensslPfxToPem(
   password: string,
 ): Promise<PemBundle> {
   const id = randomUUID();
-  const pfxPath = join(tmpdir(), `a1-${id}.pfx`);
-  const outPath = join(tmpdir(), `a1-${id}.pem`);
-  const passPath = join(tmpdir(), `a1-${id}.pass`);
-  await writeFile(pfxPath, pfx);
-  await writeFile(passPath, password, "utf8");
+  // Diretorio proprio com 0700 e arquivos com 0600. Antes o .pfx, o PEM
+  // convertido e a SENHA em texto puro eram gravados direto em /tmp com a
+  // permissao padrao do processo (0644 na maioria dos conteineres): qualquer
+  // outro usuario da maquina lia chave privada mais senha durante a janela de
+  // conversao. `mkdtemp` tambem elimina colisao de nome entre execucoes.
+  const dir = await mkdtemp(join(tmpdir(), `a1-${id}-`));
+  await chmod(dir, 0o700);
+  const pfxPath = join(dir, "cert.pfx");
+  const outPath = join(dir, "cert.pem");
+  const passPath = join(dir, "cert.pass");
+  await writeFile(pfxPath, pfx, { mode: 0o600 });
+  await writeFile(passPath, password, { encoding: "utf8", mode: 0o600 });
 
   const attempts: string[][] = [["-legacy"], []];
   let lastError: Error | null = null;
@@ -157,6 +164,7 @@ async function opensslPfxToPem(
     await unlink(pfxPath).catch(() => undefined);
     await unlink(outPath).catch(() => undefined);
     await unlink(passPath).catch(() => undefined);
+    await rm(dir, { recursive: true, force: true }).catch(() => undefined);
   }
 }
 

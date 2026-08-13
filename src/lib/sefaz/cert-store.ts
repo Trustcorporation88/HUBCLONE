@@ -6,9 +6,8 @@ import { pfxToPemBundle } from "@/lib/sefaz/pfx-tls";
 
 const ROOT = path.join(process.cwd(), "data");
 
-export function certsDir(firmId: string) {
-  return path.join(ROOT, "certs", firmId);
-}
+// certsDir removido junto com savePfxFile: não existe mais diretório de .pfx em
+// disco. O blob vive cifrado no Postgres (Certificate.pfxEnc).
 
 export function xmlDir(firmId: string, clientId: string) {
   return path.join(ROOT, "xml", firmId, clientId);
@@ -89,17 +88,17 @@ export async function inspectPfx(
   }
 }
 
-export async function savePfxFile(
-  firmId: string,
-  cnpj: string,
-  buffer: Buffer,
-): Promise<string> {
-  const dir = certsDir(firmId);
-  await ensureDir(dir);
-  const filePath = path.join(dir, `${onlyDigits(cnpj)}.pfx`);
-  await writeFile(filePath, buffer);
-  return filePath;
-}
+/**
+ * REMOVIDO: savePfxFile.
+ *
+ * Gravava o .pfx ORIGINAL, sem cifra e sem chmod, em data/certs/<firmId>/<cnpj>.pfx
+ * — mesmo já existindo o blob cifrado em pfxEnc no banco, na linha seguinte do
+ * mesmo handler. Era chave privada de assinatura do contribuinte em texto claro
+ * no filesystem, sobrevivendo a snapshot de container e a backup de volume.
+ *
+ * O caminho de LEITURA (pfxPath) segue existindo em loadCertificatePfx para os
+ * certificados cadastrados antes desta mudança. Nada novo escreve ali.
+ */
 
 export async function saveXmlFile(
   firmId: string,

@@ -68,6 +68,22 @@ export function getOpsStatus(): OpsStatus {
       : "ok (default: adn.nfse.gov.br/contribuintes)",
   });
 
+  // A chave dedicada dos certificados e critica: sem ela, o A1 dos clientes fica
+  // cifrado com o mesmo segredo da sessao, e rotacionar AUTH_SECRET depois de um
+  // incidente torna todos os certificados ilegiveis.
+  // Checagem inline em vez de importar de crypto-secret: aquele modulo importa
+  // requireAuthSecret daqui, e o import mutuo entre os dois quebra em runtime.
+  const certKey = process.env.CERT_ENCRYPTION_KEY?.trim();
+  checks.push({
+    key: "CERT_ENCRYPTION_KEY",
+    ok: Boolean(certKey && certKey.length >= 32),
+    detail: !certKey
+      ? "ausente — os certificados A1 usam o mesmo segredo da sessao; rotacionar AUTH_SECRET os torna ilegiveis"
+      : certKey.length < 32
+        ? "curta demais (minimo 32 caracteres aleatorios)"
+        : "ok (chave dedicada)",
+  });
+
   checks.push({
     key: "DATABASE_URL",
     ok: Boolean(process.env.DATABASE_URL),
@@ -83,7 +99,7 @@ export function getOpsStatus(): OpsStatus {
   });
 
   const critical = checks.filter((c) =>
-    ["AUTH_SECRET", "DATABASE_URL", "SMTP"].includes(c.key),
+    ["AUTH_SECRET", "DATABASE_URL", "SMTP", "CERT_ENCRYPTION_KEY"].includes(c.key),
   );
   const ok = critical.every((c) => c.ok);
 

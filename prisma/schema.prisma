@@ -219,7 +219,9 @@ model XmlDocument {
   firmId        String
   clientId      String
   accessKey     String
-  docType       String   // NFE | NFCE | NFSE | CTE | CFE | MDFE
+  /// NFE | RESUMO | EVENT | NFSE | CTE — RESUMO é o resNFe do DistDFe (nota de
+  /// entrada ainda sem XML completo, depende de manifestação) e EVENT é procEvento.
+  docType       String
   direction     String   // IN | OUT
   issuerCnpj    String?
   recipientCnpj String?
@@ -300,6 +302,8 @@ model CaptureRun {
   firmId        String
   clientId      String
   certificateId String?
+  /// Quem disparou a captura. O A1 é a assinatura do contribuinte: uso tem dono.
+  userId        String?
   mode          String    // MOCK | LIVE
   kindsJson     String    @default("[\"NFE\"]")
   status        String    @default("RUNNING") // RUNNING | DONE | FAILED
@@ -318,6 +322,26 @@ model CaptureRun {
   certificate Certificate? @relation(fields: [certificateId], references: [id], onDelete: SetNull)
 
   @@index([firmId, startedAt])
+  @@index([certificateId, startedAt])
+}
+
+/// Trava de captura por certificado — impede duas consultas DistDFe simultâneas
+/// para o mesmo CNPJ, que a SEFAZ rejeita como "consumo indevido" (cStat 656) e
+/// pune com uma hora de bloqueio.
+///
+/// Por que tabela e não pg_advisory_lock: o advisory lock é preso à SESSÃO do
+/// Postgres, e o Prisma trabalha com pool. O lock sairia numa conexão e o
+/// unlock em outra, deixando o certificado travado até a conexão morrer.
+/// Linha com expiração é atômica (UPDATE condicionado), vale entre réplicas e
+/// se recupera sozinha se o processo cair no meio.
+model CaptureLock {
+  certificateId String   @id
+  runId         String?
+  lockedByUser  String?
+  lockedAt      DateTime @default(now())
+  expiresAt     DateTime
+
+  @@index([expiresAt])
 }
 
 /// Horas lançadas — P&L interno por cliente

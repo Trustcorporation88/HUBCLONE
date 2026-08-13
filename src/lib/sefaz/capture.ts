@@ -18,6 +18,19 @@ const DOC_TYPE: Record<CaptureKind, string> = {
   NFSE: "NFSE",
 };
 
+/**
+ * Tipo gravado no XmlDocument. Para NF-e o DistDFe devolve tres coisas
+ * diferentes no mesmo lote: o XML completo, o RESUMO (resNFe) e eventos.
+ * Guardar essa distincao e o que permite a auditoria tratar cada um pelo que ele
+ * e — e o que permite saber quais notas ainda precisam de manifestacao.
+ */
+function resolveDocType(kind: CaptureKind, detectado?: string): string {
+  if (kind !== "NFE") return DOC_TYPE[kind];
+  if (detectado === "RESUMO") return "RESUMO";
+  if (detectado === "EVENT") return "EVENT";
+  return "NFE";
+}
+
 const SOURCE: Record<CaptureKind, string> = {
   NFE: "SEFAZ_DISTDFE",
   CTE: "CTE_DISTDFE",
@@ -31,6 +44,49 @@ const SOURCE: Record<CaptureKind, string> = {
 // passa a bloquear a chamada localmente (sem nem tentar a SEFAZ de novo)
 // até o prazo passar, e mostra a hora exata em que pode tentar de novo.
 const THROTTLE_COOLDOWN_MS = 60 * 60 * 1000;
+
+/**
+ * Validade da trava de captura. Uma execucao real leva segundos; o teto existe
+ * so para o caso de o processo morrer no meio e deixar a linha para tras. Trinta
+ * minutos e folgado para a paginacao completa do DistDFe (MAX_PAGES) e curto o
+ * bastante para nao deixar o cliente travado ate o dia seguinte.
+ */
+const CAPTURE_LOCK_TTL_MS = 30 * 60 * 1000;
+
+/**
+ * Toma a trava do certificado. Retorna false se ja existe uma captura viva.
+ *
+ * Duas operacoes, ambas atomicas no banco:
+ *  1. `create` — vence quem chegar primeiro; a segunda recebe violacao de unique.
+ *  2. `updateMany` com `expiresAt < agora` no WHERE — recupera trava orfa de um
+ *     processo que morreu, e continua sendo um unico UPDATE, entao so uma
+ *     replica consegue.
+ */
+async function acquireCaptureLock(
+  certificateId: string,
+  userId?: string,
+): Promise<boolean> {
+  const agora = new Date();
+  const expiresAt = new Date(agora.getTime() + CAPTURE_LOCK_TTL_MS);
+  try {
+    await prisma.captureLock.create({
+      data: { certificateId, expiresAt, lockedByUser: userId ?? null },
+    });
+    return true;
+  } catch {
+    const retomada = await prisma.captureLock.updateMany({
+      where: { certificateId, expiresAt: { lt: agora } },
+      data: { expiresAt, lockedAt: agora, lockedByUser: userId ?? null },
+    });
+    return retomada.count > 0;
+  }
+}
+
+async function releaseCaptureLock(certificateId: string): Promise<void> {
+  await prisma.captureLock
+    .deleteMany({ where: { certificateId } })
+    .catch(() => undefined);
+}
 const LOCAL_GUARD_MARKER = "Bloqueio local";
 
 function parseKindValue(joined: string | null, kind: CaptureKind): string | null {
@@ -132,7 +188,11 @@ async function saveDocs(opts: {
           firmId: opts.firmId,
           clientId: opts.clientId,
           accessKey: scopedKey,
-          docType: DOC_TYPE[opts.kind],
+          // Antes gravava sempre o "kind" (NFE/CTE/NFSE) e jogava fora o tipo
+          // real que o parser identificou. Sem isso a auditoria nao consegue
+          // distinguir XML completo de RESUMO (resNFe) ou de evento, e acabava
+          // reprovando os dois casos mais comuns da captura.
+          docType: resolveDocType(opts.kind, doc.docType),
           direction: doc.direction ?? "IN",
           issuerCnpj: doc.issuerCnpj,
           recipientCnpj: doc.recipientCnpj,
@@ -159,6 +219,8 @@ export async function runXmlCapture(opts: {
   firmId: string;
   clientId: string;
   kinds?: CaptureKind[];
+  /** Quem disparou. Certificado A1 e assinatura do contribuinte: uso tem dono. */
+  userId?: string;
 }) {
   const kinds = opts.kinds?.length ? opts.kinds : (["NFE"] as CaptureKind[]);
 
@@ -203,11 +265,34 @@ export async function runXmlCapture(opts: {
     };
   }
 
+  // TRAVA POR CERTIFICADO
+  //
+  // Nada impedia duas capturas simultaneas do mesmo certificado: dois cliques,
+  // duas abas, dois funcionarios, ou a janela de deploy do Railway em que a
+  // instancia nova sobe antes da antiga cair. A SEFAZ trata consulta paralela
+  // como consumo indevido e responde 656, que bloqueia o CNPJ por UMA HORA. A
+  // guarda de 656 que ja existe so age DEPOIS que a rejeicao chegou; esta trava
+  // impede a rejeicao acontecer.
+  //
+  // A trava vive no banco (tabela CaptureLock), nao em memoria: vale entre
+  // replicas. Nao usamos pg_advisory_lock porque ele e preso a SESSAO do
+  // Postgres e o Prisma usa pool — o lock sairia numa conexao e o unlock em
+  // outra, deixando o certificado travado ate a conexao ser reciclada.
+  const locked = await acquireCaptureLock(cert.id, opts.userId);
+  if (!locked) {
+    return {
+      error:
+        "Ja existe uma captura em andamento para este certificado. Aguarde ela terminar — disparar em paralelo faz a SEFAZ bloquear o CNPJ por consumo indevido (cStat 656).",
+      status: 409 as const,
+    };
+  }
+
   const run = await prisma.captureRun.create({
     data: {
       firmId: opts.firmId,
       clientId: client.id,
       certificateId: cert.id,
+      userId: opts.userId ?? null,
       mode: "LIVE",
       kindsJson: JSON.stringify(effectiveKinds),
       status: "RUNNING",
@@ -429,5 +514,10 @@ export async function runXmlCapture(opts: {
       },
     });
     return { run: finished, error: message, status: 502 as const };
+  } finally {
+    // Solta a trava em qualquer saida (sucesso, rejeicao da SEFAZ ou excecao).
+    // Se o processo morrer antes disso, a linha expira sozinha em
+    // CAPTURE_LOCK_TTL_MS e a proxima captura a retoma.
+    await releaseCaptureLock(cert.id);
   }
 }
