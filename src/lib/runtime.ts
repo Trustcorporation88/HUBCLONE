@@ -7,6 +7,18 @@ export function isDemoAllowed() {
   return process.env.ALLOW_DEMO === "true";
 }
 
+/**
+ * Quem fala com a SEFAZ: "saas" (ProContador, padrao) ou "local" (motor antigo
+ * deste app). Existe um dono so porque dois sistemas consultando o mesmo
+ * DistDFe com o mesmo CNPJ se bloqueiam por consumo indevido e podem consumir o
+ * cursor NSU um do outro.
+ */
+export function captureOwner(): "saas" | "local" {
+  return process.env.CAPTURE_OWNER?.trim().toLowerCase() === "local"
+    ? "local"
+    : "saas";
+}
+
 export function requireEnv(name: string): string {
   const v = process.env[name]?.trim();
   if (!v) {
@@ -82,6 +94,15 @@ export function getOpsStatus(): OpsStatus {
       : certKey.length < 32
         ? "curta demais (minimo 32 caracteres aleatorios)"
         : "ok (chave dedicada)",
+  });
+
+  checks.push({
+    key: "CAPTURE_OWNER",
+    ok: true,
+    detail:
+      captureOwner() === "local"
+        ? "local — este app fala direto com a SEFAZ (nao use junto com o ProContador no mesmo CNPJ)"
+        : "saas — captura e certificado A1 no ProContador (recomendado)",
   });
 
   checks.push({

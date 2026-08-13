@@ -3,6 +3,8 @@ import { z } from "zod";
 import { readSession } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { runXmlCapture, type CaptureKind } from "@/lib/sefaz/capture";
+import { syncFiscalFromProContador } from "@/lib/integrations/procontador-fiscal";
+import { captureOwner } from "@/lib/runtime";
 
 const bodySchema = z.object({
   clientId: z.string().min(1),
@@ -50,12 +52,28 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await runXmlCapture({
-    firmId: session.firmId,
-    clientId: parsed.data.clientId,
-    kinds: parsed.data.kinds as CaptureKind[] | undefined,
-    userId: session.userId,
-  });
+  // DONO UNICO DA CAPTURA
+  //
+  // Por padrao quem fala com a SEFAZ e o ProContador (SaaS), que e onde vive o
+  // certificado A1 e onde existe a manifestacao do destinatario. O OS consome o
+  // resultado pela API. Dois sistemas consultando o mesmo DistDFe com o mesmo
+  // CNPJ se bloqueiam mutuamente por consumo indevido e podem avancar o cursor
+  // NSU um do outro, perdendo documento fiscal em silencio.
+  //
+  // CAPTURE_OWNER=local reativa o motor antigo, so para migracao/emergencia.
+  const result =
+    captureOwner() === "local"
+      ? await runXmlCapture({
+          firmId: session.firmId,
+          clientId: parsed.data.clientId,
+          kinds: parsed.data.kinds as CaptureKind[] | undefined,
+          userId: session.userId,
+        })
+      : await syncFiscalFromProContador({
+          firmId: session.firmId,
+          clientId: parsed.data.clientId,
+          userId: session.userId,
+        });
 
   if ("error" in result && result.error && result.status === 404) {
     return NextResponse.json({ error: result.error }, { status: 404 });

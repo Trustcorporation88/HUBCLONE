@@ -64,6 +64,9 @@ model Client {
   tradeName    String?
   cnpj         String
   regime       String   @default("SIMPLES") // SIMPLES | LUCRO_PRESUMIDO | LUCRO_REAL | MEI
+  /// id da empresa correspondente no ProContador (SaaS), dono do certificado e
+  /// da captura. Preenchido pelo sync de clientes; o CNPJ serve de fallback.
+  procontadorCompanyId String?
   whatsapp     String?
   email        String?
   active       Boolean  @default(true)

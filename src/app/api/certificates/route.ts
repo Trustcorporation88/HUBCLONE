@@ -4,6 +4,7 @@ import { encryptBytes, encryptSecret, onlyDigits } from "@/lib/crypto-secret";
 import { inspectPfx } from "@/lib/sefaz/cert-store";
 import { assertPfxTlsReady } from "@/lib/sefaz/pfx-tls";
 import { prisma } from "@/lib/db";
+import { captureOwner } from "@/lib/runtime";
 
 export async function GET() {
   let session;
@@ -41,6 +42,19 @@ export async function POST(req: Request) {
     session = await requireStaffSession();
   } catch {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+  }
+
+  // Um certificado, um lugar. Com a captura no ProContador, guardar o A1 aqui
+  // tambem significaria duas copias da chave privada do cliente e dois sistemas
+  // consultando a SEFAZ com o mesmo CNPJ. O cadastro fica no dono.
+  if (captureOwner() !== "local") {
+    return NextResponse.json(
+      {
+        error:
+          "O certificado A1 fica cadastrado no ProContador, que e quem fala com a SEFAZ. Cadastre por la; a captura aparece aqui pela integracao.",
+      },
+      { status: 409 },
+    );
   }
 
   const form = await req.formData();

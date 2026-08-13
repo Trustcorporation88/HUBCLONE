@@ -211,6 +211,9 @@ export async function syncProContadorClients(firmId: string) {
           whatsapp: row.phone ? onlyDigits(row.phone) : null,
           regime: mapRegime(row.tax_regime),
           active: true,
+          // Guarda o id do lado do SaaS: e por ele que a captura fiscal e
+          // buscada depois, sem precisar varrer /companies a cada consulta.
+          procontadorCompanyId: row.id ?? null,
         };
 
         const existing = await prisma.client.findUnique({
