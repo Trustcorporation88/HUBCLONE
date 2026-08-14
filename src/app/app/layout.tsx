@@ -68,11 +68,8 @@ export default async function AppShellLayout({
               >
                 ProContador Office
               </div>
-              {/* O escritorio saiu do topo (o produto vem primeiro), mas com
-                  varios escritorios na mesma instalacao continua importando
-                  saber em qual voce esta — entao vive aqui, junto do usuario. */}
               <p className="mt-1 text-xs text-text-muted leading-relaxed truncate">
-                {session.name} · {session.role} · {session.firmName}
+                {session.name} · {session.role}
               </p>
             </div>
           </div>
