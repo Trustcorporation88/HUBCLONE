@@ -11,6 +11,7 @@ import {
   LineChart,
   Timer,
   Puzzle,
+  UserPlus,
   FileSignature,
   Inbox,
   ShieldAlert,
@@ -34,6 +35,7 @@ const NAV = [
   { href: "/app/inbox", label: "Inbox", icon: Inbox },
   { href: "/app/health", label: "Saúde", icon: ShieldAlert },
   { href: "/app/integrations", label: "Integrações", icon: Puzzle },
+  { href: "/app/convites", label: "Convites", icon: UserPlus },
   { href: "/app/help", label: "Ajuda", icon: CircleHelp },
   { href: "/app/knowledge", label: "Benchmark", icon: BookOpen },
 ];
@@ -60,17 +62,17 @@ export default async function AppShellLayout({
               priority
             />
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted truncate">
-                {session.firmName}
-              </div>
               <div
-                className="mt-0.5 text-lg font-semibold tracking-tight leading-tight"
+                className="text-lg font-semibold tracking-tight leading-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 ProContador Office
               </div>
+              {/* O escritorio saiu do topo (o produto vem primeiro), mas com
+                  varios escritorios na mesma instalacao continua importando
+                  saber em qual voce esta — entao vive aqui, junto do usuario. */}
               <p className="mt-1 text-xs text-text-muted leading-relaxed truncate">
-                {session.name} · {session.role}
+                {session.name} · {session.role} · {session.firmName}
               </p>
             </div>
           </div>
