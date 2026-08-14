@@ -10,6 +10,7 @@ import {
   Gauge,
   LineChart,
   Timer,
+  Building2,
   Puzzle,
   UserPlus,
   FileSignature,
@@ -36,6 +37,7 @@ const NAV = [
   { href: "/app/health", label: "Saúde", icon: ShieldAlert },
   { href: "/app/integrations", label: "Integrações", icon: Puzzle },
   { href: "/app/convites", label: "Convites", icon: UserPlus },
+  { href: "/app/escritorio", label: "Escritório", icon: Building2 },
   { href: "/app/help", label: "Ajuda", icon: CircleHelp },
   { href: "/app/knowledge", label: "Benchmark", icon: BookOpen },
 ];
