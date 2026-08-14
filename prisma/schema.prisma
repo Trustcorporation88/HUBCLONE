@@ -328,6 +328,35 @@ model CaptureRun {
   @@index([certificateId, startedAt])
 }
 
+/// Convite: única porta de entrada para escritório novo ou usuário novo.
+///
+/// Por que convite e não cadastro aberto: o app roda num domínio público
+/// (office.procontador.com.br). Cadastro livre deixaria qualquer visitante
+/// criar escritório na sua instância. O /setup continua valendo só para o
+/// primeiro escritório e segue recusando depois disso.
+///
+/// O código nunca é gravado: guardamos só o hash. Quem perder o link gera outro.
+model FirmInvite {
+  id         String    @id @default(cuid())
+  /// sha256 do código enviado no link
+  codeHash   String    @unique
+  /// NEW_FIRM = cria escritório novo · JOIN_FIRM = entra num existente
+  kind       String
+  /// preenchido em JOIN_FIRM
+  firmId     String?
+  role       String    @default("OWNER")
+  /// quando preenchido, só esse e-mail pode aceitar
+  email      String?
+  createdBy  String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  usedBy     String?
+  createdAt  DateTime  @default(now())
+
+  @@index([firmId])
+  @@index([expiresAt])
+}
+
 /// Trava de captura por certificado — impede duas consultas DistDFe simultâneas
 /// para o mesmo CNPJ, que a SEFAZ rejeita como "consumo indevido" (cStat 656) e
 /// pune com uma hora de bloqueio.

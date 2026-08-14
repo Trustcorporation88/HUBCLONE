@@ -16,6 +16,9 @@ const PUBLIC_API_ROUTES = new Set([
   "/api/auth/login",
   "/api/auth/logout",
   "/api/auth/bootstrap",
+  // Aceite de convite e publico por natureza: quem aceita ainda nao tem conta.
+  // O codigo do convite e a credencial, e a rota tem rate limit propria.
+  "/api/auth/accept-invite",
   "/api/health",
 ]);
 
