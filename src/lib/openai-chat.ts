@@ -41,6 +41,7 @@ export async function askOfficeAssistant(opts: {
       temperature: 0.3,
       messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmed],
     }),
+    signal: AbortSignal.timeout(20000),
   });
 
   const raw = (await res.json().catch(() => null)) as {

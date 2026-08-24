@@ -27,6 +27,26 @@ export function requireAuthSecret() {
   return secret;
 }
 
+/**
+ * Secret used to encrypt data at rest (PFX/PEM certificates, integration
+ * credentials). Kept separate from the JWT-signing AUTH_SECRET so that a leak
+ * of one does not compromise the other. Falls back to AUTH_SECRET only for
+ * backward compatibility with data encrypted before the split.
+ */
+export function requireEncryptionKey() {
+  const key = process.env.ENCRYPTION_KEY?.trim();
+  if (key) {
+    if (key.includes("change-me") || key.includes("hub-dev") || key.length < 16) {
+      throw new Error(
+        "ENCRYPTION_KEY inválido. Defina um segredo forte no .env (mín. 16 chars, sem valor de exemplo).",
+      );
+    }
+    return key;
+  }
+  // Backward compatibility: data encrypted with AUTH_SECRET-derived key.
+  return requireAuthSecret();
+}
+
 export type OpsStatus = {
   ok: boolean;
   demoAllowed: boolean;
@@ -72,6 +92,19 @@ export function getOpsStatus(): OpsStatus {
   });
 
   checks.push({
+    key: "SUPABASE_STORAGE",
+    ok: Boolean(
+      process.env.SUPABASE_URL?.trim() &&
+        process.env.SUPABASE_SERVICE_ROLE_KEY?.trim(),
+    ),
+    detail:
+      process.env.SUPABASE_URL?.trim() &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+        ? "ok (arquivos persistentes)"
+        : "SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY obrigatórios para armazenar arquivos",
+  });
+
+  checks.push({
     key: "OPENAI_API_KEY",
     ok: Boolean(process.env.OPENAI_API_KEY?.trim()),
     detail: process.env.OPENAI_API_KEY?.trim()
@@ -80,7 +113,7 @@ export function getOpsStatus(): OpsStatus {
   });
 
   const critical = checks.filter((c) =>
-    ["AUTH_SECRET", "DATABASE_URL", "SMTP"].includes(c.key),
+    ["AUTH_SECRET", "DATABASE_URL", "SMTP", "SUPABASE_STORAGE"].includes(c.key),
   );
   const ok = critical.every((c) => c.ok);
 

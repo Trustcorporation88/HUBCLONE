@@ -1,5 +1,30 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import { requireEnv } from "@/lib/runtime";
+
+let cachedTransporter: Transporter | null = null;
+let cachedTransporterKey: string | null = null;
+
+function getTransporter(opts: {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+}): Transporter {
+  const key = `${opts.host}:${opts.port}:${opts.user}`;
+  if (cachedTransporter && cachedTransporterKey === key) {
+    return cachedTransporter;
+  }
+
+  cachedTransporter = nodemailer.createTransport({
+    host: opts.host,
+    port: opts.port,
+    secure: opts.port === 465,
+    auth: { user: opts.user, pass: opts.pass },
+    pool: true,
+  });
+  cachedTransporterKey = key;
+  return cachedTransporter;
+}
 
 export async function sendRealEmail(opts: {
   to: string;
@@ -13,12 +38,7 @@ export async function sendRealEmail(opts: {
   const pass = requireEnv("SMTP_PASS");
   const from = requireEnv("SMTP_FROM");
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-  });
+  const transporter = getTransporter({ host, port, user, pass });
 
   const info = await transporter.sendMail({
     from,

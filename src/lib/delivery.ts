@@ -1,8 +1,7 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/db";
 import { formatBrl } from "@/lib/utils";
 import { sendRealEmail } from "@/lib/email";
+import { putObject } from "@/lib/storage";
 
 export type SendChannel = "EMAIL" | "WHATSAPP_MANUAL";
 
@@ -97,10 +96,8 @@ export async function ensureGuideFile(opts: {
   if (!obligation) return { error: "Guia não encontrada", status: 404 as const };
 
   const content = buildGuideFileContent(obligation, opts.firmName);
-  const dir = path.join(process.cwd(), "data", "guides", opts.firmId);
-  await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, `${obligation.id}.txt`);
-  await writeFile(filePath, content, "utf8");
+  const filePath = `guides/${opts.firmId}/${obligation.id}.txt`;
+  await putObject(filePath, content, "text/plain; charset=utf-8");
   const fileName = `${obligation.type}_${obligation.competence}_${obligation.id.slice(0, 6)}.txt`;
 
   return { obligation, content, filePath, fileName };

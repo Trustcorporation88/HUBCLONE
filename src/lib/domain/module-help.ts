@@ -144,7 +144,7 @@ export const MODULE_HELP: ModuleHelp[] = [
       "Upload de documentos: a OpenAI classifica (DAS, NF-e, contrato, comprovante, outros) para triagem.",
     forWhom: "Atendimento e fiscal.",
     howToStart: [
-      "Conecte OpenAI em Integrações (ou OPENAI_API_KEY no Railway).",
+      "Conecte OpenAI em Integrações (ou OPENAI_API_KEY no ambiente).",
       "Envie o arquivo e confira a classificação.",
     ],
     tips: ["Mesma chave serve para o Assistente (Ajuda)."],
@@ -170,13 +170,13 @@ export const MODULE_HELP: ModuleHelp[] = [
       "Conectores reais: ProContador (empresas), Omie, Domínio (CSV/API), ClickSign, OpenAI.",
     forWhom: "Owner / TI do escritório.",
     howToStart: [
-      "ProContador: e-mail admin + senha + API Railway → Importar empresas.",
+      "ProContador: e-mail admin + senha + API pública → Importar empresas.",
       "Omie: App Key/Secret → Importar clientes.",
       "Domínio: CSV agora; API parceiro quando houver token.",
       "OpenAI: cole a API key para Inbox e Assistente.",
     ],
     tips: [
-      "API ProContador correta: contador-api-production.up.railway.app/api/v1",
+      "API ProContador correta: www.procontador.com.br/api/v1",
       "Tutorial detalhado em Integrações → Ver tutorial.",
     ],
   },

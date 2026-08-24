@@ -9,7 +9,7 @@ import { z } from "zod";
 
 const bodySchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(1).max(128),
   firmSlug: z.string().min(1),
 });
 
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,

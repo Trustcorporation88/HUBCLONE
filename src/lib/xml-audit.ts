@@ -26,7 +26,7 @@ export function auditXmlDocument(doc: {
       severity: "WARNING",
       code: "ZERO_AMOUNT",
       message: "Documento sem valor ou valor zerado",
-      blocking: true,
+      blocking: false,
     });
   }
 
@@ -96,43 +96,53 @@ export async function runXmlAuditForClient(opts: {
     where: { firmId: opts.firmId, clientId: opts.clientId },
   });
 
+  if (docs.length === 0) {
+    return { docs: 0, findingsCount: 0, blockingCount: 0 };
+  }
+
   let findingsCount = 0;
   let blockingCount = 0;
 
+  const findingsByDoc = new Map<string, AuditFindingInput[]>();
   for (const doc of docs) {
-    await prisma.xmlAuditFinding.deleteMany({
-      where: { xmlDocumentId: doc.id },
-    });
-
     const findings = auditXmlDocument({
       ...doc,
       clientCnpj: client.cnpj,
     });
-
-    await prisma.xmlAuditFinding.createMany({
-      data: findings.map((f) => ({
-        firmId: opts.firmId,
-        xmlDocumentId: doc.id,
-        severity: f.severity,
-        code: f.code,
-        message: f.message,
-        blocking: f.blocking,
-      })),
-    });
-
+    findingsByDoc.set(doc.id, findings);
     findingsCount += findings.length;
     blockingCount += findings.filter((f) => f.blocking).length;
-
-    const hasBlocking = findings.some((f) => f.blocking);
-    const hasWarning = findings.some((f) => f.severity === "WARNING");
-    await prisma.xmlDocument.update({
-      where: { id: doc.id },
-      data: {
-        status: hasBlocking ? "ERROR" : hasWarning ? "WARNING" : "OK",
-        auditJson: JSON.stringify(findings),
-      },
-    });
   }
+
+  const createData = docs.flatMap((doc) =>
+    (findingsByDoc.get(doc.id) ?? []).map((f) => ({
+      firmId: opts.firmId,
+      xmlDocumentId: doc.id,
+      severity: f.severity,
+      code: f.code,
+      message: f.message,
+      blocking: f.blocking,
+    })),
+  );
+
+  await prisma.$transaction([
+    prisma.xmlAuditFinding.deleteMany({
+      where: { xmlDocumentId: { in: docs.map((d) => d.id) } },
+    }),
+    prisma.xmlAuditFinding.createMany({ data: createData }),
+    ...docs.map((doc) => {
+      const findings = findingsByDoc.get(doc.id) ?? [];
+      const hasBlocking = findings.some((f) => f.blocking);
+      const hasWarning = findings.some((f) => f.severity === "WARNING");
+      return prisma.xmlDocument.update({
+        where: { id: doc.id },
+        data: {
+          status: hasBlocking ? "ERROR" : hasWarning ? "WARNING" : "OK",
+          auditJson: JSON.stringify(findings),
+        },
+      });
+    }),
+  ]);
 
   return { docs: docs.length, findingsCount, blockingCount };
 }

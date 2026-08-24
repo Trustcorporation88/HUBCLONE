@@ -72,7 +72,7 @@ export function OfficeChat({ compact = false }: { compact?: boolean }) {
       <div className="border-b border-border px-4 py-3">
         <p className="text-sm font-medium">Assistente do escritório</p>
         <p className="text-xs text-text-muted">
-          Usa a mesma API key OpenAI (Integrações ou Railway)
+          Usa a mesma API key OpenAI (Integrações ou ambiente)
         </p>
       </div>
 

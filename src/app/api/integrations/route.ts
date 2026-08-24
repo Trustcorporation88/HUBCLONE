@@ -99,7 +99,7 @@ export async function POST(req: Request) {
     },
     hint:
       provider === "OPENAI"
-        ? "Para o inbox, defina também OPENAI_API_KEY nas variáveis do Railway/.env"
+        ? "Para o inbox, defina também OPENAI_API_KEY no ambiente/.env"
         : undefined,
     decodedKeys: Object.keys(decodeCreds(integration.credentialsEnc)),
   });

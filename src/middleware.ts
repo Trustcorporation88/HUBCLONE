@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { requireAuthSecret } from "@/lib/runtime";
 
 const SESSION_COOKIE = "hub_session";
 
 function secretKey() {
-  const secret = process.env.AUTH_SECRET ?? "hub-dev-secret-change-me";
-  return new TextEncoder().encode(secret);
+  return new TextEncoder().encode(requireAuthSecret());
 }
 
 export async function middleware(request: NextRequest) {
@@ -16,6 +16,30 @@ export async function middleware(request: NextRequest) {
   const isApp = pathname.startsWith("/app");
   const isApiProtected =
     pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/");
+
+  // CSRF defense: reject cross-site state-changing API requests. Browsers always
+  // send an Origin header on POST/PUT/PATCH/DELETE (including same-origin), so a
+  // host mismatch means the request originated from another site.
+  const isApi = pathname.startsWith("/api/");
+  const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
+  if (isApi && isMutating) {
+    const origin = request.headers.get("origin");
+    if (origin) {
+      const host = request.headers.get("host");
+      let originHost: string | null = null;
+      try {
+        originHost = new URL(origin).host;
+      } catch {
+        originHost = null;
+      }
+      if (!originHost || originHost !== host) {
+        return NextResponse.json(
+          { error: "Origem não permitida (CSRF)" },
+          { status: 403 },
+        );
+      }
+    }
+  }
 
   if (!isApp && !isPortal && !isApiProtected) {
     return NextResponse.next();
@@ -64,11 +88,7 @@ export const config = {
     "/app/:path*",
     "/portal",
     "/portal/:path*",
-    "/api/pipeline/:path*",
-    "/api/obligations/:path*",
-    "/api/deliveries/:path*",
-    "/api/certificates/:path*",
-    "/api/xml/:path*",
-    "/api/payments/:path*",
+    // Protect every API route by default; the handler skips /api/auth/* explicitly.
+    "/api/:path*",
   ],
 };

@@ -1,22 +1,8 @@
-import { mkdir, writeFile, readFile } from "fs/promises";
-import path from "path";
+import { readFile } from "fs/promises";
 import forge from "node-forge";
 import { decryptSecret, onlyDigits } from "@/lib/crypto-secret";
 import { pfxToPemBundle } from "@/lib/sefaz/pfx-tls";
-
-const ROOT = path.join(process.cwd(), "data");
-
-export function certsDir(firmId: string) {
-  return path.join(ROOT, "certs", firmId);
-}
-
-export function xmlDir(firmId: string, clientId: string) {
-  return path.join(ROOT, "xml", firmId, clientId);
-}
-
-export async function ensureDir(dir: string) {
-  await mkdir(dir, { recursive: true });
-}
+import { putObject } from "@/lib/storage";
 
 export type PfxInfo = {
   subjectCn: string | null;
@@ -89,18 +75,7 @@ export async function inspectPfx(
   }
 }
 
-export async function savePfxFile(
-  firmId: string,
-  cnpj: string,
-  buffer: Buffer,
-): Promise<string> {
-  const dir = certsDir(firmId);
-  await ensureDir(dir);
-  const filePath = path.join(dir, `${onlyDigits(cnpj)}.pfx`);
-  await writeFile(filePath, buffer);
-  return filePath;
-}
-
+/** Persists a captured XML in Supabase Storage; returns the object key. */
 export async function saveXmlFile(
   firmId: string,
   clientId: string,
@@ -108,27 +83,13 @@ export async function saveXmlFile(
   xml: string,
 ): Promise<string> {
   const safeKey = accessKey.replace(/[^\w.-]+/g, "_").slice(0, 120);
-  const dir = xmlDir(firmId, clientId);
-  try {
-    await ensureDir(dir);
-    const filePath = path.join(dir, `${safeKey}.xml`);
-    await writeFile(filePath, xml, "utf8");
-    return filePath;
-  } catch {
-    const { tmpdir } = await import("os");
-    const filePath = path.join(tmpdir(), `pc-xml-${safeKey}.xml`);
-    await writeFile(filePath, xml, "utf8");
-    return filePath;
-  }
-}
-
-export async function readPfx(filePath: string) {
-  return readFile(filePath);
+  const key = `xml/${firmId}/${clientId}/${safeKey}.xml`;
+  return putObject(key, xml, "application/xml");
 }
 
 /**
  * Carrega o .pfx: primeiro do banco (pfxEnc), depois do disco legado.
- * No Railway o disco é efêmero — por isso o blob deve viver no Postgres.
+ * Em deploys com disco efêmero, o blob deve viver no Postgres.
  */
 export async function loadCertificatePfx(cert: {
   pfxEnc?: string | null;

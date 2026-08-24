@@ -29,7 +29,7 @@ export async function classifyInboxWithOpenAI(opts: {
   apiKey?: string;
 }): Promise<ClassifyResult> {
   const apiKey = opts.apiKey?.trim() || requireEnv("OPENAI_API_KEY");
-  const model = process.env.OPENAI_MODEL?.trim() || "gpt-4.1";
+  const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o";
 
   const prompt = [
     "Classifique o documento fiscal/contábil brasileiro em UMA categoria:",
@@ -61,6 +61,7 @@ export async function classifyInboxWithOpenAI(opts: {
         { role: "user", content: prompt },
       ],
     }),
+    signal: AbortSignal.timeout(15000),
   });
 
   const raw = await res.json().catch(() => null);

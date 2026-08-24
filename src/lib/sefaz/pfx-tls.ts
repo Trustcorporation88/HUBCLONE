@@ -4,9 +4,34 @@ import { randomUUID } from "crypto";
 import { tmpdir } from "os";
 import { join } from "path";
 import { readFile, unlink, writeFile } from "fs/promises";
+import { readFileSync } from "fs";
 import https from "https";
 import tls from "tls";
 import forge from "node-forge";
+
+/**
+ * CA set for validating the SEFAZ server certificate: Node's bundled roots
+ * plus any extra PEM supplied via SEFAZ_CA_BUNDLE (path or inline PEM),
+ * e.g. the ICP-Brasil chain. Loaded once.
+ */
+let cachedCaBundle: string[] | undefined;
+function sefazCaBundle(): string[] {
+  if (cachedCaBundle) return cachedCaBundle;
+  const roots = [...tls.rootCertificates];
+  const extra = process.env.SEFAZ_CA_BUNDLE?.trim();
+  if (extra) {
+    try {
+      const pem = extra.includes("-----BEGIN")
+        ? extra
+        : readFileSync(extra, "utf8");
+      roots.push(pem);
+    } catch {
+      // If the bundle can't be read we still fall back to Node roots.
+    }
+  }
+  cachedCaBundle = roots;
+  return roots;
+}
 
 const execFileAsync = promisify(execFile);
 
@@ -210,14 +235,19 @@ export function mapTlsError(err: unknown): string {
 }
 
 function agentFromPem(bundle: PemBundle): https.Agent {
-  // Não usar `ca` com intermediários do A1 — isso substitui a trust store.
+  // Client cert (A1) for mTLS; server chain validated via sefazCaBundle().
   const secureContext = tls.createSecureContext({
     key: bundle.key,
     cert: bundle.cert,
+    ca: sefazCaBundle(),
   });
+  // Verify the SEFAZ server certificate by default. Only disable via an
+  // explicit, documented opt-out (never silently on missing env).
+  const rejectUnauthorized = process.env.SEFAZ_TLS_INSECURE !== "true";
   return new https.Agent({
     secureContext,
-    rejectUnauthorized: false,
+    ca: sefazCaBundle(),
+    rejectUnauthorized,
     keepAlive: false,
     maxCachedSessions: 0,
   });

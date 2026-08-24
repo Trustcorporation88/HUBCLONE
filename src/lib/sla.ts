@@ -10,7 +10,11 @@ export type SlaResult = {
   late: boolean;
 };
 
+const ensuredFirmIds = new Set<string>();
+
 export async function ensureDefaultSlaPolicies(firmId: string) {
+  if (ensuredFirmIds.has(firmId)) return;
+
   const defaults = [
     { channel: "EMAIL", department: "ALL", targetHours: 24 },
     { channel: "WHATSAPP", department: "ALL", targetHours: 4 },
@@ -28,6 +32,8 @@ export async function ensureDefaultSlaPolicies(firmId: string) {
       update: {},
     });
   }
+
+  ensuredFirmIds.add(firmId);
 }
 
 export async function getSlaMonitor(firmId: string) {

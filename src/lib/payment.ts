@@ -1,22 +1,35 @@
 import { createHash } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/db";
-import { formatBrl } from "@/lib/utils";
+import { putObject } from "@/lib/storage";
 
 export type PayMethod = "PIX" | "BOLETO";
 
+function proofContentType(ext: string) {
+  switch (ext) {
+    case "pdf":
+      return "application/pdf";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+/** Persists the payment proof in Supabase Storage; returns the object key. */
 async function writeProof(opts: {
   firmId: string;
   paymentId: string;
   buffer: Buffer;
   ext: string;
 }) {
-  const dir = path.join(process.cwd(), "data", "proofs", opts.firmId);
-  await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, `${opts.paymentId}.${extSafe(opts.ext)}`);
-  await writeFile(filePath, opts.buffer);
-  return filePath;
+  const safeExt = extSafe(opts.ext);
+  const key = `proofs/${opts.firmId}/${opts.paymentId}.${safeExt}`;
+  return putObject(key, opts.buffer, proofContentType(safeExt));
 }
 
 function extSafe(ext: string) {
@@ -153,21 +166,6 @@ export async function confirmGuidePayment(opts: {
     buffer: opts.proof.buffer,
     ext,
   });
-
-  await writeFile(
-    path.join(path.dirname(proofPath), `${payment.id}.meta.txt`),
-    [
-      "COMPROVANTE REGISTRADO — ProContador Office",
-      `Ref: ${payment.providerRef}`,
-      `Método: ${payment.method}`,
-      `Valor: ${formatBrl(payment.amountCents)}`,
-      `Guia: ${payment.obligation.type} ${payment.obligation.competence}`,
-      `Cliente: ${payment.obligation.client.tradeName ?? payment.obligation.client.legalName}`,
-      `Arquivo: ${opts.proof.filename}`,
-      `Registrado em: ${now.toISOString()}`,
-    ].join("\n"),
-    "utf8",
-  );
 
   const updated = await prisma.$transaction(async (tx) => {
     const p = await tx.payment.update({

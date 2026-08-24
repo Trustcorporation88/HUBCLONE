@@ -13,10 +13,10 @@ export async function resolveOpenAiKey(firmId: string): Promise<string> {
   if (fromIntegration) return fromIntegration;
 
   throw new Error(
-    "OPENAI_API_KEY ausente. Configure no Railway/.env ou em Integrações → OpenAI.",
+    "OPENAI_API_KEY ausente. Configure no ambiente/.env ou em Integrações → OpenAI.",
   );
 }
 
 export function openAiModel() {
-  return process.env.OPENAI_MODEL?.trim() || "gpt-4.1";
+  return process.env.OPENAI_MODEL?.trim() || "gpt-4o";
 }

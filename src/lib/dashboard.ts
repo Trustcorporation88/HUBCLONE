@@ -1,3 +1,4 @@
+import { addDays } from "date-fns";
 import { prisma } from "@/lib/db";
 
 export const MONITOR_TYPES = [
@@ -36,7 +37,7 @@ function trafficForObligation(o: {
 
 export async function getOfficeDashboard(firmId: string) {
   const now = new Date();
-  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const in30 = addDays(now, 30);
 
   const [
     clients,

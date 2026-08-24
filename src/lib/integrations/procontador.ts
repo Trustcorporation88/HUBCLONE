@@ -4,7 +4,7 @@ import { decodeCreds } from "@/lib/integrations";
 
 const DEFAULT_API =
   process.env.PROCONTADOR_API_URL?.replace(/\/$/, "") ||
-  "https://contador-api-production.up.railway.app/api/v1";
+  "https://www.procontador.com.br/api/v1";
 
 type CompanyRow = {
   id?: string;
@@ -41,11 +41,12 @@ export async function loginProContador(creds: {
         email: creds.email,
         password: creds.password,
       }),
+      signal: AbortSignal.timeout(15000),
     });
   } catch (e) {
     const reason = e instanceof Error ? e.message : "fetch failed";
     throw new Error(
-      `Não alcançou a API ProContador (${baseUrl}): ${reason}. Use https://contador-api-production.up.railway.app/api/v1 ou https://www.procontador.com.br/api/v1`,
+      `Não alcançou a API ProContador (${baseUrl}): ${reason}. Use https://www.procontador.com.br/api/v1`,
     );
   }
   const data = (await res.json().catch(() => null)) as {
@@ -93,6 +94,7 @@ export async function testProContador(creds: Record<string, string>) {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
       },
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) {
       return {
@@ -154,6 +156,7 @@ export async function syncProContadorClients(firmId: string) {
             Authorization: `Bearer ${accessToken}`,
             Accept: "application/json",
           },
+          signal: AbortSignal.timeout(15000),
         },
       );
       const json = (await res.json().catch(() => null)) as {
@@ -172,6 +175,17 @@ export async function syncProContadorClients(firmId: string) {
       totalPages = Math.max(1, Number(json?.pagination?.totalPages ?? 1));
       const list = json?.data ?? [];
 
+      const rows = new Map<
+        string,
+        {
+          cnpj: string;
+          legalName: string;
+          tradeName: string;
+          email: string | null;
+          whatsapp: string | null;
+          regime: string;
+        }
+      >();
       for (const row of list) {
         if (row.is_active === false) {
           skipped += 1;
@@ -188,30 +202,64 @@ export async function syncProContadorClients(firmId: string) {
           continue;
         }
 
-        const payload = {
+        rows.set(cnpj, {
+          cnpj,
           legalName,
           tradeName: legalName,
           email: row.email?.trim() || null,
           whatsapp: row.phone ? onlyDigits(row.phone) : null,
           regime: mapRegime(row.tax_regime),
-          active: true,
-        };
-
-        const existing = await prisma.client.findUnique({
-          where: { firmId_cnpj: { firmId, cnpj } },
         });
+      }
 
-        if (existing) {
-          await prisma.client.update({
-            where: { id: existing.id },
-            data: payload,
+      if (rows.size > 0) {
+        const existingClients = await prisma.client.findMany({
+          where: { firmId, cnpj: { in: Array.from(rows.keys()) } },
+          select: { id: true, cnpj: true },
+        });
+        const existingByCnpj = new Map(existingClients.map((c) => [c.cnpj, c.id]));
+
+        const toCreate = Array.from(rows.values()).filter(
+          (r) => !existingByCnpj.has(r.cnpj),
+        );
+        const toUpdate = Array.from(rows.values()).filter((r) =>
+          existingByCnpj.has(r.cnpj),
+        );
+
+        if (toCreate.length > 0) {
+          const result = await prisma.client.createMany({
+            data: toCreate.map((r) => ({
+              firmId,
+              cnpj: r.cnpj,
+              legalName: r.legalName,
+              tradeName: r.tradeName,
+              email: r.email,
+              whatsapp: r.whatsapp,
+              regime: r.regime,
+              active: true,
+            })),
+            skipDuplicates: true,
           });
-          updated += 1;
-        } else {
-          await prisma.client.create({
-            data: { firmId, cnpj, ...payload },
-          });
-          created += 1;
+          created += result.count;
+        }
+
+        if (toUpdate.length > 0) {
+          await prisma.$transaction(
+            toUpdate.map((r) =>
+              prisma.client.update({
+                where: { id: existingByCnpj.get(r.cnpj)! },
+                data: {
+                  legalName: r.legalName,
+                  tradeName: r.tradeName,
+                  email: r.email,
+                  whatsapp: r.whatsapp,
+                  regime: r.regime,
+                  active: true,
+                },
+              }),
+            ),
+          );
+          updated += toUpdate.length;
         }
       }
 

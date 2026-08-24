@@ -1,8 +1,7 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
+import { putObject } from "@/lib/storage";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -49,16 +48,12 @@ export async function POST(req: Request, ctx: Ctx) {
     );
   }
 
-  const dir = path.join(
-    process.cwd(),
-    "data",
-    "signatures",
-    session.firmId,
-  );
-  await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, `${contract.id}.pdf`);
   const buf = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buf);
+  const filePath = await putObject(
+    `signatures/${session.firmId}/${contract.id}.pdf`,
+    buf,
+    "application/pdf",
+  );
 
   const updated = await prisma.contract.update({
     where: { id: contract.id },

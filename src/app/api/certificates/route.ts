@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { readSession } from "@/lib/auth";
 import { encryptBytes, encryptSecret, onlyDigits } from "@/lib/crypto-secret";
-import { inspectPfx, savePfxFile } from "@/lib/sefaz/cert-store";
+import { inspectPfx } from "@/lib/sefaz/cert-store";
 import { assertPfxTlsReady } from "@/lib/sefaz/pfx-tls";
 import { prisma } from "@/lib/db";
 
@@ -96,18 +96,13 @@ export async function POST(req: Request) {
     );
   }
 
-  let pfxPath = "";
-  try {
-    pfxPath = await savePfxFile(session.firmId, cnpj, buffer);
-  } catch {
-    pfxPath = "";
-  }
-
+  // Certificate stays encrypted at rest in Postgres (pfxEnc/pemEnc). No disk
+  // copy is kept; pfxPath is legacy-only.
   const data = {
     clientId,
     cnpj,
     label,
-    pfxPath,
+    pfxPath: "",
     pfxEnc: encryptBytes(buffer),
     pemKeyEnc: encryptSecret(pem.key),
     pemCertEnc: encryptSecret(pem.cert),

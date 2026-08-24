@@ -3,6 +3,8 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { readSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { resolveInside } from "@/lib/safe-path";
+import { getObject, isStorageKey } from "@/lib/storage";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -27,9 +29,14 @@ export async function GET(_req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Comprovante não disponível" }, { status: 404 });
   }
 
+  const safePath = resolveInside(payment.proofPath);
+  if (!safePath) {
+    return NextResponse.json({ error: "Comprovante inválido" }, { status: 400 });
+  }
+
   try {
-    const buf = await readFile(payment.proofPath);
-    const ext = path.extname(payment.proofPath).toLowerCase();
+    const buf = await readFile(safePath);
+    const ext = path.extname(safePath).toLowerCase();
     const type =
       ext === ".pdf"
         ? "application/pdf"

@@ -78,7 +78,7 @@ export default async function HelpPage() {
               Integrações → OpenAI
             </Link>{" "}
             ou variável <code className="text-accent">OPENAI_API_KEY</code> no
-            Railway.
+            ambiente.
           </p>
         </aside>
       </div>

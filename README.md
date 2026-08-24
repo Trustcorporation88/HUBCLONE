@@ -19,11 +19,31 @@ Nenhum caminho inventa SEFAZ, PIX, boleto ou e-mail.
 | Integrações | Domínio/Omie/ClickSign só com credencial testada |
 | Auth | `/setup` cria o 1º escritório real; login com slug |
 
-## Banco (produção)
+## Banco (produção) — Supabase PRO
 
-Use **PostgreSQL no Railway**. Veja o passo a passo: [docs/POSTGRES-RAILWAY.md](docs/POSTGRES-RAILWAY.md).
+Use **PostgreSQL do Supabase PRO**. Em *Project Settings → Database → Connection string*
+copie a URL e coloque em `DATABASE_URL` (porta 5432 direta para migrations; use o
+pooler na 6543 com `?pgbouncer=true` em ambientes serverless).
 
-`DATABASE_URL` deve ser a referência do plugin Postgres — nunca `file:./dev.db` em produção.
+`DATABASE_URL` deve apontar para o Postgres do Supabase — nunca `file:./dev.db` em produção.
+
+## Arquivos — Supabase Storage PRO
+
+Comprovantes de pagamento, guias e XMLs capturados são persistidos no **Supabase Storage**
+(não mais no disco local efêmero). Configure:
+
+- `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API; a service role
+  key é server-only, nunca exponha no client).
+- `SUPABASE_STORAGE_BUCKET` (default `hub-files`) — crie um bucket **privado** com esse nome.
+
+Certificados A1 (.pfx/PEM) continuam **cifrados no banco** (AES-256-GCM), não no bucket.
+
+## Segredos
+
+- `AUTH_SECRET` — assina a sessão (JWT).
+- `ENCRYPTION_KEY` — cifra dados sensíveis em repouso (certificados, credenciais de
+  integração). Deve ser **diferente** do `AUTH_SECRET`; se ausente, cai para `AUTH_SECRET`
+  por compatibilidade com dados já cifrados.
 
 ## Serviços (escritório + portal)
 
@@ -32,7 +52,7 @@ Use **PostgreSQL no Railway**. Veja o passo a passo: [docs/POSTGRES-RAILWAY.md](
 ## Setup
 
 ```bash
-cp .env.example .env   # AUTH_SECRET + SMTP_* + OPENAI_API_KEY
+cp .env.example .env   # DATABASE_URL + AUTH_SECRET + ENCRYPTION_KEY + SUPABASE_* + SMTP_* + OPENAI_API_KEY
 npm install
 npm run db:setup
 npm run dev

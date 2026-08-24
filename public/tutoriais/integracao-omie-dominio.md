@@ -16,7 +16,7 @@ Esta integração traz as **empresas** do SaaS para a base de **clientes** do OS
 ### 0.1 Pré-requisitos
 
 1. Conta **admin** em [www.procontador.com.br](https://www.procontador.com.br) **sem MFA** (MFA bloqueia o login da API de sync).
-2. API online em `https://api.procontador.com.br/api/v1` (override via `PROCONTADOR_API_URL` no Railway se necessário).
+2. API online em `https://www.procontador.com.br/api/v1` (override via `PROCONTADOR_API_URL` no ambiente se necessário).
 
 ### 0.2 Conectar no OS
 

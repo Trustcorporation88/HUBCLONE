@@ -39,6 +39,7 @@ export async function testIntegration(
     if (!key) return { ok: false, detail: "OPENAI_API_KEY ausente" };
     const res = await fetch("https://api.openai.com/v1/models", {
       headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) {
       return { ok: false, detail: `OpenAI HTTP ${res.status}` };
@@ -61,6 +62,7 @@ export async function testIntegration(
         app_secret: appSecret,
         param: [{ pagina: 1, registros_por_pagina: 1 }],
       }),
+      signal: AbortSignal.timeout(15000),
     });
     const text = await res.text();
     if (!res.ok) {
@@ -82,6 +84,7 @@ export async function testIntegration(
         Accept: "application/json",
         Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
       },
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) {
       return { ok: false, detail: `ClickSign HTTP ${res.status}` };
@@ -100,6 +103,7 @@ export async function testIntegration(
     }
     const res = await fetch(`${base}/health`, {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(15000),
     }).catch(() => null);
     if (!res) {
       return {

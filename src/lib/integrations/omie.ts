@@ -44,6 +44,7 @@ async function omieListPage(opts: {
         },
       ],
     }),
+    signal: AbortSignal.timeout(15000),
   });
 
   const data = (await res.json().catch(() => null)) as OmieListResponse | null;
@@ -93,6 +94,10 @@ export async function syncOmieClients(firmId: string) {
       totalPages = Math.max(1, Number(data.total_de_paginas ?? 1));
       const list = data.clientes_cadastro ?? [];
 
+      const rows = new Map<
+        string,
+        { cnpj: string; legalName: string; tradeName: string | null; email: string | null; regime: string }
+      >();
       for (const raw of list) {
         if (raw.inativo === "S") {
           skipped += 1;
@@ -110,33 +115,61 @@ export async function syncOmieClients(firmId: string) {
           continue;
         }
 
-        const existing = await prisma.client.findUnique({
-          where: { firmId_cnpj: { firmId, cnpj } },
-        });
-
-        const payload = {
+        rows.set(cnpj, {
+          cnpj,
           legalName,
           tradeName: raw.nome_fantasia?.trim() || null,
           email: raw.email?.trim() || null,
           regime: mapRegime(raw),
-          active: true,
-        };
+        });
+      }
 
-        if (existing) {
-          await prisma.client.update({
-            where: { id: existing.id },
-            data: payload,
-          });
-          updated += 1;
-        } else {
-          await prisma.client.create({
-            data: {
+      if (rows.size > 0) {
+        const existingClients = await prisma.client.findMany({
+          where: { firmId, cnpj: { in: Array.from(rows.keys()) } },
+          select: { id: true, cnpj: true },
+        });
+        const existingByCnpj = new Map(existingClients.map((c) => [c.cnpj, c.id]));
+
+        const toCreate = Array.from(rows.values()).filter(
+          (r) => !existingByCnpj.has(r.cnpj),
+        );
+        const toUpdate = Array.from(rows.values()).filter((r) =>
+          existingByCnpj.has(r.cnpj),
+        );
+
+        if (toCreate.length > 0) {
+          const result = await prisma.client.createMany({
+            data: toCreate.map((r) => ({
               firmId,
-              cnpj,
-              ...payload,
-            },
+              cnpj: r.cnpj,
+              legalName: r.legalName,
+              tradeName: r.tradeName,
+              email: r.email,
+              regime: r.regime,
+              active: true,
+            })),
+            skipDuplicates: true,
           });
-          created += 1;
+          created += result.count;
+        }
+
+        if (toUpdate.length > 0) {
+          await prisma.$transaction(
+            toUpdate.map((r) =>
+              prisma.client.update({
+                where: { id: existingByCnpj.get(r.cnpj)! },
+                data: {
+                  legalName: r.legalName,
+                  tradeName: r.tradeName,
+                  email: r.email,
+                  regime: r.regime,
+                  active: true,
+                },
+              }),
+            ),
+          );
+          updated += toUpdate.length;
         }
       }
 

@@ -381,7 +381,12 @@ function Donut({
   const d2 = (progress / total) * c;
   const d3 = (todo / total) * c;
   return (
-    <svg viewBox="0 0 100 100" className="size-full -rotate-90">
+    <svg
+      viewBox="0 0 100 100"
+      className="size-full -rotate-90"
+      role="img"
+      aria-label={`Gráfico de progresso: ${done} concluídos, ${progress} em andamento, ${todo} pendentes.`}
+    >
       <circle
         cx="50"
         cy="50"

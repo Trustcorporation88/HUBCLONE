@@ -1,3 +1,4 @@
+import { subDays, subMonths } from "date-fns";
 import { prisma } from "@/lib/db";
 
 const CERT_WARN_DAYS = 30;
@@ -16,49 +17,75 @@ export async function refreshFiscalHealth(opts: {
 
   let created = 0;
 
-  for (const client of clients) {
-    await prisma.fiscalAlert.updateMany({
+  if (clients.length === 0) {
+    return { clients: 0, alertsCreated: 0 };
+  }
+
+  const clientIds = clients.map((c) => c.id);
+  const cnpjDigitsByClient = new Map(
+    clients.map((c) => [c.id, c.cnpj.replace(/\D/g, "")]),
+  );
+  const cnpjDigits = Array.from(new Set(cnpjDigitsByClient.values()));
+
+  await prisma.fiscalAlert.updateMany({
+    where: {
+      firmId: opts.firmId,
+      clientId: { in: clientIds },
+      resolvedAt: null,
+    },
+    data: { resolvedAt: new Date() },
+  });
+
+  const [allCerts, allOverdue, allCndOk, xmlErrorGroups] = await Promise.all([
+    prisma.certificate.findMany({
       where: {
         firmId: opts.firmId,
-        clientId: client.id,
-        resolvedAt: null,
+        active: true,
+        OR: [{ clientId: { in: clientIds } }, { cnpj: { in: cnpjDigits } }],
       },
-      data: { resolvedAt: new Date() },
-    });
+    }),
+    prisma.obligation.findMany({
+      where: {
+        firmId: opts.firmId,
+        clientId: { in: clientIds },
+        status: { notIn: ["PAID", "CANCELLED"] },
+        dueAt: { lt: new Date() },
+      },
+    }),
+    prisma.obligation.findMany({
+      where: {
+        firmId: opts.firmId,
+        clientId: { in: clientIds },
+        type: "CND",
+        status: "PAID",
+        paidAt: { gte: subDays(new Date(), 180) },
+      },
+      select: { clientId: true },
+    }),
+    prisma.xmlDocument.groupBy({
+      by: ["clientId"],
+      where: {
+        firmId: opts.firmId,
+        clientId: { in: clientIds },
+        status: "ERROR",
+      },
+      _count: { _all: true },
+    }),
+  ]);
 
-    const [certs, overdue, cndOk, xmlErrors] = await Promise.all([
-      prisma.certificate.findMany({
-        where: {
-          firmId: opts.firmId,
-          active: true,
-          OR: [{ clientId: client.id }, { cnpj: client.cnpj.replace(/\D/g, "") }],
-        },
-      }),
-      prisma.obligation.findMany({
-        where: {
-          firmId: opts.firmId,
-          clientId: client.id,
-          status: { notIn: ["PAID", "CANCELLED"] },
-          dueAt: { lt: new Date() },
-        },
-      }),
-      prisma.obligation.findFirst({
-        where: {
-          firmId: opts.firmId,
-          clientId: client.id,
-          type: "CND",
-          status: "PAID",
-          paidAt: { gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 180) },
-        },
-      }),
-      prisma.xmlDocument.count({
-        where: {
-          firmId: opts.firmId,
-          clientId: client.id,
-          status: "ERROR",
-        },
-      }),
-    ]);
+  const cndOkClientIds = new Set(allCndOk.map((o) => o.clientId));
+  const xmlErrorsByClient = new Map(
+    xmlErrorGroups.map((g) => [g.clientId, g._count._all]),
+  );
+
+  for (const client of clients) {
+    const clientCnpjDigits = cnpjDigitsByClient.get(client.id)!;
+    const certs = allCerts.filter(
+      (c) => c.clientId === client.id || c.cnpj === clientCnpjDigits,
+    );
+    const overdue = allOverdue.filter((o) => o.clientId === client.id);
+    const cndOk = cndOkClientIds.has(client.id);
+    const xmlErrors = xmlErrorsByClient.get(client.id) ?? 0;
 
     const now = Date.now();
     for (const cert of certs) {
@@ -158,8 +185,7 @@ export async function getAdvisorySummary(opts: {
   months?: number;
 }) {
   const months = opts.months ?? 6;
-  const from = new Date();
-  from.setMonth(from.getMonth() - months);
+  const from = subMonths(new Date(), months);
 
   const [xmlOut, obligations] = await Promise.all([
     prisma.xmlDocument.findMany({

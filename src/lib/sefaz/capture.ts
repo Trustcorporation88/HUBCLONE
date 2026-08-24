@@ -30,7 +30,10 @@ async function saveDocs(opts: {
   kind: CaptureKind;
   result: DistDfeResult;
 }) {
-  let saved = 0;
+  // Upload the XML payloads to persistent storage (one network call each is
+  // unavoidable), then persist all metadata rows in a single batched insert
+  // instead of one Prisma create per document (avoids N+1 DB round-trips).
+  const rows = [];
   for (const doc of opts.result.docs) {
     const accessKey =
       doc.accessKey ??
@@ -48,30 +51,30 @@ async function saveDocs(opts: {
       rawPath = null;
     }
 
-    try {
-      await prisma.xmlDocument.create({
-        data: {
-          firmId: opts.firmId,
-          clientId: opts.clientId,
-          accessKey: `${opts.kind}:${accessKey}`.slice(0, 60),
-          docType: DOC_TYPE[opts.kind],
-          direction: doc.direction ?? "IN",
-          issuerCnpj: doc.issuerCnpj,
-          recipientCnpj: doc.recipientCnpj,
-          issuedAt: doc.issuedAt,
-          amountCents: doc.amountCents,
-          status: "CAPTURED",
-          rawPath,
-          nsu: doc.nsu,
-          schemaSource: SOURCE[opts.kind],
-        },
-      });
-      saved += 1;
-    } catch {
-      // duplicate access key
-    }
+    rows.push({
+      firmId: opts.firmId,
+      clientId: opts.clientId,
+      accessKey: `${opts.kind}:${accessKey}`.slice(0, 60),
+      docType: DOC_TYPE[opts.kind],
+      direction: doc.direction ?? "IN",
+      issuerCnpj: doc.issuerCnpj,
+      recipientCnpj: doc.recipientCnpj,
+      issuedAt: doc.issuedAt,
+      amountCents: doc.amountCents,
+      status: "CAPTURED",
+      rawPath,
+      nsu: doc.nsu,
+      schemaSource: SOURCE[opts.kind],
+    });
   }
-  return saved;
+
+  if (rows.length === 0) return 0;
+
+  const result = await prisma.xmlDocument.createMany({
+    data: rows,
+    skipDuplicates: true, // ignore duplicate access keys
+  });
+  return result.count;
 }
 
 /** Captura 100% live — exige certificado A1 do cliente. Sem mock. */

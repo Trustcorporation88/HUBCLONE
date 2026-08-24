@@ -1,10 +1,9 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
 import { classifyInboxWithOpenAI } from "@/lib/openai-classify";
 import { resolveOpenAiKey } from "@/lib/openai-key";
+import { putObject } from "@/lib/storage";
 
 export async function GET() {
   const session = await readSession();
@@ -75,12 +74,13 @@ export async function POST(req: Request) {
     );
   }
 
-  const dir = path.join(process.cwd(), "data", "inbox", session.firmId, clientId);
-  await mkdir(dir, { recursive: true });
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
-  const filePath = path.join(dir, `${Date.now()}-${safeName}`);
   const buf = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buf);
+  const filePath = await putObject(
+    `inbox/${session.firmId}/${clientId}/${Date.now()}-${safeName}`,
+    buf,
+    file.type || "application/octet-stream",
+  );
 
   let classification: string | null = null;
   let confidence: number | null = null;

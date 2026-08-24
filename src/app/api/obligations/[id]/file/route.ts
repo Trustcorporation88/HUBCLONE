@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { readFile } from "fs/promises";
 import { readSession } from "@/lib/auth";
 import { ensureGuideFile } from "@/lib/delivery";
 
@@ -29,8 +28,9 @@ export async function GET(_req: Request, ctx: Ctx) {
     }
   }
 
-  const content = await readFile(result.filePath!, "utf8");
-  return new NextResponse(content, {
+  // The guide is deterministic plain text generated on demand and persisted to
+  // Supabase Storage by ensureGuideFile; serve the freshly built content.
+  return new NextResponse(result.content!, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Content-Disposition": `attachment; filename="${result.fileName}"`,
