@@ -117,6 +117,12 @@ export default function LoginForm() {
           </button>
         </form>
 
+        <p className="mt-4 text-center text-sm">
+          <Link href="/recuperar" className="text-text-muted hover:text-text">
+            Esqueci minha senha
+          </Link>
+        </p>
+
         <p className="mt-6 text-center text-xs text-text-muted">
           <Link href="/" className="hover:text-text">
             Voltar ao site
