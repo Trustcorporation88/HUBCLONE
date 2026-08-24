@@ -47,14 +47,28 @@ drift do schema, arrisca uma alteração destrutiva sem revisão.
 
 ### Arquivos
 
-Comprovantes de pagamento, guias, XMLs capturados e uploads do Inbox são
-gravados em **disco local** (`/data/...`). No Railway o disco é efêmero: esses
-arquivos se perdem no redeploy. Se precisar de persistência, anexe um volume ao
-service ou migre para um object store — o código hoje **não** fala com o
-Supabase Storage.
+Comprovantes de pagamento, PDFs assinados, XMLs capturados e anexos do Inbox vão
+para o **Supabase Storage**, num bucket privado. Configure:
+
+- `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API). A
+  service_role key ignora RLS e é **server-only** — nunca prefixe com
+  `NEXT_PUBLIC_`.
+- `SUPABASE_STORAGE_BUCKET` (default `hub-files`) — crie o bucket como
+  **privado**.
+
+Sem essas variáveis o app cai para `data/` em disco local. Isso serve para
+desenvolvimento; em produção o disco do container é efêmero e o arquivo
+desaparece no redeploy.
+
+As colunas que guardam localizacao de arquivo (`Payment.proofPath`,
+`Contract.signedPdfPath`, `XmlDocument.rawPath`, `InboxItem.filePath`) guardam um
+**pointer**: a chave do bucket nos registros novos, ou um caminho local absoluto
+nos antigos e no modo de desenvolvimento. A leitura distingue os dois por
+formato, então registros gravados antes desta mudança continuam legíveis sem
+migração de dados.
 
 Certificados A1 (.pfx/PEM) são a exceção: ficam **cifrados no banco**
-(AES-256-GCM, via `CERT_ENCRYPTION_KEY`), não em disco.
+(AES-256-GCM, via `CERT_ENCRYPTION_KEY`), não no bucket.
 
 ## Segredos
 
