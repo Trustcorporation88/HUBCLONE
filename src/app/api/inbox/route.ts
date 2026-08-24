@@ -1,1 +1,183 @@
-aW1wb3J0IHsgTmV4dFJlc3BvbnNlIH0gZnJvbSAibmV4dC9zZXJ2ZXIiOwppbXBvcnQgeyBwcmlzbWEgfSBmcm9tICJAL2xpYi9kYiI7CmltcG9ydCB7IHJlYWRTZXNzaW9uIH0gZnJvbSAiQC9saWIvYXV0aCI7CmltcG9ydCB7IGNsYXNzaWZ5SW5ib3hXaXRoT3BlbkFJIH0gZnJvbSAiQC9saWIvb3BlbmFpLWNsYXNzaWZ5IjsKaW1wb3J0IHsgcmVzb2x2ZU9wZW5BaUtleSB9IGZyb20gIkAvbGliL29wZW5haS1rZXkiOwppbXBvcnQgeyBjaGVja1JhdGVMaW1pdCB9IGZyb20gIkAvbGliL3JhdGUtbGltaXQiOwppbXBvcnQgeyBzdG9yYWdlS2V5LCB3cml0ZVN0b3JlZEZpbGUgfSBmcm9tICJAL2xpYi9zdG9yYWdlIjsKCmFzeW5jIGZ1bmN0aW9uIGV4dHJhY3RUZXh0RnJvbVBkZihidWZmZXI6IEJ1ZmZlcik6IFByb21pc2U8c3RyaW5nIHwgdW5kZWZpbmVkPiB7CiAgdHJ5IHsKICAgIGNvbnN0IHBkZlBhcnNlID0gKGF3YWl0IGltcG9ydCgicGRmLXBhcnNlIikpLmRlZmF1bHQ7CiAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBwZGZQYXJzZShidWZmZXIpOwogICAgcmV0dXJuIHJlc3VsdC50ZXh0Py50cmltKCkgfHwgdW5kZWZpbmVkOwogIH0gY2F0Y2ggewogICAgcmV0dXJuIHVuZGVmaW5lZDsKICB9Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBHRVQoKSB7CiAgY29uc3Qgc2Vzc2lvbiA9IGF3YWl0IHJlYWRTZXNzaW9uKCk7CiAgaWYgKCFzZXNzaW9uKSB7CiAgICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oeyBlcnJvcjogIk7Do28gYXV0ZW50aWNhZG8iIH0sIHsgc3RhdHVzOiA0MDEgfSk7CiAgfQoKICBjb25zdCBjbGllbnRTY29wZSA9CiAgICBzZXNzaW9uLnJvbGUgPT09ICJDTElFTlQiICYmIHNlc3Npb24uY2xpZW50SWQKICAgICAgPyB7IGNsaWVudElkOiBzZXNzaW9uLmNsaWVudElkIH0KICAgICAgOiB7fTsKCiAgY29uc3QgaXRlbXMgPSBhd2FpdCBwcmlzbWEuaW5ib3hJdGVtLmZpbmRNYW55KHsKICAgIHdoZXJlOiB7IGZpcm1JZDogc2Vzc2lvbi5maXJtSWQsIC4uLmNsaWVudFNjb3BlIH0sCiAgICBpbmNsdWRlOiB7CiAgICAgIGNsaWVudDogeyBzZWxlY3Q6IHsgdHJhZGVOYW1lOiB0cnVlLCBsZWdhbE5hbWU6IHRydWUgfSB9LAogICAgfSwKICAgIG9yZGVyQnk6IHsgY3JlYXRlZEF0OiAiZGVzYyIgfSwKICAgIHRha2U6IDEwMCwKICB9KTsKCiAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKHsgaXRlbXMgfSk7Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBQT1NUKHJlcTogUmVxdWVzdCkgewogIGNvbnN0IHNlc3Npb24gPSBhd2FpdCByZWFkU2Vzc2lvbigpOwogIGlmICghc2Vzc2lvbikgewogICAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKHsgZXJyb3I6ICJOw6NvIGF1dGVudGljYWRvIiB9LCB7IHN0YXR1czogNDAxIH0pOwogIH0KCiAgY29uc3QgcmF0ZSA9IGNoZWNrUmF0ZUxpbWl0KGBpbmJveDoke3Nlc3Npb24udXNlcklkfWAsIHsgbGltaXQ6IDE1LCB3aW5kb3dNczogNjBfMDAwIH0pOwogIGlmICghcmF0ZS5hbGxvd2VkKSB7CiAgICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oCiAgICAgIHsgZXJyb3I6ICJNdWl0b3MgZW52aW9zLiBBZ3VhcmRlIHVtIGluc3RhbnRlIGUgdGVudGUgbm92YW1lbnRlLiIgfSwKICAgICAgeyBzdGF0dXM6IDQyOSwgaGVhZGVyczogeyAiUmV0cnktQWZ0ZXIiOiBTdHJpbmcoTWF0aC5jZWlsKHJhdGUucmV0cnlBZnRlck1zIC8gMTAwMCkpIH0gfSwKICAgICk7CiAgfQoKICBjb25zdCBmb3JtID0gYXdhaXQgcmVxLmZvcm1EYXRhKCk7CiAgY29uc3QgZmlsZSA9IGZvcm0uZ2V0KCJmaWxlIik7CiAgbGV0IGNsaWVudElkID0gU3RyaW5nKGZvcm0uZ2V0KCJjbGllbnRJZCIpID8/ICIiKTsKCiAgaWYgKHNlc3Npb24ucm9sZSA9PT0gIkNMSUVOVCIpIHsKICAgIGlmICghc2Vzc2lvbi5jbGllbnRJZCkgewogICAgICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oeyBlcnJvcjogIkNsaWVudGUgaW52w6FsaWRvIiB9LCB7IHN0YXR1czogNDAzIH0pOwogICAgfQogICAgY2xpZW50SWQgPSBzZXNzaW9uLmNsaWVudElkOwogIH0KCiAgaWYgKCFjbGllbnRJZCkgewogICAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKHsgZXJyb3I6ICJjbGllbnRJZCBvYnJpZ2F0w7NyaW8iIH0sIHsgc3RhdHVzOiA0MDAgfSk7CiAgfQoKICBjb25zdCBjbGllbnQgPSBhd2FpdCBwcmlzbWEuY2xpZW50LmZpbmRGaXJzdCh7CiAgICB3aGVyZTogeyBpZDogY2xpZW50SWQsIGZpcm1JZDogc2Vzc2lvbi5maXJtSWQgfSwKICB9KTsKICBpZiAoIWNsaWVudCkgewogICAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKHsgZXJyb3I6ICJDbGllbnRlIG7Do28gZW5jb250cmFkbyIgfSwgeyBzdGF0dXM6IDQwNCB9KTsKICB9CgogIGlmICghKGZpbGUgaW5zdGFuY2VvZiBGaWxlKSB8fCBmaWxlLnNpemUgPT09IDApIHsKICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbih7IGVycm9yOiAiQXJxdWl2byBvYnJpZ2F0w7NyaW8iIH0sIHsgc3RhdHVzOiA0MDAgfSk7CiAgfQoKICBjb25zdCBhbGxvd2VkID0gWwogICAgImFwcGxpY2F0aW9uL3BkZiIsCiAgICAiaW1hZ2UvanBlZyIsCiAgICAiaW1hZ2UvcG5nIiwKICAgICJpbWFnZS93ZWJwIiwKICAgICJpbWFnZS9qcGciLAogIF07CiAgaWYgKCFhbGxvd2VkLmluY2x1ZGVzKGZpbGUudHlwZSkgJiYgIS9cLihwZGZ8anBlP2d8cG5nfHdlYnApJC9pLnRlc3QoZmlsZS5uYW1lKSkgewogICAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKAogICAgICB7IGVycm9yOiAiRW52aWUgUERGLCBKUEcgb3UgUE5HIiB9LAogICAgICB7IHN0YXR1czogNDAwIH0sCiAgICApOwogIH0KCiAgY29uc3Qgc2FmZU5hbWUgPSBmaWxlLm5hbWUucmVwbGFjZSgvW15hLXpBLVowLTkuXy1dL2csICJfIikuc2xpY2UoMCwgMTIwKTsKICBjb25zdCBidWYgPSBCdWZmZXIuZnJvbShhd2FpdCBmaWxlLmFycmF5QnVmZmVyKCkpOwoKICAvLyBWYWkgcGFyYSBvIG9iamVjdCBzdG9yZTogbm8gZGlzY28gZWbDqm1lcm8gZG8gY29udGFpbmVyIG8gYW5leG8gZG8gSW5ib3gKICAvLyBkZXNhcGFyZWNpYSBubyByZWRlcGxveSwgZGVpeGFuZG8gbyBJbmJveEl0ZW0gYXBvbnRhbmRvIHBhcmEgbyB2YXppby4KICBsZXQgZmlsZVBhdGg6IHN0cmluZzsKICB0cnkgewogICAgZmlsZVBhdGggPSBhd2FpdCB3cml0ZVN0b3JlZEZpbGUoewogICAgICBrZXk6IHN0b3JhZ2VLZXkoCiAgICAgICAgImluYm94IiwKICAgICAgICBzZXNzaW9uLmZpcm1JZCwKICAgICAgICBjbGllbnRJZCwKICAgICAgICBgJHtEYXRlLm5vdygpfS0ke3NhZmVOYW1lfWAsCiAgICAgICksCiAgICAgIGJvZHk6IGJ1ZiwKICAgICAgY29udGVudFR5cGU6IGZpbGUudHlwZSB8fCAiYXBwbGljYXRpb24vb2N0ZXQtc3RyZWFtIiwKICAgIH0pOwogIH0gY2F0Y2ggKGUpIHsKICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbigKICAgICAgewogICAgICAgIGVycm9yOgogICAgICAgICAgZSBpbnN0YW5jZW9mIEVycm9yCiAgICAgICAgICAgID8gYEZhbGhhIGFvIGFycXVpdmFyIG8gYW5leG86ICR7ZS5tZXNzYWdlfWAKICAgICAgICAgICAgOiAiRmFsaGEgYW8gYXJxdWl2YXIgbyBhbmV4by4iLAogICAgICB9LAogICAgICB7IHN0YXR1czogNTAyIH0sCiAgICApOwogIH0KCiAgbGV0IGNsYXNzaWZpY2F0aW9uOiBzdHJpbmcgfCBudWxsID0gbnVsbDsKICBsZXQgY29uZmlkZW5jZTogbnVtYmVyIHwgbnVsbCA9IG51bGw7CiAgbGV0IHJhd0FpSnNvbjogc3RyaW5nIHwgbnVsbCA9IG51bGw7CiAgbGV0IHN0YXR1cyA9ICJQRU5ESU5HIjsKICBsZXQgbm90ZTogc3RyaW5nIHwgbnVsbCA9IG51bGw7CgogIHRyeSB7CiAgICBjb25zdCBhcGlLZXkgPSBhd2FpdCByZXNvbHZlT3BlbkFpS2V5KHNlc3Npb24uZmlybUlkKTsKICAgIGNvbnN0IG1pbWVUeXBlID0gZmlsZS50eXBlIHx8ICJhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0iOwogICAgY29uc3QgaXNJbWFnZSA9IG1pbWVUeXBlLnN0YXJ0c1dpdGgoImltYWdlLyIpOwogICAgY29uc3QgaXNQZGYgPSBtaW1lVHlwZSA9PT0gImFwcGxpY2F0aW9uL3BkZiIgfHwgL1wucGRmJC9pLnRlc3QoZmlsZS5uYW1lKTsKCiAgICBjb25zdCB0ZXh0RXhjZXJwdCA9IGlzUGRmID8gYXdhaXQgZXh0cmFjdFRleHRGcm9tUGRmKGJ1ZikgOiB1bmRlZmluZWQ7CiAgICAvLyBTw7MgZW52aWEgYSBpbWFnZW0gZW0gYmFzZTY0IHNlIG7Do28gY29uc2VndWltb3MgZXh0cmFpciB0ZXh0byAoZXZpdGEKICAgIC8vIGdhc3RhciB0b2tlbnMgZGUgdmlzw6NvIHF1YW5kbyBvIFBERiBqw6EgdGVtIHRleHRvIHN1ZmljaWVudGUpLgogICAgY29uc3QgaW1hZ2VCYXNlNjQgPSBpc0ltYWdlICYmICF0ZXh0RXhjZXJwdCA/IGJ1Zi50b1N0cmluZygiYmFzZTY0IikgOiB1bmRlZmluZWQ7CgogICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgY2xhc3NpZnlJbmJveFdpdGhPcGVuQUkoewogICAgICBmaWxlbmFtZTogZmlsZS5uYW1lLAogICAgICBtaW1lVHlwZSwKICAgICAgdGV4dEV4Y2VycHQsCiAgICAgIGltYWdlQmFzZTY0LAogICAgICBhcGlLZXksCiAgICB9KTsKICAgIGNsYXNzaWZpY2F0aW9uID0gcmVzdWx0LmNsYXNzaWZpY2F0aW9uOwogICAgY29uZmlkZW5jZSA9IHJlc3VsdC5jb25maWRlbmNlOwogICAgcmF3QWlKc29uID0gSlNPTi5zdHJpbmdpZnkocmVzdWx0LnJhdyk7CiAgICBzdGF0dXMgPSAiQ0xBU1NJRklFRCI7CiAgICBub3RlID0gcmVzdWx0LnN1bW1hcnk7CiAgfSBjYXRjaCAoZSkgewogICAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKAogICAgICB7CiAgICAgICAgZXJyb3I6CiAgICAgICAgICBlIGluc3RhbmNlb2YgRXJyb3IKICAgICAgICAgICAgPyBlLm1lc3NhZ2UKICAgICAgICAgICAgOiAiRmFsaGEgYW8gY2xhc3NpZmljYXIgY29tIE9wZW5BSS4gQ29uZmlndXJlIE9QRU5BSV9BUElfS0VZLiIsCiAgICAgIH0sCiAgICAgIHsgc3RhdHVzOiA1MDIgfSwKICAgICk7CiAgfQoKICBjb25zdCBpdGVtID0gYXdhaXQgcHJpc21hLmluYm94SXRlbS5jcmVhdGUoewogICAgZGF0YTogewogICAgICBmaXJtSWQ6IHNlc3Npb24uZmlybUlkLAogICAgICBjbGllbnRJZCwKICAgICAgdXBsb2FkZWRCeUlkOiBzZXNzaW9uLnVzZXJJZCwKICAgICAgZmlsZW5hbWU6IGZpbGUubmFtZSwKICAgICAgbWltZVR5cGU6IGZpbGUudHlwZSB8fCAiYXBwbGljYXRpb24vb2N0ZXQtc3RyZWFtIiwKICAgICAgZmlsZVBhdGgsCiAgICAgIGNsYXNzaWZpY2F0aW9uLAogICAgICBjb25maWRlbmNlLAogICAgICByYXdBaUpzb24sCiAgICAgIHN0YXR1cywKICAgICAgbm90ZSwKICAgIH0sCiAgfSk7CgogIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbih7IGl0ZW0gfSk7Cn0K
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { readSession } from "@/lib/auth";
+import { classifyInboxWithOpenAI } from "@/lib/openai-classify";
+import { resolveOpenAiKey } from "@/lib/openai-key";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { storageKey, writeStoredFile } from "@/lib/storage";
+
+async function extractTextFromPdf(buffer: Buffer): Promise<string | undefined> {
+  try {
+    const pdfParse = (await import("pdf-parse")).default;
+    const result = await pdfParse(buffer);
+    return result.text?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function GET() {
+  const session = await readSession();
+  if (!session) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
+  const clientScope =
+    session.role === "CLIENT" && session.clientId
+      ? { clientId: session.clientId }
+      : {};
+
+  const items = await prisma.inboxItem.findMany({
+    where: { firmId: session.firmId, ...clientScope },
+    include: {
+      client: { select: { tradeName: true, legalName: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+
+  return NextResponse.json({ items });
+}
+
+export async function POST(req: Request) {
+  const session = await readSession();
+  if (!session) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
+  const rate = checkRateLimit(`inbox:${session.userId}`, { limit: 15, windowMs: 60_000 });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Muitos envios. Aguarde um instante e tente novamente." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    );
+  }
+
+  const form = await req.formData();
+  const file = form.get("file");
+  let clientId = String(form.get("clientId") ?? "");
+
+  if (session.role === "CLIENT") {
+    if (!session.clientId) {
+      return NextResponse.json({ error: "Cliente inválido" }, { status: 403 });
+    }
+    clientId = session.clientId;
+  }
+
+  if (!clientId) {
+    return NextResponse.json({ error: "clientId obrigatório" }, { status: 400 });
+  }
+
+  const client = await prisma.client.findFirst({
+    where: { id: clientId, firmId: session.firmId },
+  });
+  if (!client) {
+    return NextResponse.json({ error: "Cliente não encontrado" }, { status: 404 });
+  }
+
+  if (!(file instanceof File) || file.size === 0) {
+    return NextResponse.json({ error: "Arquivo obrigatório" }, { status: 400 });
+  }
+
+  const allowed = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/jpg",
+  ];
+  if (!allowed.includes(file.type) && !/\.(pdf|jpe?g|png|webp)$/i.test(file.name)) {
+    return NextResponse.json(
+      { error: "Envie PDF, JPG ou PNG" },
+      { status: 400 },
+    );
+  }
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
+  const buf = Buffer.from(await file.arrayBuffer());
+
+  // Vai para o object store: no disco efêmero do container o anexo do Inbox
+  // desaparecia no redeploy, deixando o InboxItem apontando para o vazio.
+  let filePath: string;
+  try {
+    filePath = await writeStoredFile({
+      key: storageKey(
+        "inbox",
+        session.firmId,
+        clientId,
+        `${Date.now()}-${safeName}`,
+      ),
+      body: buf,
+      contentType: file.type || "application/octet-stream",
+    });
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error:
+          e instanceof Error
+            ? `Falha ao arquivar o anexo: ${e.message}`
+            : "Falha ao arquivar o anexo.",
+      },
+      { status: 502 },
+    );
+  }
+
+  let classification: string | null = null;
+  let confidence: number | null = null;
+  let rawAiJson: string | null = null;
+  let status = "PENDING";
+  let note: string | null = null;
+
+  try {
+    const apiKey = await resolveOpenAiKey(session.firmId);
+    const mimeType = file.type || "application/octet-stream";
+    const isImage = mimeType.startsWith("image/");
+    const isPdf = mimeType === "application/pdf" || /\.pdf$/i.test(file.name);
+
+    const textExcerpt = isPdf ? await extractTextFromPdf(buf) : undefined;
+    // Só envia a imagem em base64 se não conseguimos extrair texto (evita
+    // gastar tokens de visão quando o PDF já tem texto suficiente).
+    const imageBase64 = isImage && !textExcerpt ? buf.toString("base64") : undefined;
+
+    const result = await classifyInboxWithOpenAI({
+      filename: file.name,
+      mimeType,
+      textExcerpt,
+      imageBase64,
+      apiKey,
+    });
+    classification = result.classification;
+    confidence = result.confidence;
+    rawAiJson = JSON.stringify(result.raw);
+    status = "CLASSIFIED";
+    note = result.summary;
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error:
+          e instanceof Error
+            ? e.message
+            : "Falha ao classificar com OpenAI. Configure OPENAI_API_KEY.",
+      },
+      { status: 502 },
+    );
+  }
+
+  const item = await prisma.inboxItem.create({
+    data: {
+      firmId: session.firmId,
+      clientId,
+      uploadedById: session.userId,
+      filename: file.name,
+      mimeType: file.type || "application/octet-stream",
+      filePath,
+      classification,
+      confidence,
+      rawAiJson,
+      status,
+      note,
+    },
+  });
+
+  return NextResponse.json({ item });
+}

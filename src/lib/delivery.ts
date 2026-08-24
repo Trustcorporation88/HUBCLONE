@@ -1,1 +1,316 @@
-aW1wb3J0IHsgcHJpc21hIH0gZnJvbSAiQC9saWIvZGIiOwppbXBvcnQgeyBmb3JtYXRCcmwgfSBmcm9tICJAL2xpYi91dGlscyI7CmltcG9ydCB7IHNlbmRSZWFsRW1haWwgfSBmcm9tICJAL2xpYi9lbWFpbCI7CgpleHBvcnQgdHlwZSBTZW5kQ2hhbm5lbCA9ICJFTUFJTCIgfCAiV0hBVFNBUFBfTUFOVUFMIjsKCnR5cGUgT2JsaWdhdGlvbldpdGhDbGllbnQgPSB7CiAgaWQ6IHN0cmluZzsKICBmaXJtSWQ6IHN0cmluZzsKICB0eXBlOiBzdHJpbmc7CiAgY29tcGV0ZW5jZTogc3RyaW5nOwogIGFtb3VudENlbnRzOiBudW1iZXIgfCBudWxsOwogIGR1ZUF0OiBEYXRlIHwgbnVsbDsKICBzdGF0dXM6IHN0cmluZzsKICBiYXJjb2RlOiBzdHJpbmcgfCBudWxsOwogIGNsaWVudDogewogICAgdHJhZGVOYW1lOiBzdHJpbmcgfCBudWxsOwogICAgbGVnYWxOYW1lOiBzdHJpbmc7CiAgICBlbWFpbDogc3RyaW5nIHwgbnVsbDsKICAgIHdoYXRzYXBwOiBzdHJpbmcgfCBudWxsOwogICAgY25wajogc3RyaW5nOwogIH07Cn07CgpleHBvcnQgZnVuY3Rpb24gYnVpbGRHdWlkZU1lc3NhZ2UobzogT2JsaWdhdGlvbldpdGhDbGllbnQsIGZpcm1OYW1lOiBzdHJpbmcpIHsKICBjb25zdCBjbGllbnROYW1lID0gby5jbGllbnQudHJhZGVOYW1lID8/IG8uY2xpZW50LmxlZ2FsTmFtZTsKICBjb25zdCBkdWUgPSBvLmR1ZUF0CiAgICA/IG8uZHVlQXQudG9Mb2NhbGVEYXRlU3RyaW5nKCJwdC1CUiIpCiAgICA6ICJhIGNvbmZpcm1hciI7CiAgcmV0dXJuICgKICAgIGAke2Zpcm1OYW1lfTogZ3VpYSAke28udHlwZX0gY29tcGV0w6puY2lhICR7by5jb21wZXRlbmNlfSBgICsKICAgIGBkZSAke2NsaWVudE5hbWV9IOKAlCB2YWxvciAke2Zvcm1hdEJybChvLmFtb3VudENlbnRzKX0sIHZlbmNpbWVudG8gJHtkdWV9LmAKICApOwp9CgpleHBvcnQgZnVuY3Rpb24gYnVpbGRHdWlkZUZpbGVDb250ZW50KAogIG86IE9ibGlnYXRpb25XaXRoQ2xpZW50LAogIGZpcm1OYW1lOiBzdHJpbmcsCikgewogIGNvbnN0IGNsaWVudE5hbWUgPSBvLmNsaWVudC50cmFkZU5hbWUgPz8gby5jbGllbnQubGVnYWxOYW1lOwogIGNvbnN0IGR1ZSA9IG8uZHVlQXQKICAgID8gby5kdWVBdC50b0xvY2FsZURhdGVTdHJpbmcoInB0LUJSIikKICAgIDogImEgY29uZmlybWFyIjsKICByZXR1cm4gWwogICAgYEdVSUEgREUgSU1QT1NUTyDigJQgJHtmaXJtTmFtZX1gLAogICAgIiIucGFkRW5kKDQ4LCAiPSIpLAogICAgYFRpcG86ICR7by50eXBlfWAsCiAgICBgQ29tcGV0w6puY2lhOiAke28uY29tcGV0ZW5jZX1gLAogICAgYENsaWVudGU6ICR7Y2xpZW50TmFtZX1gLAogICAgYENOUEo6ICR7by5jbGllbnQuY25wan1gLAogICAgYFZhbG9yOiAke2Zvcm1hdEJybChvLmFtb3VudENlbnRzKX1gLAogICAgYFZlbmNpbWVudG86ICR7ZHVlfWAsCiAgICBvLmJhcmNvZGUgPyBgQ8OzZGlnbyBkZSBiYXJyYXM6ICR7by5iYXJjb2RlfWAgOiBudWxsLAogICAgIiIucGFkRW5kKDQ4LCAiLSIpLAogICAgIkFycXVpdm8gZ2VyYWRvIHBlbG8gUHJvQ29udGFkb3IgT2ZmaWNlLiIsCiAgICAiQW5leGUgZXN0ZSBhcnF1aXZvIG5vIFdoYXRzQXBwIGUgZW52aWUgYW8gY2xpZW50ZS4iLAogICAgYEdlcmFkbyBlbTogJHtuZXcgRGF0ZSgpLnRvTG9jYWxlU3RyaW5nKCJwdC1CUiIpfWAsCiAgXQogICAgLmZpbHRlcihCb29sZWFuKQogICAgLmpvaW4oIlxuIik7Cn0KCmV4cG9ydCBmdW5jdGlvbiB3aGF0c2FwcERlZXBMaW5rKHBob25lOiBzdHJpbmcsIHRleHQ6IHN0cmluZykgewogIGNvbnN0IGRpZ2l0cyA9IHBob25lLnJlcGxhY2UoL1xEL2csICIiKTsKICBjb25zdCBub3JtYWxpemVkID0gZGlnaXRzLnN0YXJ0c1dpdGgoIjU1IikgPyBkaWdpdHMgOiBgNTUke2RpZ2l0c31gOwogIHJldHVybiBgaHR0cHM6Ly93YS5tZS8ke25vcm1hbGl6ZWR9P3RleHQ9JHtlbmNvZGVVUklDb21wb25lbnQodGV4dCl9YDsKfQoKYXN5bmMgZnVuY3Rpb24gZGlzcGF0Y2hFbWFpbCgKICB0bzogc3RyaW5nLAogIHN1YmplY3Q6IHN0cmluZywKICBib2R5OiBzdHJpbmcsCiAgYXR0YWNobWVudD86IHsgZmlsZW5hbWU6IHN0cmluZzsgY29udGVudDogc3RyaW5nIH0sCikgewogIGNvbnN0IGluZm8gPSBhd2FpdCBzZW5kUmVhbEVtYWlsKHsKICAgIHRvLAogICAgc3ViamVjdCwKICAgIHRleHQ6IGJvZHksCiAgICBhdHRhY2htZW50czogYXR0YWNobWVudAogICAgICA/IFt7IGZpbGVuYW1lOiBhdHRhY2htZW50LmZpbGVuYW1lLCBjb250ZW50OiBhdHRhY2htZW50LmNvbnRlbnQgfV0KICAgICAgOiB1bmRlZmluZWQsCiAgfSk7CiAgcmV0dXJuIHsgb2s6IHRydWUgYXMgY29uc3QsIHByb3ZpZGVyTXNnSWQ6IGluZm8ubWVzc2FnZUlkIH07Cn0KCi8qKgogKiBNb250YSBvIGNvbnRlw7pkbyBkbyBhcnF1aXZvIGRhIGd1aWEgYSBwYXJ0aXIgZG8gYmFuY28uCiAqCiAqIE7Do28gZ3JhdmEgZW0gbHVnYXIgbmVuaHVtOiBvIHRleHRvIMOpIGRlcml2YWRvIDEwMCUgZGFzIGNvbHVuYXMgZGEgb2JyaWdhw6fDo28KICogZSBkbyBjbGllbnRlLCBlbnTDo28gcGVyc2lzdGlyIHVtYSBjw7NwaWEgc8OzIGNyaWF2YSB1bSBhcnF1aXZvIHBhcmEgZmljYXIKICogb2Jzb2xldG8g4oCUIGUsIG5vIGRpc2NvIGVmw6ptZXJvIGRvIFJhaWx3YXksIHVtIGFycXVpdm8gcXVlIGRlc2FwYXJlY2lhIG5vCiAqIHJlZGVwbG95IHNlZ3VpbnRlLiBRdWVtIHByZWNpc2EgZG9zIGJ5dGVzIHVzYSBgY29udGVudGAgZGlyZXRvLgogKi8KZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGVuc3VyZUd1aWRlRmlsZShvcHRzOiB7CiAgZmlybUlkOiBzdHJpbmc7CiAgZmlybU5hbWU6IHN0cmluZzsKICBvYmxpZ2F0aW9uSWQ6IHN0cmluZzsKfSkgewogIGNvbnN0IG9ibGlnYXRpb24gPSBhd2FpdCBwcmlzbWEub2JsaWdhdGlvbi5maW5kRmlyc3QoewogICAgd2hlcmU6IHsgaWQ6IG9wdHMub2JsaWdhdGlvbklkLCBmaXJtSWQ6IG9wdHMuZmlybUlkIH0sCiAgICBpbmNsdWRlOiB7IGNsaWVudDogdHJ1ZSB9LAogIH0pOwogIGlmICghb2JsaWdhdGlvbikgcmV0dXJuIHsgZXJyb3I6ICJHdWlhIG7Do28gZW5jb250cmFkYSIsIHN0YXR1czogNDA0IGFzIGNvbnN0IH07CgogIGNvbnN0IGNvbnRlbnQgPSBidWlsZEd1aWRlRmlsZUNvbnRlbnQob2JsaWdhdGlvbiwgb3B0cy5maXJtTmFtZSk7CiAgY29uc3QgZmlsZU5hbWUgPSBgJHtvYmxpZ2F0aW9uLnR5cGV9XyR7b2JsaWdhdGlvbi5jb21wZXRlbmNlfV8ke29ibGlnYXRpb24uaWQuc2xpY2UoMCwgNil9LnR4dGA7CgogIHJldHVybiB7IG9ibGlnYXRpb24sIGNvbnRlbnQsIGZpbGVOYW1lIH07Cn0KCi8qKgogKiBFLW1haWwgPSBlbnZpbyBhdXRvbcOhdGljby4KICogV2hhdHNBcHAgPSBOw4NPIHVzYSBNZXRhL1R3aWxpbzogZ2VyYSBhcnF1aXZvICsgbGluayB3YS5tZSBwYXJhIG8gdXN1w6FyaW8gYW5leGFyIGUgZW52aWFyLgogKi8KZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHNlbmRPYmxpZ2F0aW9uR3VpZGUob3B0czogewogIGZpcm1JZDogc3RyaW5nOwogIGZpcm1OYW1lOiBzdHJpbmc7CiAgb2JsaWdhdGlvbklkOiBzdHJpbmc7CiAgY2hhbm5lbHM6IFNlbmRDaGFubmVsW107Cn0pIHsKICBjb25zdCBvYmxpZ2F0aW9uID0gYXdhaXQgcHJpc21hLm9ibGlnYXRpb24uZmluZEZpcnN0KHsKICAgIHdoZXJlOiB7IGlkOiBvcHRzLm9ibGlnYXRpb25JZCwgZmlybUlkOiBvcHRzLmZpcm1JZCB9LAogICAgaW5jbHVkZTogeyBjbGllbnQ6IHRydWUgfSwKICB9KTsKCiAgaWYgKCFvYmxpZ2F0aW9uKSB7CiAgICByZXR1cm4geyBlcnJvcjogIkd1aWEgbsOjbyBlbmNvbnRyYWRhIiwgc3RhdHVzOiA0MDQgYXMgY29uc3QgfTsKICB9CgogIGlmIChbIlBBSUQiLCAiQ0FOQ0VMTEVEIl0uaW5jbHVkZXMob2JsaWdhdGlvbi5zdGF0dXMpKSB7CiAgICByZXR1cm4gewogICAgICBlcnJvcjogYEd1aWEgZW0gc3RhdHVzICR7b2JsaWdhdGlvbi5zdGF0dXN9IG7Do28gcG9kZSBzZXIgZW52aWFkYWAsCiAgICAgIHN0YXR1czogNDAwIGFzIGNvbnN0LAogICAgfTsKICB9CgogIGNvbnN0IGJvZHkgPSBidWlsZEd1aWRlTWVzc2FnZShvYmxpZ2F0aW9uLCBvcHRzLmZpcm1OYW1lKTsKICBjb25zdCByZXN1bHRzOiBBcnJheTx7CiAgICBjaGFubmVsOiBTZW5kQ2hhbm5lbDsKICAgIGRlbGl2ZXJ5SWQ6IHN0cmluZzsKICAgIHN0YXR1czogc3RyaW5nOwogICAgdG9BZGRyZXNzOiBzdHJpbmc7CiAgICBkb3dubG9hZFVybD86IHN0cmluZzsKICAgIHdoYXRzYXBwVXJsPzogc3RyaW5nOwogIH0+ID0gW107CgogIGZvciAoY29uc3QgY2hhbm5lbCBvZiBvcHRzLmNoYW5uZWxzKSB7CiAgICBpZiAoY2hhbm5lbCA9PT0gIkVNQUlMIikgewogICAgICBjb25zdCB0b0FkZHJlc3MgPSBvYmxpZ2F0aW9uLmNsaWVudC5lbWFpbDsKICAgICAgaWYgKCF0b0FkZHJlc3MpIHsKICAgICAgICBjb25zdCBmYWlsZWQgPSBhd2FpdCBwcmlzbWEuZGVsaXZlcnkuY3JlYXRlKHsKICAgICAgICAgIGRhdGE6IHsKICAgICAgICAgICAgZmlybUlkOiBvcHRzLmZpcm1JZCwKICAgICAgICAgICAgb2JsaWdhdGlvbklkOiBvYmxpZ2F0aW9uLmlkLAogICAgICAgICAgICBjaGFubmVsOiAiRU1BSUwiLAogICAgICAgICAgICB0b0FkZHJlc3M6ICIiLAogICAgICAgICAgICBzdGF0dXM6ICJGQUlMRUQiLAogICAgICAgICAgICBib2R5UHJldmlldzogYm9keS5zbGljZSgwLCAyODApLAogICAgICAgICAgICBlcnJvck1lc3NhZ2U6ICJDbGllbnRlIHNlbSBlLW1haWwgY2FkYXN0cmFkbyIsCiAgICAgICAgICB9LAogICAgICAgIH0pOwogICAgICAgIHJlc3VsdHMucHVzaCh7CiAgICAgICAgICBjaGFubmVsLAogICAgICAgICAgZGVsaXZlcnlJZDogZmFpbGVkLmlkLAogICAgICAgICAgc3RhdHVzOiAiRkFJTEVEIiwKICAgICAgICAgIHRvQWRkcmVzczogIiIsCiAgICAgICAgfSk7CiAgICAgICAgY29udGludWU7CiAgICAgIH0KCiAgICAgIGNvbnN0IHF1ZXVlZCA9IGF3YWl0IHByaXNtYS5kZWxpdmVyeS5jcmVhdGUoewogICAgICAgIGRhdGE6IHsKICAgICAgICAgIGZpcm1JZDogb3B0cy5maXJtSWQsCiAgICAgICAgICBvYmxpZ2F0aW9uSWQ6IG9ibGlnYXRpb24uaWQsCiAgICAgICAgICBjaGFubmVsOiAiRU1BSUwiLAogICAgICAgICAgdG9BZGRyZXNzLAogICAgICAgICAgc3RhdHVzOiAiUVVFVUVEIiwKICAgICAgICAgIGJvZHlQcmV2aWV3OiBib2R5LnNsaWNlKDAsIDI4MCksCiAgICAgICAgfSwKICAgICAgfSk7CgogICAgICBjb25zdCBzdWJqZWN0ID0gYEd1aWEgJHtvYmxpZ2F0aW9uLnR5cGV9ICR7b2JsaWdhdGlvbi5jb21wZXRlbmNlfSDigJQgJHtvcHRzLmZpcm1OYW1lfWA7CiAgICAgIGNvbnN0IGZpbGUgPSBhd2FpdCBlbnN1cmVHdWlkZUZpbGUoewogICAgICAgIGZpcm1JZDogb3B0cy5maXJtSWQsCiAgICAgICAgZmlybU5hbWU6IG9wdHMuZmlybU5hbWUsCiAgICAgICAgb2JsaWdhdGlvbklkOiBvYmxpZ2F0aW9uLmlkLAogICAgICB9KTsKICAgICAgY29uc3QgYXR0YWNobWVudCA9CiAgICAgICAgImNvbnRlbnQiIGluIGZpbGUgJiYgZmlsZS5jb250ZW50CiAgICAgICAgICA/IHsgZmlsZW5hbWU6IGZpbGUuZmlsZU5hbWUhLCBjb250ZW50OiBmaWxlLmNvbnRlbnQgfQogICAgICAgICAgOiB1bmRlZmluZWQ7CgogICAgICBsZXQgZGlzcGF0Y2hlZDoKICAgICAgICB8IHsgb2s6IHRydWU7IHByb3ZpZGVyTXNnSWQ6IHN0cmluZyB9CiAgICAgICAgfCB7IG9rOiBmYWxzZTsgZXJyb3I6IHN0cmluZyB9OwogICAgICB0cnkgewogICAgICAgIGRpc3BhdGNoZWQgPSBhd2FpdCBkaXNwYXRjaEVtYWlsKHRvQWRkcmVzcywgc3ViamVjdCwgYm9keSwgYXR0YWNobWVudCk7CiAgICAgIH0gY2F0Y2ggKGUpIHsKICAgICAgICBkaXNwYXRjaGVkID0gewogICAgICAgICAgb2s6IGZhbHNlLAogICAgICAgICAgZXJyb3I6IGUgaW5zdGFuY2VvZiBFcnJvciA/IGUubWVzc2FnZSA6ICJGYWxoYSBTTVRQIiwKICAgICAgICB9OwogICAgICB9CiAgICAgIGNvbnN0IHVwZGF0ZWQgPSBhd2FpdCBwcmlzbWEuZGVsaXZlcnkudXBkYXRlKHsKICAgICAgICB3aGVyZTogeyBpZDogcXVldWVkLmlkIH0sCiAgICAgICAgZGF0YTogZGlzcGF0Y2hlZC5vawogICAgICAgICAgPyB7CiAgICAgICAgICAgICAgc3RhdHVzOiAiU0VOVCIsCiAgICAgICAgICAgICAgcHJvdmlkZXJNc2dJZDogZGlzcGF0Y2hlZC5wcm92aWRlck1zZ0lkLAogICAgICAgICAgICAgIHNlbnRBdDogbmV3IERhdGUoKSwKICAgICAgICAgICAgfQogICAgICAgICAgOiB7CiAgICAgICAgICAgICAgc3RhdHVzOiAiRkFJTEVEIiwKICAgICAgICAgICAgICBlcnJvck1lc3NhZ2U6IGRpc3BhdGNoZWQuZXJyb3IsCiAgICAgICAgICAgIH0sCiAgICAgIH0pOwoKICAgICAgcmVzdWx0cy5wdXNoKHsKICAgICAgICBjaGFubmVsLAogICAgICAgIGRlbGl2ZXJ5SWQ6IHVwZGF0ZWQuaWQsCiAgICAgICAgc3RhdHVzOiB1cGRhdGVkLnN0YXR1cywKICAgICAgICB0b0FkZHJlc3MsCiAgICAgIH0pOwogICAgICBjb250aW51ZTsKICAgIH0KCiAgICAvLyBXSEFUU0FQUF9NQU5VQUwKICAgIGNvbnN0IHBob25lID0gb2JsaWdhdGlvbi5jbGllbnQud2hhdHNhcHA7CiAgICBhd2FpdCBlbnN1cmVHdWlkZUZpbGUoewogICAgICBmaXJtSWQ6IG9wdHMuZmlybUlkLAogICAgICBmaXJtTmFtZTogb3B0cy5maXJtTmFtZSwKICAgICAgb2JsaWdhdGlvbklkOiBvYmxpZ2F0aW9uLmlkLAogICAgfSk7CgogICAgY29uc3QgdGlwID0KICAgICAgYCR7Ym9keX1cblxuYCArCiAgICAgIGBTZWd1ZSBhIGd1aWEgZW0gYW5leG8gKGJhaXhlIG5vIFByb0NvbnRhZG9yIE9mZmljZSBlIGFuZXhlIGFxdWkpLmA7CgogICAgY29uc3QgZGVsaXZlcnkgPSBhd2FpdCBwcmlzbWEuZGVsaXZlcnkuY3JlYXRlKHsKICAgICAgZGF0YTogewogICAgICAgIGZpcm1JZDogb3B0cy5maXJtSWQsCiAgICAgICAgb2JsaWdhdGlvbklkOiBvYmxpZ2F0aW9uLmlkLAogICAgICAgIGNoYW5uZWw6ICJXSEFUU0FQUF9NQU5VQUwiLAogICAgICAgIHRvQWRkcmVzczogcGhvbmUgPz8gIiIsCiAgICAgICAgc3RhdHVzOiBwaG9uZSA/ICJTRU5UIiA6ICJGQUlMRUQiLAogICAgICAgIGJvZHlQcmV2aWV3OiB0aXAuc2xpY2UoMCwgMjgwKSwKICAgICAgICBlcnJvck1lc3NhZ2U6IHBob25lCiAgICAgICAgICA/IG51bGwKICAgICAgICAgIDogIkNsaWVudGUgc2VtIFdoYXRzQXBwIOKAlCBiYWl4ZSBvIGFycXVpdm8gZSBlbnZpZSBtYW51YWxtZW50ZSIsCiAgICAgICAgc2VudEF0OiBwaG9uZSA/IG5ldyBEYXRlKCkgOiBudWxsLAogICAgICAgIHByb3ZpZGVyTXNnSWQ6IGBtYW51YWxfJHtEYXRlLm5vdygpfWAsCiAgICAgIH0sCiAgICB9KTsKCiAgICByZXN1bHRzLnB1c2goewogICAgICBjaGFubmVsLAogICAgICBkZWxpdmVyeUlkOiBkZWxpdmVyeS5pZCwKICAgICAgc3RhdHVzOiBkZWxpdmVyeS5zdGF0dXMsCiAgICAgIHRvQWRkcmVzczogcGhvbmUgPz8gIiIsCiAgICAgIGRvd25sb2FkVXJsOiBgL2FwaS9vYmxpZ2F0aW9ucy8ke29ibGlnYXRpb24uaWR9L2ZpbGVgLAogICAgICB3aGF0c2FwcFVybDogcGhvbmUgPyB3aGF0c2FwcERlZXBMaW5rKHBob25lLCB0aXApIDogdW5kZWZpbmVkLAogICAgfSk7CiAgfQoKICBjb25zdCBhbnlPayA9IHJlc3VsdHMuc29tZSgocikgPT4gci5zdGF0dXMgPT09ICJTRU5UIik7CiAgaWYgKGFueU9rKSB7CiAgICBhd2FpdCBwcmlzbWEub2JsaWdhdGlvbi51cGRhdGUoewogICAgICB3aGVyZTogeyBpZDogb2JsaWdhdGlvbi5pZCB9LAogICAgICBkYXRhOiB7CiAgICAgICAgc3RhdHVzOiBvYmxpZ2F0aW9uLnN0YXR1cyA9PT0gIlZJRVdFRCIgPyAiVklFV0VEIiA6ICJTRU5UIiwKICAgICAgICBzZW50QXQ6IG5ldyBEYXRlKCksCiAgICAgIH0sCiAgICB9KTsKCiAgICBpZiAob2JsaWdhdGlvbi50YXNrSWQpIHsKICAgICAgYXdhaXQgcHJpc21hLmZpc2NhbFBpcGVsaW5lLnVwZGF0ZU1hbnkoewogICAgICAgIHdoZXJlOiB7CiAgICAgICAgICBmaXJtSWQ6IG9wdHMuZmlybUlkLAogICAgICAgICAgdGFza0lkOiBvYmxpZ2F0aW9uLnRhc2tJZCwKICAgICAgICAgIHN0YWdlOiAiR1VJREUiLAogICAgICAgIH0sCiAgICAgICAgZGF0YTogeyBzdGFnZTogIlBBWSIsIHN0YWdlU3RhdHVzOiAiTkVFRFNfQVBQUk9WQUwiIH0sCiAgICAgIH0pOwogICAgfQogIH0KCiAgcmV0dXJuIHsgcmVzdWx0cywgb2JsaWdhdGlvbklkOiBvYmxpZ2F0aW9uLmlkIH07Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBtYXJrRGVsaXZlcnlWaWV3ZWQob3B0czogewogIGZpcm1JZDogc3RyaW5nOwogIGRlbGl2ZXJ5SWQ6IHN0cmluZzsKfSkgewogIGNvbnN0IGRlbGl2ZXJ5ID0gYXdhaXQgcHJpc21hLmRlbGl2ZXJ5LmZpbmRGaXJzdCh7CiAgICB3aGVyZTogeyBpZDogb3B0cy5kZWxpdmVyeUlkLCBmaXJtSWQ6IG9wdHMuZmlybUlkIH0sCiAgfSk7CiAgaWYgKCFkZWxpdmVyeSkgcmV0dXJuIHsgZXJyb3I6ICJFbnZpbyBuw6NvIGVuY29udHJhZG8iLCBzdGF0dXM6IDQwNCBhcyBjb25zdCB9OwoKICBjb25zdCBub3cgPSBuZXcgRGF0ZSgpOwogIGF3YWl0IHByaXNtYS5kZWxpdmVyeS51cGRhdGUoewogICAgd2hlcmU6IHsgaWQ6IGRlbGl2ZXJ5LmlkIH0sCiAgICBkYXRhOiB7IHN0YXR1czogIlZJRVdFRCIsIHZpZXdlZEF0OiBub3cgfSwKICB9KTsKCiAgLy8gTsOjbyByZWdyaWRlIHVtYSBvYnJpZ2HDp8OjbyBqw6EgcGFnYS9jYW5jZWxhZGEgZGUgdm9sdGEgcGFyYSAidmlzdWFsaXphZGEiCiAgLy8g4oCUIHPDsyBhdmFuw6dhIG8gc3RhdHVzIHNlIGFpbmRhIGVzdGl2ZXIgYW50ZXMgZGUgVklFV0VEIG5vIGNpY2xvIGRlIHZpZGEuCiAgYXdhaXQgcHJpc21hLm9ibGlnYXRpb24udXBkYXRlTWFueSh7CiAgICB3aGVyZTogewogICAgICBpZDogZGVsaXZlcnkub2JsaWdhdGlvbklkLAogICAgICBzdGF0dXM6IHsgaW46IFsiRFJBRlQiLCAiUkVBRFkiLCAiU0VOVCJdIH0sCiAgICB9LAogICAgZGF0YTogeyBzdGF0dXM6ICJWSUVXRUQiLCB2aWV3ZWRBdDogbm93IH0sCiAgfSk7CgogIHJldHVybiB7IG9rOiB0cnVlIH07Cn0K
+import { prisma } from "@/lib/db";
+import { formatBrl } from "@/lib/utils";
+import { sendRealEmail } from "@/lib/email";
+
+export type SendChannel = "EMAIL" | "WHATSAPP_MANUAL";
+
+type ObligationWithClient = {
+  id: string;
+  firmId: string;
+  type: string;
+  competence: string;
+  amountCents: number | null;
+  dueAt: Date | null;
+  status: string;
+  barcode: string | null;
+  client: {
+    tradeName: string | null;
+    legalName: string;
+    email: string | null;
+    whatsapp: string | null;
+    cnpj: string;
+  };
+};
+
+export function buildGuideMessage(o: ObligationWithClient, firmName: string) {
+  const clientName = o.client.tradeName ?? o.client.legalName;
+  const due = o.dueAt
+    ? o.dueAt.toLocaleDateString("pt-BR")
+    : "a confirmar";
+  return (
+    `${firmName}: guia ${o.type} competência ${o.competence} ` +
+    `de ${clientName} — valor ${formatBrl(o.amountCents)}, vencimento ${due}.`
+  );
+}
+
+export function buildGuideFileContent(
+  o: ObligationWithClient,
+  firmName: string,
+) {
+  const clientName = o.client.tradeName ?? o.client.legalName;
+  const due = o.dueAt
+    ? o.dueAt.toLocaleDateString("pt-BR")
+    : "a confirmar";
+  return [
+    `GUIA DE IMPOSTO — ${firmName}`,
+    "".padEnd(48, "="),
+    `Tipo: ${o.type}`,
+    `Competência: ${o.competence}`,
+    `Cliente: ${clientName}`,
+    `CNPJ: ${o.client.cnpj}`,
+    `Valor: ${formatBrl(o.amountCents)}`,
+    `Vencimento: ${due}`,
+    o.barcode ? `Código de barras: ${o.barcode}` : null,
+    "".padEnd(48, "-"),
+    "Arquivo gerado pelo ProContador Office.",
+    "Anexe este arquivo no WhatsApp e envie ao cliente.",
+    `Gerado em: ${new Date().toLocaleString("pt-BR")}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export function whatsappDeepLink(phone: string, text: string) {
+  const digits = phone.replace(/\D/g, "");
+  const normalized = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(text)}`;
+}
+
+async function dispatchEmail(
+  to: string,
+  subject: string,
+  body: string,
+  attachment?: { filename: string; content: string },
+) {
+  const info = await sendRealEmail({
+    to,
+    subject,
+    text: body,
+    attachments: attachment
+      ? [{ filename: attachment.filename, content: attachment.content }]
+      : undefined,
+  });
+  return { ok: true as const, providerMsgId: info.messageId };
+}
+
+/**
+ * Monta o conteúdo do arquivo da guia a partir do banco.
+ *
+ * Não grava em lugar nenhum: o texto é derivado 100% das colunas da obrigação
+ * e do cliente, então persistir uma cópia só criava um arquivo para ficar
+ * obsoleto — e, no disco efêmero do Railway, um arquivo que desaparecia no
+ * redeploy seguinte. Quem precisa dos bytes usa `content` direto.
+ */
+export async function ensureGuideFile(opts: {
+  firmId: string;
+  firmName: string;
+  obligationId: string;
+}) {
+  const obligation = await prisma.obligation.findFirst({
+    where: { id: opts.obligationId, firmId: opts.firmId },
+    include: { client: true },
+  });
+  if (!obligation) return { error: "Guia não encontrada", status: 404 as const };
+
+  const content = buildGuideFileContent(obligation, opts.firmName);
+  const fileName = `${obligation.type}_${obligation.competence}_${obligation.id.slice(0, 6)}.txt`;
+
+  return { obligation, content, fileName };
+}
+
+/**
+ * E-mail = envio automático.
+ * WhatsApp = NÃO usa Meta/Twilio: gera arquivo + link wa.me para o usuário anexar e enviar.
+ */
+export async function sendObligationGuide(opts: {
+  firmId: string;
+  firmName: string;
+  obligationId: string;
+  channels: SendChannel[];
+}) {
+  const obligation = await prisma.obligation.findFirst({
+    where: { id: opts.obligationId, firmId: opts.firmId },
+    include: { client: true },
+  });
+
+  if (!obligation) {
+    return { error: "Guia não encontrada", status: 404 as const };
+  }
+
+  if (["PAID", "CANCELLED"].includes(obligation.status)) {
+    return {
+      error: `Guia em status ${obligation.status} não pode ser enviada`,
+      status: 400 as const,
+    };
+  }
+
+  const body = buildGuideMessage(obligation, opts.firmName);
+  const results: Array<{
+    channel: SendChannel;
+    deliveryId: string;
+    status: string;
+    toAddress: string;
+    downloadUrl?: string;
+    whatsappUrl?: string;
+  }> = [];
+
+  for (const channel of opts.channels) {
+    if (channel === "EMAIL") {
+      const toAddress = obligation.client.email;
+      if (!toAddress) {
+        const failed = await prisma.delivery.create({
+          data: {
+            firmId: opts.firmId,
+            obligationId: obligation.id,
+            channel: "EMAIL",
+            toAddress: "",
+            status: "FAILED",
+            bodyPreview: body.slice(0, 280),
+            errorMessage: "Cliente sem e-mail cadastrado",
+          },
+        });
+        results.push({
+          channel,
+          deliveryId: failed.id,
+          status: "FAILED",
+          toAddress: "",
+        });
+        continue;
+      }
+
+      const queued = await prisma.delivery.create({
+        data: {
+          firmId: opts.firmId,
+          obligationId: obligation.id,
+          channel: "EMAIL",
+          toAddress,
+          status: "QUEUED",
+          bodyPreview: body.slice(0, 280),
+        },
+      });
+
+      const subject = `Guia ${obligation.type} ${obligation.competence} — ${opts.firmName}`;
+      const file = await ensureGuideFile({
+        firmId: opts.firmId,
+        firmName: opts.firmName,
+        obligationId: obligation.id,
+      });
+      const attachment =
+        "content" in file && file.content
+          ? { filename: file.fileName!, content: file.content }
+          : undefined;
+
+      let dispatched:
+        | { ok: true; providerMsgId: string }
+        | { ok: false; error: string };
+      try {
+        dispatched = await dispatchEmail(toAddress, subject, body, attachment);
+      } catch (e) {
+        dispatched = {
+          ok: false,
+          error: e instanceof Error ? e.message : "Falha SMTP",
+        };
+      }
+      const updated = await prisma.delivery.update({
+        where: { id: queued.id },
+        data: dispatched.ok
+          ? {
+              status: "SENT",
+              providerMsgId: dispatched.providerMsgId,
+              sentAt: new Date(),
+            }
+          : {
+              status: "FAILED",
+              errorMessage: dispatched.error,
+            },
+      });
+
+      results.push({
+        channel,
+        deliveryId: updated.id,
+        status: updated.status,
+        toAddress,
+      });
+      continue;
+    }
+
+    // WHATSAPP_MANUAL
+    const phone = obligation.client.whatsapp;
+    await ensureGuideFile({
+      firmId: opts.firmId,
+      firmName: opts.firmName,
+      obligationId: obligation.id,
+    });
+
+    const tip =
+      `${body}\n\n` +
+      `Segue a guia em anexo (baixe no ProContador Office e anexe aqui).`;
+
+    const delivery = await prisma.delivery.create({
+      data: {
+        firmId: opts.firmId,
+        obligationId: obligation.id,
+        channel: "WHATSAPP_MANUAL",
+        toAddress: phone ?? "",
+        status: phone ? "SENT" : "FAILED",
+        bodyPreview: tip.slice(0, 280),
+        errorMessage: phone
+          ? null
+          : "Cliente sem WhatsApp — baixe o arquivo e envie manualmente",
+        sentAt: phone ? new Date() : null,
+        providerMsgId: `manual_${Date.now()}`,
+      },
+    });
+
+    results.push({
+      channel,
+      deliveryId: delivery.id,
+      status: delivery.status,
+      toAddress: phone ?? "",
+      downloadUrl: `/api/obligations/${obligation.id}/file`,
+      whatsappUrl: phone ? whatsappDeepLink(phone, tip) : undefined,
+    });
+  }
+
+  const anyOk = results.some((r) => r.status === "SENT");
+  if (anyOk) {
+    await prisma.obligation.update({
+      where: { id: obligation.id },
+      data: {
+        status: obligation.status === "VIEWED" ? "VIEWED" : "SENT",
+        sentAt: new Date(),
+      },
+    });
+
+    if (obligation.taskId) {
+      await prisma.fiscalPipeline.updateMany({
+        where: {
+          firmId: opts.firmId,
+          taskId: obligation.taskId,
+          stage: "GUIDE",
+        },
+        data: { stage: "PAY", stageStatus: "NEEDS_APPROVAL" },
+      });
+    }
+  }
+
+  return { results, obligationId: obligation.id };
+}
+
+export async function markDeliveryViewed(opts: {
+  firmId: string;
+  deliveryId: string;
+}) {
+  const delivery = await prisma.delivery.findFirst({
+    where: { id: opts.deliveryId, firmId: opts.firmId },
+  });
+  if (!delivery) return { error: "Envio não encontrado", status: 404 as const };
+
+  const now = new Date();
+  await prisma.delivery.update({
+    where: { id: delivery.id },
+    data: { status: "VIEWED", viewedAt: now },
+  });
+
+  // Não regride uma obrigação já paga/cancelada de volta para "visualizada"
+  // — só avança o status se ainda estiver antes de VIEWED no ciclo de vida.
+  await prisma.obligation.updateMany({
+    where: {
+      id: delivery.obligationId,
+      status: { in: ["DRAFT", "READY", "SENT"] },
+    },
+    data: { status: "VIEWED", viewedAt: now },
+  });
+
+  return { ok: true };
+}
