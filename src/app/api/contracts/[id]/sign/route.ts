@@ -1,9 +1,8 @@
-import { mkdir, writeFile } from "fs/promises";
 import { createHash } from "crypto";
-import path from "path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/auth";
+import { storageKey, writeStoredFile } from "@/lib/storage";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -61,15 +60,26 @@ export async function POST(req: Request, ctx: Ctx) {
     );
   }
 
-  const dir = path.join(
-    process.cwd(),
-    "data",
-    "signatures",
-    session.firmId,
-  );
-  await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, `${contract.id}.pdf`);
-  await writeFile(filePath, buf);
+  // O PDF assinado é a prova do contrato: precisa sobreviver ao redeploy, então
+  // vai para o object store, não para o disco efêmero do container.
+  let pointer: string;
+  try {
+    pointer = await writeStoredFile({
+      key: storageKey("signatures", session.firmId, `${contract.id}.pdf`),
+      body: buf,
+      contentType: "application/pdf",
+    });
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error:
+          e instanceof Error
+            ? `Falha ao arquivar o PDF assinado: ${e.message}`
+            : "Falha ao arquivar o PDF assinado.",
+      },
+      { status: 502 },
+    );
+  }
 
   // Trilha de auditoria mínima: isto NÃO é uma assinatura eletrônica
   // qualificada (ICP-Brasil/ClickSign) — é upload manual de PDF assinado à
@@ -84,7 +94,7 @@ export async function POST(req: Request, ctx: Ctx) {
     where: { id: contract.id },
     data: {
       status: "SIGNED",
-      signedPdfPath: filePath,
+      signedPdfPath: pointer,
       signedFileHash: fileHash,
       signedByIp: signerIp,
       signedByUserAgent: userAgent,

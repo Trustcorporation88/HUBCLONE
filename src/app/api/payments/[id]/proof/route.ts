@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
 import { readSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { contentTypeForPointer, readStoredFile } from "@/lib/storage";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -27,21 +26,16 @@ export async function GET(_req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Comprovante não disponível" }, { status: 404 });
   }
 
+  // proofPath é um pointer: chave do bucket nos registros novos, caminho local
+  // absoluto nos antigos. readStoredFile resolve os dois.
   try {
-    const buf = await readFile(payment.proofPath);
-    const ext = path.extname(payment.proofPath).toLowerCase();
-    const type =
-      ext === ".pdf"
-        ? "application/pdf"
-        : ext === ".png"
-          ? "image/png"
-          : ext === ".webp"
-            ? "image/webp"
-            : ext === ".jpg" || ext === ".jpeg"
-              ? "image/jpeg"
-              : "application/octet-stream";
+    const buf = await readStoredFile(payment.proofPath);
+    const type = contentTypeForPointer(payment.proofPath);
+    const ext = payment.proofPath.includes(".")
+      ? `.${payment.proofPath.split(".").pop()}`
+      : "";
 
-    return new NextResponse(buf, {
+    return new NextResponse(new Uint8Array(buf), {
       headers: {
         "Content-Type": type,
         "Content-Disposition": `inline; filename="comprovante-${payment.id}${ext}"`,
