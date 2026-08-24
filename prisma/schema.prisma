@@ -51,6 +51,7 @@ model User {
   client        Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
   assignedTasks Task[]  @relation("TaskAssignee")
   timeEntries   TimeEntry[]
+  passwordResets PasswordReset[]
 
   @@unique([firmId, email])
   @@index([clientId])
@@ -519,4 +520,32 @@ model FiscalAlert {
 
   @@index([firmId, resolvedAt])
   @@index([clientId, type])
+}
+
+/// Redefinição de senha do usuário.
+///
+/// Mesmo padrão do FirmInvite: o código de 32 hex só existe dentro da URL e o
+/// banco guarda apenas o sha256 dele. Assim um dump do banco não permite
+/// assumir contas, e um código perdido não tem como ser recuperado — só
+/// reemitido.
+///
+/// Uso único (usedAt) e expiração curta: redefinir senha é a operação mais
+/// atacada de um app, e um link de longa validade parado numa caixa de e-mail é
+/// uma chave esquecida na porta.
+model PasswordReset {
+  id        String    @id @default(cuid())
+  /// sha256 do código enviado no link
+  codeHash  String    @unique
+  userId    String
+  /// "SELF" quando o próprio usuário pediu; id de quem emitiu quando veio do
+  /// painel (caminho que funciona sem SMTP configurado).
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
