@@ -1,1 +1,551 @@
-Z2VuZXJhdG9yIGNsaWVudCB7CiAgcHJvdmlkZXIgPSAicHJpc21hLWNsaWVudC1qcyIKfQoKZGF0YXNvdXJjZSBkYiB7CiAgcHJvdmlkZXIgPSAicG9zdGdyZXNxbCIKICB1cmwgICAgICA9IGVudigiREFUQUJBU0VfVVJMIikKfQoKLy8vIEVzY3JpdMOzcmlvIGRlIGNvbnRhYmlsaWRhZGUgKHRlbmFudCkKbW9kZWwgRmlybSB7CiAgaWQgICAgICAgICAgIFN0cmluZyAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgbmFtZSAgICAgICAgIFN0cmluZwogIHNsdWcgICAgICAgICBTdHJpbmcgICBAdW5pcXVlCiAgYnJhbmROYW1lICAgIFN0cmluZz8KICBicmFuZFRhZ2xpbmUgU3RyaW5nPwogIGNyZWF0ZWRBdCAgICBEYXRlVGltZSBAZGVmYXVsdChub3coKSkKICB1cGRhdGVkQXQgICAgRGF0ZVRpbWUgQHVwZGF0ZWRBdAoKICB1c2VycyAgICAgICAgVXNlcltdCiAgY2xpZW50cyAgICAgIENsaWVudFtdCiAgcHJvY2Vzc2VzICAgIFByb2Nlc3NUZW1wbGF0ZVtdCiAgdGFza3MgICAgICAgIFRhc2tbXQogIG9ibGlnYXRpb25zICBPYmxpZ2F0aW9uW10KICB4bWxEb2NzICAgICAgWG1sRG9jdW1lbnRbXQogIHBpcGVsaW5lcyAgICBGaXNjYWxQaXBlbGluZVtdCiAgZGVsaXZlcmllcyAgIERlbGl2ZXJ5W10KICBjZXJ0aWZpY2F0ZXMgQ2VydGlmaWNhdGVbXQogIGNhcHR1cmVSdW5zICBDYXB0dXJlUnVuW10KICBwYXltZW50cyAgICAgUGF5bWVudFtdCiAgdGltZUVudHJpZXMgIFRpbWVFbnRyeVtdCiAgc2xhUG9saWNpZXMgIFNsYVBvbGljeVtdCiAgeG1sRmluZGluZ3MgIFhtbEF1ZGl0RmluZGluZ1tdCiAgaW50ZWdyYXRpb25zIEludGVncmF0aW9uW10KICBjb250cmFjdHMgICAgQ29udHJhY3RbXQogIGluYm94SXRlbXMgICBJbmJveEl0ZW1bXQogIGZpc2NhbEFsZXJ0cyBGaXNjYWxBbGVydFtdCn0KCm1vZGVsIFVzZXIgewogIGlkICAgICAgICAgICBTdHJpbmcgICBAaWQgQGRlZmF1bHQoY3VpZCgpKQogIGZpcm1JZCAgICAgICBTdHJpbmcKICBjbGllbnRJZCAgICAgU3RyaW5nPwogIGVtYWlsICAgICAgICBTdHJpbmcKICBuYW1lICAgICAgICAgU3RyaW5nCiAgcGFzc3dvcmRIYXNoIFN0cmluZyAgIEBkZWZhdWx0KCIiKQogIHJvbGUgICAgICAgICBTdHJpbmcgICBAZGVmYXVsdCgiU1RBRkYiKSAvLyBPV05FUiB8IE1BTkFHRVIgfCBTVEFGRiB8IENMSUVOVAogIGNyZWF0ZWRBdCAgICBEYXRlVGltZSBAZGVmYXVsdChub3coKSkKCiAgZmlybSAgICAgICAgICBGaXJtICAgIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICBjbGllbnQgICAgICAgIENsaWVudD8gQHJlbGF0aW9uKGZpZWxkczogW2NsaWVudElkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IFNldE51bGwpCiAgYXNzaWduZWRUYXNrcyBUYXNrW10gIEByZWxhdGlvbigiVGFza0Fzc2lnbmVlIikKICB0aW1lRW50cmllcyAgIFRpbWVFbnRyeVtdCiAgcGFzc3dvcmRSZXNldHMgUGFzc3dvcmRSZXNldFtdCgogIEBAdW5pcXVlKFtmaXJtSWQsIGVtYWlsXSkKICBAQGluZGV4KFtjbGllbnRJZF0pCn0KCi8vLyBDbGllbnRlIGRvIGVzY3JpdMOzcmlvIChlbXByZXNhIGF0ZW5kaWRhKQptb2RlbCBDbGllbnQgewogIGlkICAgICAgICAgICBTdHJpbmcgICBAaWQgQGRlZmF1bHQoY3VpZCgpKQogIGZpcm1JZCAgICAgICBTdHJpbmcKICBsZWdhbE5hbWUgICAgU3RyaW5nCiAgdHJhZGVOYW1lICAgIFN0cmluZz8KICBjbnBqICAgICAgICAgU3RyaW5nCiAgcmVnaW1lICAgICAgIFN0cmluZyAgIEBkZWZhdWx0KCJTSU1QTEVTIikgLy8gU0lNUExFUyB8IExVQ1JPX1BSRVNVTUlETyB8IExVQ1JPX1JFQUwgfCBNRUkKICAvLy8gaWQgZGEgZW1wcmVzYSBjb3JyZXNwb25kZW50ZSBubyBQcm9Db250YWRvciAoU2FhUyksIGRvbm8gZG8gY2VydGlmaWNhZG8gZQogIC8vLyBkYSBjYXB0dXJhLiBQcmVlbmNoaWRvIHBlbG8gc3luYyBkZSBjbGllbnRlczsgbyBDTlBKIHNlcnZlIGRlIGZhbGxiYWNrLgogIHByb2NvbnRhZG9yQ29tcGFueUlkIFN0cmluZz8KICB3aGF0c2FwcCAgICAgU3RyaW5nPwogIGVtYWlsICAgICAgICBTdHJpbmc/CiAgYWN0aXZlICAgICAgIEJvb2xlYW4gIEBkZWZhdWx0KHRydWUpCiAgY3JlYXRlZEF0ICAgIERhdGVUaW1lIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgICBEYXRlVGltZSBAdXBkYXRlZEF0CgogIGZpcm0gICAgICAgICBGaXJtICAgICAgICAgICAgIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICB1c2VycyAgICAgICAgVXNlcltdCiAgdGFza3MgICAgICAgIFRhc2tbXQogIG9ibGlnYXRpb25zICBPYmxpZ2F0aW9uW10KICB4bWxEb2NzICAgICAgWG1sRG9jdW1lbnRbXQogIHBpcGVsaW5lcyAgICBGaXNjYWxQaXBlbGluZVtdCiAgY2VydGlmaWNhdGVzIENlcnRpZmljYXRlW10KICBjYXB0dXJlUnVucyAgQ2FwdHVyZVJ1bltdCiAgdGltZUVudHJpZXMgIFRpbWVFbnRyeVtdCiAgY29udHJhY3RzICAgIENvbnRyYWN0W10KICBpbmJveEl0ZW1zICAgSW5ib3hJdGVtW10KICBmaXNjYWxBbGVydHMgRmlzY2FsQWxlcnRbXQoKICBAQHVuaXF1ZShbZmlybUlkLCBjbnBqXSkKICBAQGluZGV4KFtmaXJtSWRdKQp9CgovLy8gVGVtcGxhdGUgZGUgcHJvY2Vzc28gcmVjb3JyZW50ZSAoaW5zcGlyYWRvIEthcmJvbiArIFRhc2tIdWIpCm1vZGVsIFByb2Nlc3NUZW1wbGF0ZSB7CiAgaWQgICAgICAgICAgU3RyaW5nICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICBmaXJtSWQgICAgICBTdHJpbmcKICBuYW1lICAgICAgICBTdHJpbmcKICBjb2RlICAgICAgICBTdHJpbmcKICBkZXBhcnRtZW50ICBTdHJpbmcgICAvLyBGSVNDQUwgfCBDT05UQUJJTCB8IERQIHwgU09DSUVUQVJJTyB8IEFURU5ESU1FTlRPCiAgcmVnaW1lU2NvcGUgU3RyaW5nICAgQGRlZmF1bHQoIkFMTCIpIC8vIEFMTCB8IFNJTVBMRVMgfCAuLi4KICByZWN1cnJpbmcgICBCb29sZWFuICBAZGVmYXVsdCh0cnVlKQogIGRheU9mTW9udGggIEludD8gICAgIC8vIGRpYSB0w61waWNvIGRlIHZlbmNpbWVudG8KICBzdGVwc0pzb24gICBTdHJpbmcgICBAZGVmYXVsdCgiW10iKSAvLyBKU09OIGFycmF5IG9mIHN0ZXAgZGVmaW5pdGlvbnMKICBjcmVhdGVkQXQgICBEYXRlVGltZSBAZGVmYXVsdChub3coKSkKCiAgZmlybSAgRmlybSAgIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICB0YXNrcyBUYXNrW10KCiAgQEB1bmlxdWUoW2Zpcm1JZCwgY29kZV0pCn0KCm1vZGVsIFRhc2sgewogIGlkICAgICAgICAgIFN0cmluZyAgICBAaWQgQGRlZmF1bHQoY3VpZCgpKQogIGZpcm1JZCAgICAgIFN0cmluZwogIGNsaWVudElkICAgIFN0cmluZz8KICB0ZW1wbGF0ZUlkICBTdHJpbmc/CiAgYXNzaWduZWVJZCAgU3RyaW5nPwogIHRpdGxlICAgICAgIFN0cmluZwogIGRlc2NyaXB0aW9uIFN0cmluZz8KICBzdGF0dXMgICAgICBTdHJpbmcgICAgQGRlZmF1bHQoIlBFTkRJTkciKSAvLyBQRU5ESU5HIHwgSU5fUFJPR1JFU1MgfCBCTE9DS0VEIHwgRE9ORSB8IENBTkNFTExFRAogIHByaW9yaXR5ICAgIFN0cmluZyAgICBAZGVmYXVsdCgiTk9STUFMIikgLy8gTE9XIHwgTk9STUFMIHwgSElHSCB8IFVSR0VOVAogIGRlcGFydG1lbnQgIFN0cmluZyAgICBAZGVmYXVsdCgiRklTQ0FMIikKICBkdWVBdCAgICAgICBEYXRlVGltZT8KICBjb21wbGV0ZWRBdCBEYXRlVGltZT8KICBjcmVhdGVkQXQgICBEYXRlVGltZSAgQGRlZmF1bHQobm93KCkpCiAgdXBkYXRlZEF0ICAgRGF0ZVRpbWUgIEB1cGRhdGVkQXQKCiAgZmlybSAgICAgICAgRmlybSAgICAgICAgICAgICBAcmVsYXRpb24oZmllbGRzOiBbZmlybUlkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgY2xpZW50ICAgICAgQ2xpZW50PyAgICAgICAgICBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdKQogIHRlbXBsYXRlICAgIFByb2Nlc3NUZW1wbGF0ZT8gQHJlbGF0aW9uKGZpZWxkczogW3RlbXBsYXRlSWRdLCByZWZlcmVuY2VzOiBbaWRdKQogIGFzc2lnbmVlICAgIFVzZXI/ICAgICAgICAgICAgQHJlbGF0aW9uKCJUYXNrQXNzaWduZWUiLCBmaWVsZHM6IFthc3NpZ25lZUlkXSwgcmVmZXJlbmNlczogW2lkXSkKICBvYmxpZ2F0aW9uICBPYmxpZ2F0aW9uPwogIHBpcGVsaW5lICAgIEZpc2NhbFBpcGVsaW5lPwogIHRpbWVFbnRyaWVzIFRpbWVFbnRyeVtdCgogIEBAaW5kZXgoW2Zpcm1JZCwgc3RhdHVzXSkKICBAQGluZGV4KFtmaXJtSWQsIGR1ZUF0XSkKICBAQGluZGV4KFtmaXJtSWQsIGRlcGFydG1lbnRdKQp9CgovLy8gR3VpYSAvIG9icmlnYcOnw6NvIGZpc2NhbCAoTW9uaXRvckh1YispCm1vZGVsIE9ibGlnYXRpb24gewogIGlkICAgICAgICAgICAgU3RyaW5nICAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgICBTdHJpbmcKICBjbGllbnRJZCAgICAgIFN0cmluZwogIHRhc2tJZCAgICAgICAgU3RyaW5nPyAgIEB1bmlxdWUKICB0eXBlICAgICAgICAgIFN0cmluZyAgICAvLyBEQVMgfCBEQVJGIHwgR1BTIHwgRENURldFQiB8IFBHREFTIHwgQ05EIHwgRkdUUyB8IElTUyB8IEdOUkUgfCBPVEhFUgogIGNvbXBldGVuY2UgICAgU3RyaW5nICAgIC8vIFlZWVktTU0KICBhbW91bnRDZW50cyAgIEludD8KICBiYXJjb2RlICAgICAgIFN0cmluZz8KICBwaXhQYXlsb2FkICAgIFN0cmluZz8KICBzdGF0dXMgICAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgiRFJBRlQiKSAvLyBEUkFGVCB8IFJFQURZIHwgU0VOVCB8IFZJRVdFRCB8IFBBSUQgfCBPVkVSRFVFIHwgQ0FOQ0VMTEVECiAgZHVlQXQgICAgICAgICBEYXRlVGltZT8KICBzZW50QXQgICAgICAgIERhdGVUaW1lPwogIHZpZXdlZEF0ICAgICAgRGF0ZVRpbWU/CiAgcGFpZEF0ICAgICAgICBEYXRlVGltZT8KICBwcm9vZlVybCAgICAgIFN0cmluZz8KICBzb3VyY2VQb3J0YWwgIFN0cmluZz8gICAvLyBlLUNBQyB8IEZHVFMgfCBTRUZBWiB8IE1BTlVBTAogIGNyZWF0ZWRBdCAgICAgRGF0ZVRpbWUgIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgICAgRGF0ZVRpbWUgIEB1cGRhdGVkQXQKCiAgZmlybSAgIEZpcm0gICBAcmVsYXRpb24oZmllbGRzOiBbZmlybUlkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgY2xpZW50IENsaWVudCBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICB0YXNrICAgVGFzaz8gIEByZWxhdGlvbihmaWVsZHM6IFt0YXNrSWRdLCByZWZlcmVuY2VzOiBbaWRdKQogIGRlbGl2ZXJpZXMgRGVsaXZlcnlbXQogIHBheW1lbnRzICAgUGF5bWVudFtdCgogIEBAaW5kZXgoW2Zpcm1JZCwgc3RhdHVzXSkKICBAQGluZGV4KFtjbGllbnRJZCwgY29tcGV0ZW5jZV0pCn0KCi8vLyBFbnZpbyBkZSBndWlhIChDb25uZWN0SHViIC8gQ29uZmkpOiBlLW1haWwgKyBXaGF0c0FwcCBjb20gcmFzdHJlaW8KbW9kZWwgRGVsaXZlcnkgewogIGlkICAgICAgICAgICAgU3RyaW5nICAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgICBTdHJpbmcKICBvYmxpZ2F0aW9uSWQgIFN0cmluZwogIGNoYW5uZWwgICAgICAgU3RyaW5nICAgIC8vIEVNQUlMIHwgV0hBVFNBUFAKICB0b0FkZHJlc3MgICAgIFN0cmluZwogIHN0YXR1cyAgICAgICAgU3RyaW5nICAgIEBkZWZhdWx0KCJRVUVVRUQiKSAvLyBRVUVVRUQgfCBTRU5UIHwgREVMSVZFUkVEIHwgVklFV0VEIHwgRkFJTEVECiAgcHJvdmlkZXJNc2dJZCBTdHJpbmc/CiAgYm9keVByZXZpZXcgICBTdHJpbmc/CiAgZXJyb3JNZXNzYWdlICBTdHJpbmc/CiAgc2VudEF0ICAgICAgICBEYXRlVGltZT8KICB2aWV3ZWRBdCAgICAgIERhdGVUaW1lPwogIGNyZWF0ZWRBdCAgICAgRGF0ZVRpbWUgIEBkZWZhdWx0KG5vdygpKQoKICBmaXJtICAgICAgIEZpcm0gICAgICAgQHJlbGF0aW9uKGZpZWxkczogW2Zpcm1JZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQogIG9ibGlnYXRpb24gT2JsaWdhdGlvbiBAcmVsYXRpb24oZmllbGRzOiBbb2JsaWdhdGlvbklkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCgogIEBAaW5kZXgoW29ibGlnYXRpb25JZF0pCiAgQEBpbmRleChbZmlybUlkLCBzdGF0dXNdKQp9CgovLy8gUGFnYW1lbnRvIGRlIGd1aWEgKERvb3RheCAvIFBhZyDDmnRpbCBsZXZlbCkKbW9kZWwgUGF5bWVudCB7CiAgaWQgICAgICAgICAgICBTdHJpbmcgICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICBmaXJtSWQgICAgICAgIFN0cmluZwogIG9ibGlnYXRpb25JZCAgU3RyaW5nCiAgbWV0aG9kICAgICAgICBTdHJpbmcgICAgLy8gUElYIHwgQk9MRVRPCiAgc3RhdHVzICAgICAgICBTdHJpbmcgICAgQGRlZmF1bHQoIlBFTkRJTkciKSAvLyBQRU5ESU5HIHwgUEFJRCB8IEVYUElSRUQgfCBGQUlMRUQgfCBDQU5DRUxMRUQKICBhbW91bnRDZW50cyAgIEludAogIHBpeENvcHlQYXN0ZSAgU3RyaW5nPwogIGJvbGV0b0JhcmNvZGUgU3RyaW5nPwogIGJvbGV0b0RpZ2l0YWJsZSBTdHJpbmc/CiAgcHJvdmlkZXJSZWYgICBTdHJpbmc/CiAgcHJvb2ZQYXRoICAgICBTdHJpbmc/CiAgcGFpZEF0ICAgICAgICBEYXRlVGltZT8KICBleHBpcmVzQXQgICAgIERhdGVUaW1lPwogIGNyZWF0ZWRBdCAgICAgRGF0ZVRpbWUgIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgICAgRGF0ZVRpbWUgIEB1cGRhdGVkQXQKCiAgZmlybSAgICAgICBGaXJtICAgICAgIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICBvYmxpZ2F0aW9uIE9ibGlnYXRpb24gQHJlbGF0aW9uKGZpZWxkczogW29ibGlnYXRpb25JZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQoKICBAQGluZGV4KFtvYmxpZ2F0aW9uSWRdKQogIEBAaW5kZXgoW2Zpcm1JZCwgc3RhdHVzXSkKfQoKLy8vIFhNTCBmaXNjYWwgY29tcHJhL3ZlbmRhIChYTUxIdWIgKyBRaXZlLWxldmVsIG1vZGVsKQptb2RlbCBYbWxEb2N1bWVudCB7CiAgaWQgICAgICAgICAgICBTdHJpbmcgICBAaWQgQGRlZmF1bHQoY3VpZCgpKQogIGZpcm1JZCAgICAgICAgU3RyaW5nCiAgY2xpZW50SWQgICAgICBTdHJpbmcKICBhY2Nlc3NLZXkgICAgIFN0cmluZwogIC8vLyBORkUgfCBSRVNVTU8gfCBFVkVOVCB8IE5GU0UgfCBDVEUg4oCUIFJFU1VNTyDDqSBvIHJlc05GZSBkbyBEaXN0REZlIChub3RhIGRlCiAgLy8vIGVudHJhZGEgYWluZGEgc2VtIFhNTCBjb21wbGV0bywgZGVwZW5kZSBkZSBtYW5pZmVzdGHDp8OjbykgZSBFVkVOVCDDqSBwcm9jRXZlbnRvLgogIGRvY1R5cGUgICAgICAgU3RyaW5nCiAgZGlyZWN0aW9uICAgICBTdHJpbmcgICAvLyBJTiB8IE9VVAogIGlzc3VlckNucGogICAgU3RyaW5nPwogIHJlY2lwaWVudENucGogU3RyaW5nPwogIGlzc3VlZEF0ICAgICAgRGF0ZVRpbWU/CiAgYW1vdW50Q2VudHMgICBJbnQ/CiAgc3RhdHVzICAgICAgICBTdHJpbmcgICBAZGVmYXVsdCgiQ0FQVFVSRUQiKSAvLyBDQVBUVVJFRCB8IEFVRElURUQgfCBPSyB8IFdBUk5JTkcgfCBFUlJPUiB8IElNUE9SVEVECiAgYXVkaXRKc29uICAgICBTdHJpbmc/ICAvLyBKU09OIGF1ZGl0IGZpbmRpbmdzCiAgcmF3UGF0aCAgICAgICBTdHJpbmc/CiAgbnN1ICAgICAgICAgICBTdHJpbmc/CiAgc2NoZW1hU291cmNlICBTdHJpbmc/ICAvLyBTRUZBWl9ESVNUREZFIHwgTU9DSyB8IFVQTE9BRAogIGNyZWF0ZWRBdCAgICAgRGF0ZVRpbWUgQGRlZmF1bHQobm93KCkpCgogIGZpcm0gICAgIEZpcm0gICAgICAgICAgICAgIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICBjbGllbnQgICBDbGllbnQgICAgICAgICAgICBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICBmaW5kaW5ncyBYbWxBdWRpdEZpbmRpbmdbXQoKICBAQHVuaXF1ZShbZmlybUlkLCBhY2Nlc3NLZXldKQogIEBAaW5kZXgoW2NsaWVudElkLCBkaXJlY3Rpb25dKQp9CgovLy8gTW9hdDogY2FwdHVyYSDihpIgYXVkaXRhIOKGkiBhcHVyYSDihpIgZ3VpYSDihpIgcGFnYSDihpIgcHJvdmEg4oaSIGZlY2hhIHRhcmVmYQptb2RlbCBGaXNjYWxQaXBlbGluZSB7CiAgaWQgICAgICAgICAgIFN0cmluZyAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgIFN0cmluZwogIGNsaWVudElkICAgICBTdHJpbmcKICB0YXNrSWQgICAgICAgU3RyaW5nPyAgQHVuaXF1ZQogIG9ibGlnYXRpb25UeXBlIFN0cmluZyBAZGVmYXVsdCgiREFTIikKICBjb21wZXRlbmNlICAgU3RyaW5nCiAgc3RhZ2UgICAgICAgIFN0cmluZyAgIEBkZWZhdWx0KCJDQVBUVVJFIikgLy8gQ0FQVFVSRSB8IEFVRElUIHwgQVBVUkFURSB8IEdVSURFIHwgUEFZIHwgUFJPVkUgfCBDTE9TRQogIHN0YWdlU3RhdHVzICBTdHJpbmcgICBAZGVmYXVsdCgiUEVORElORyIpIC8vIFBFTkRJTkcgfCBSVU5OSU5HIHwgRE9ORSB8IEZBSUxFRCB8IE5FRURTX0FQUFJPVkFMCiAgbWV0YUpzb24gICAgIFN0cmluZyAgIEBkZWZhdWx0KCJ7fSIpCiAgY3JlYXRlZEF0ICAgIERhdGVUaW1lIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgICBEYXRlVGltZSBAdXBkYXRlZEF0CgogIGZpcm0gICBGaXJtICAgQHJlbGF0aW9uKGZpZWxkczogW2Zpcm1JZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQogIGNsaWVudCBDbGllbnQgQHJlbGF0aW9uKGZpZWxkczogW2NsaWVudElkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgdGFzayAgIFRhc2s/ICBAcmVsYXRpb24oZmllbGRzOiBbdGFza0lkXSwgcmVmZXJlbmNlczogW2lkXSkKCiAgQEBpbmRleChbZmlybUlkLCBzdGFnZV0pCiAgQEB1bmlxdWUoW2Zpcm1JZCwgY2xpZW50SWQsIG9ibGlnYXRpb25UeXBlLCBjb21wZXRlbmNlXSkKfQoKLy8vIENlcnRpZmljYWRvIEExICgucGZ4KSBkbyBjbGllbnRlIOKAlCBtVExTIERpc3RERmUKbW9kZWwgQ2VydGlmaWNhdGUgewogIGlkICAgICAgICAgICAgICAgU3RyaW5nICAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgICAgICBTdHJpbmcKICBjbGllbnRJZCAgICAgICAgIFN0cmluZz8KICBjbnBqICAgICAgICAgICAgIFN0cmluZwogIGxhYmVsICAgICAgICAgICAgU3RyaW5nCiAgLy8vIENhbWluaG8gbGVnYWRvIGVtIGRpc2NvIChlZsOqbWVybyBubyBSYWlsd2F5KS4gUHJlZmVyaXIgcGZ4RW5jLgogIHBmeFBhdGggICAgICAgICAgU3RyaW5nICAgIEBkZWZhdWx0KCIiKQogIC8vLyAucGZ4IGNyaXB0b2dyYWZhZG8gKEFFUy1HQ00sIGJhc2U2NCBkbyBiaW7DoXJpbykg4oCUIHBlcnNpc3RlIG5vIFBvc3RncmVzCiAgcGZ4RW5jICAgICAgICAgICBTdHJpbmc/CiAgLy8vIFBFTSBjaGF2ZS9jZXJ0IChjcmlwdG9ncmFmYWRvcykg4oCUIGV2aXRhIHJlcGFyc2UgUEtDUyMxMiBuYSBjYXB0dXJhCiAgcGVtS2V5RW5jICAgICAgICBTdHJpbmc/CiAgcGVtQ2VydEVuYyAgICAgICBTdHJpbmc/CiAgcGFzc3dvcmRFbmMgICAgICBTdHJpbmcKICBlbnZpcm9ubWVudCAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgiMiIpIC8vIDE9cHJvZCAyPWhvbW9sb2cKICBsYXN0TnN1ICAgICAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgiMDAwMDAwMDAwMDAwMDAwIikKICBsYXN0TnN1Q3RlICAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgiMDAwMDAwMDAwMDAwMDAwIikKICBsYXN0TnN1TmZzZSAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgiMDAwMDAwMDAwMDAwMDAwIikKICB2YWxpZEZyb20gICAgICAgIERhdGVUaW1lPwogIHZhbGlkVG8gICAgICAgICAgRGF0ZVRpbWU/CiAgc3ViamVjdENuICAgICAgICBTdHJpbmc/CiAgYWN0aXZlICAgICAgICAgICBCb29sZWFuICAgQGRlZmF1bHQodHJ1ZSkKICBjcmVhdGVkQXQgICAgICAgIERhdGVUaW1lICBAZGVmYXVsdChub3coKSkKICB1cGRhdGVkQXQgICAgICAgIERhdGVUaW1lICBAdXBkYXRlZEF0CgogIGZpcm0gICAgICAgIEZpcm0gICAgICAgICBAcmVsYXRpb24oZmllbGRzOiBbZmlybUlkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgY2xpZW50ICAgICAgQ2xpZW50PyAgICAgIEByZWxhdGlvbihmaWVsZHM6IFtjbGllbnRJZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBTZXROdWxsKQogIGNhcHR1cmVSdW5zIENhcHR1cmVSdW5bXQoKICBAQGluZGV4KFtmaXJtSWQsIGNucGpdKQp9Cgptb2RlbCBDYXB0dXJlUnVuIHsKICBpZCAgICAgICAgICAgIFN0cmluZyAgICBAaWQgQGRlZmF1bHQoY3VpZCgpKQogIGZpcm1JZCAgICAgICAgU3RyaW5nCiAgY2xpZW50SWQgICAgICBTdHJpbmcKICBjZXJ0aWZpY2F0ZUlkIFN0cmluZz8KICAvLy8gUXVlbSBkaXNwYXJvdSBhIGNhcHR1cmEuIE8gQTEgw6kgYSBhc3NpbmF0dXJhIGRvIGNvbnRyaWJ1aW50ZTogdXNvIHRlbSBkb25vLgogIHVzZXJJZCAgICAgICAgU3RyaW5nPwogIG1vZGUgICAgICAgICAgU3RyaW5nICAgIC8vIE1PQ0sgfCBMSVZFCiAga2luZHNKc29uICAgICBTdHJpbmcgICAgQGRlZmF1bHQoIltcIk5GRVwiXSIpCiAgc3RhdHVzICAgICAgICBTdHJpbmcgICAgQGRlZmF1bHQoIlJVTk5JTkciKSAvLyBSVU5OSU5HIHwgRE9ORSB8IEZBSUxFRAogIGRvY3NGb3VuZCAgICAgSW50ICAgICAgIEBkZWZhdWx0KDApCiAgZG9jc1NhdmVkICAgICBJbnQgICAgICAgQGRlZmF1bHQoMCkKICB1bHROc3UgICAgICAgIFN0cmluZz8KICBtYXhOc3UgICAgICAgIFN0cmluZz8KICBjU3RhdCAgICAgICAgIFN0cmluZz8KICB4TW90aXZvICAgICAgIFN0cmluZz8KICBlcnJvck1lc3NhZ2UgIFN0cmluZz8KICBzdGFydGVkQXQgICAgIERhdGVUaW1lICBAZGVmYXVsdChub3coKSkKICBmaW5pc2hlZEF0ICAgIERhdGVUaW1lPwoKICBmaXJtICAgICAgICBGaXJtICAgICAgICAgQHJlbGF0aW9uKGZpZWxkczogW2Zpcm1JZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQogIGNsaWVudCAgICAgIENsaWVudCAgICAgICBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICBjZXJ0aWZpY2F0ZSBDZXJ0aWZpY2F0ZT8gQHJlbGF0aW9uKGZpZWxkczogW2NlcnRpZmljYXRlSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogU2V0TnVsbCkKCiAgQEBpbmRleChbZmlybUlkLCBzdGFydGVkQXRdKQogIEBAaW5kZXgoW2NlcnRpZmljYXRlSWQsIHN0YXJ0ZWRBdF0pCn0KCi8vLyBDb252aXRlOiDDum5pY2EgcG9ydGEgZGUgZW50cmFkYSBwYXJhIGVzY3JpdMOzcmlvIG5vdm8gb3UgdXN1w6FyaW8gbm92by4KLy8vCi8vLyBQb3IgcXVlIGNvbnZpdGUgZSBuw6NvIGNhZGFzdHJvIGFiZXJ0bzogbyBhcHAgcm9kYSBudW0gZG9tw61uaW8gcMO6YmxpY28KLy8vIChvZmZpY2UucHJvY29udGFkb3IuY29tLmJyKS4gQ2FkYXN0cm8gbGl2cmUgZGVpeGFyaWEgcXVhbHF1ZXIgdmlzaXRhbnRlCi8vLyBjcmlhciBlc2NyaXTDs3JpbyBuYSBzdWEgaW5zdMOibmNpYS4gTyAvc2V0dXAgY29udGludWEgdmFsZW5kbyBzw7MgcGFyYSBvCi8vLyBwcmltZWlybyBlc2NyaXTDs3JpbyBlIHNlZ3VlIHJlY3VzYW5kbyBkZXBvaXMgZGlzc28uCi8vLwovLy8gTyBjw7NkaWdvIG51bmNhIMOpIGdyYXZhZG86IGd1YXJkYW1vcyBzw7MgbyBoYXNoLiBRdWVtIHBlcmRlciBvIGxpbmsgZ2VyYSBvdXRyby4KbW9kZWwgRmlybUludml0ZSB7CiAgaWQgICAgICAgICBTdHJpbmcgICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICAvLy8gc2hhMjU2IGRvIGPDs2RpZ28gZW52aWFkbyBubyBsaW5rCiAgY29kZUhhc2ggICBTdHJpbmcgICAgQHVuaXF1ZQogIC8vLyBORVdfRklSTSA9IGNyaWEgZXNjcml0w7NyaW8gbm92byDCtyBKT0lOX0ZJUk0gPSBlbnRyYSBudW0gZXhpc3RlbnRlCiAga2luZCAgICAgICBTdHJpbmcKICAvLy8gcHJlZW5jaGlkbyBlbSBKT0lOX0ZJUk0KICBmaXJtSWQgICAgIFN0cmluZz8KICByb2xlICAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgiT1dORVIiKQogIC8vLyBxdWFuZG8gcHJlZW5jaGlkbywgc8OzIGVzc2UgZS1tYWlsIHBvZGUgYWNlaXRhcgogIGVtYWlsICAgICAgU3RyaW5nPwogIGNyZWF0ZWRCeSAgU3RyaW5nCiAgZXhwaXJlc0F0ICBEYXRlVGltZQogIHVzZWRBdCAgICAgRGF0ZVRpbWU/CiAgdXNlZEJ5ICAgICBTdHJpbmc/CiAgY3JlYXRlZEF0ICBEYXRlVGltZSAgQGRlZmF1bHQobm93KCkpCgogIEBAaW5kZXgoW2Zpcm1JZF0pCiAgQEBpbmRleChbZXhwaXJlc0F0XSkKfQoKLy8vIFRyYXZhIGRlIGNhcHR1cmEgcG9yIGNlcnRpZmljYWRvIOKAlCBpbXBlZGUgZHVhcyBjb25zdWx0YXMgRGlzdERGZSBzaW11bHTDom5lYXMKLy8vIHBhcmEgbyBtZXNtbyBDTlBKLCBxdWUgYSBTRUZBWiByZWplaXRhIGNvbW8gImNvbnN1bW8gaW5kZXZpZG8iIChjU3RhdCA2NTYpIGUKLy8vIHB1bmUgY29tIHVtYSBob3JhIGRlIGJsb3F1ZWlvLgovLy8KLy8vIFBvciBxdWUgdGFiZWxhIGUgbsOjbyBwZ19hZHZpc29yeV9sb2NrOiBvIGFkdmlzb3J5IGxvY2sgw6kgcHJlc28gw6AgU0VTU8ODTyBkbwovLy8gUG9zdGdyZXMsIGUgbyBQcmlzbWEgdHJhYmFsaGEgY29tIHBvb2wuIE8gbG9jayBzYWlyaWEgbnVtYSBjb25leMOjbyBlIG8KLy8vIHVubG9jayBlbSBvdXRyYSwgZGVpeGFuZG8gbyBjZXJ0aWZpY2FkbyB0cmF2YWRvIGF0w6kgYSBjb25leMOjbyBtb3JyZXIuCi8vLyBMaW5oYSBjb20gZXhwaXJhw6fDo28gw6kgYXTDtG1pY2EgKFVQREFURSBjb25kaWNpb25hZG8pLCB2YWxlIGVudHJlIHLDqXBsaWNhcyBlCi8vLyBzZSByZWN1cGVyYSBzb3ppbmhhIHNlIG8gcHJvY2Vzc28gY2FpciBubyBtZWlvLgptb2RlbCBDYXB0dXJlTG9jayB7CiAgY2VydGlmaWNhdGVJZCBTdHJpbmcgICBAaWQKICBydW5JZCAgICAgICAgIFN0cmluZz8KICBsb2NrZWRCeVVzZXIgIFN0cmluZz8KICBsb2NrZWRBdCAgICAgIERhdGVUaW1lIEBkZWZhdWx0KG5vdygpKQogIGV4cGlyZXNBdCAgICAgRGF0ZVRpbWUKCiAgQEBpbmRleChbZXhwaXJlc0F0XSkKfQoKLy8vIEhvcmFzIGxhbsOnYWRhcyDigJQgUCZMIGludGVybm8gcG9yIGNsaWVudGUKbW9kZWwgVGltZUVudHJ5IHsKICBpZCAgICAgICAgICAgICAgU3RyaW5nICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICBmaXJtSWQgICAgICAgICAgU3RyaW5nCiAgY2xpZW50SWQgICAgICAgIFN0cmluZwogIHVzZXJJZCAgICAgICAgICBTdHJpbmcKICB0YXNrSWQgICAgICAgICAgU3RyaW5nPwogIG1pbnV0ZXMgICAgICAgICBJbnQKICBob3VybHlSYXRlQ2VudHMgSW50ICAgICAgQGRlZmF1bHQoMCkKICBjb3N0UmF0ZUNlbnRzICAgSW50ICAgICAgQGRlZmF1bHQoMCkKICBiaWxsYWJsZSAgICAgICAgQm9vbGVhbiAgQGRlZmF1bHQodHJ1ZSkKICBub3RlICAgICAgICAgICAgU3RyaW5nPwogIHdvcmtlZEF0ICAgICAgICBEYXRlVGltZSBAZGVmYXVsdChub3coKSkKICBjcmVhdGVkQXQgICAgICAgRGF0ZVRpbWUgQGRlZmF1bHQobm93KCkpCgogIGZpcm0gICBGaXJtICBAcmVsYXRpb24oZmllbGRzOiBbZmlybUlkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgY2xpZW50IENsaWVudCBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKICB1c2VyICAgVXNlciAgQHJlbGF0aW9uKGZpZWxkczogW3VzZXJJZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQogIHRhc2sgICBUYXNrPyBAcmVsYXRpb24oZmllbGRzOiBbdGFza0lkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IFNldE51bGwpCgogIEBAaW5kZXgoW2Zpcm1JZCwgY2xpZW50SWRdKQogIEBAaW5kZXgoW2Zpcm1JZCwgd29ya2VkQXRdKQp9CgovLy8gU0xBIGRlIHJlc3Bvc3RhL2VudmlvIHBvciBjYW5hbAptb2RlbCBTbGFQb2xpY3kgewogIGlkICAgICAgICAgIFN0cmluZyAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgU3RyaW5nCiAgY2hhbm5lbCAgICAgU3RyaW5nICAgLy8gRU1BSUwgfCBXSEFUU0FQUAogIGRlcGFydG1lbnQgIFN0cmluZyAgIEBkZWZhdWx0KCJBTEwiKQogIHRhcmdldEhvdXJzIEludCAgICAgIEBkZWZhdWx0KDI0KQogIGNyZWF0ZWRBdCAgIERhdGVUaW1lIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgIERhdGVUaW1lIEB1cGRhdGVkQXQKCiAgZmlybSBGaXJtIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKCiAgQEB1bmlxdWUoW2Zpcm1JZCwgY2hhbm5lbCwgZGVwYXJ0bWVudF0pCn0KCi8vLyBBY2hhZG9zIGRlIGF1ZGl0b3JpYSBYTUwgKGJsb3F1ZWlhbSBmZWNoYW1lbnRvIHNlIGJsb2NraW5nKQptb2RlbCBYbWxBdWRpdEZpbmRpbmcgewogIGlkICAgICAgICAgICAgU3RyaW5nICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICBmaXJtSWQgICAgICAgIFN0cmluZwogIHhtbERvY3VtZW50SWQgU3RyaW5nCiAgc2V2ZXJpdHkgICAgICBTdHJpbmcgICAvLyBJTkZPIHwgV0FSTklORyB8IEVSUk9SCiAgY29kZSAgICAgICAgICBTdHJpbmcKICBtZXNzYWdlICAgICAgIFN0cmluZwogIGJsb2NraW5nICAgICAgQm9vbGVhbiAgQGRlZmF1bHQoZmFsc2UpCiAgY3JlYXRlZEF0ICAgICBEYXRlVGltZSBAZGVmYXVsdChub3coKSkKCiAgZmlybSAgICAgICAgRmlybSAgICAgICAgQHJlbGF0aW9uKGZpZWxkczogW2Zpcm1JZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQogIHhtbERvY3VtZW50IFhtbERvY3VtZW50IEByZWxhdGlvbihmaWVsZHM6IFt4bWxEb2N1bWVudElkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCgogIEBAaW5kZXgoW2Zpcm1JZCwgYmxvY2tpbmddKQogIEBAaW5kZXgoW3htbERvY3VtZW50SWRdKQp9CgovLy8gTWFya2V0cGxhY2UgZGUgaW50ZWdyYcOnw7VlcyAoY3JlZGVuY2lhaXMgY3JpcHRvZ3JhZmFkYXMpCm1vZGVsIEludGVncmF0aW9uIHsKICBpZCAgICAgICAgICAgICBTdHJpbmcgICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICBmaXJtSWQgICAgICAgICBTdHJpbmcKICBwcm92aWRlciAgICAgICBTdHJpbmcgICAgLy8gRE9NSU5JTyB8IE9NSUUgfCBDTElDS1NJR04gfCBPUEVOQUkKICBzdGF0dXMgICAgICAgICBTdHJpbmcgICAgQGRlZmF1bHQoIkRJU0NPTk5FQ1RFRCIpIC8vIERJU0NPTk5FQ1RFRCB8IENPTk5FQ1RFRCB8IEVSUk9SCiAgY3JlZGVudGlhbHNFbmMgU3RyaW5nPwogIG1ldGFKc29uICAgICAgIFN0cmluZyAgICBAZGVmYXVsdCgie30iKQogIGxhc3RTeW5jQXQgICAgIERhdGVUaW1lPwogIGxhc3RFcnJvciAgICAgIFN0cmluZz8KICBjcmVhdGVkQXQgICAgICBEYXRlVGltZSAgQGRlZmF1bHQobm93KCkpCiAgdXBkYXRlZEF0ICAgICAgRGF0ZVRpbWUgIEB1cGRhdGVkQXQKCiAgZmlybSBGaXJtIEByZWxhdGlvbihmaWVsZHM6IFtmaXJtSWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKCiAgQEB1bmlxdWUoW2Zpcm1JZCwgcHJvdmlkZXJdKQp9CgovLy8gQ29udHJhdG8gLyBPUyDigJQgYXNzaW5hdHVyYSBwb3IgdXBsb2FkIGRlIFBERiBhc3NpbmFkbwptb2RlbCBDb250cmFjdCB7CiAgaWQgICAgICAgICAgICAgU3RyaW5nICAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgICAgU3RyaW5nCiAgY2xpZW50SWQgICAgICAgU3RyaW5nCiAgdGl0bGUgICAgICAgICAgU3RyaW5nCiAga2luZCAgICAgICAgICAgU3RyaW5nICAgIEBkZWZhdWx0KCJPUyIpIC8vIENPTlRSQUNUIHwgT1MKICBzdGF0dXMgICAgICAgICBTdHJpbmcgICAgQGRlZmF1bHQoIkRSQUZUIikgLy8gRFJBRlQgfCBTRU5UIHwgU0lHTkVEIHwgUkVKRUNURUQKICBvcmlnaW5hbFBhdGggICBTdHJpbmc/CiAgc2lnbmVkUGRmUGF0aCAgU3RyaW5nPwogIHNpZ25lZEZpbGVIYXNoIFN0cmluZz8KICBzaWduZWRCeUlwICAgICBTdHJpbmc/CiAgc2lnbmVkQnlVc2VyQWdlbnQgU3RyaW5nPwogIG5vdGVzICAgICAgICAgIFN0cmluZz8KICBzZW50QXQgICAgICAgICBEYXRlVGltZT8KICBzaWduZWRBdCAgICAgICBEYXRlVGltZT8KICBjcmVhdGVkQXQgICAgICBEYXRlVGltZSAgQGRlZmF1bHQobm93KCkpCiAgdXBkYXRlZEF0ICAgICAgRGF0ZVRpbWUgIEB1cGRhdGVkQXQKCiAgZmlybSAgIEZpcm0gICBAcmVsYXRpb24oZmllbGRzOiBbZmlybUlkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgY2xpZW50IENsaWVudCBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKCiAgQEBpbmRleChbZmlybUlkLCBzdGF0dXNdKQogIEBAaW5kZXgoW2NsaWVudElkXSkKfQoKLy8vIEluYm94IGludGVsaWdlbnRlIOKAlCBjbGFzc2lmaWNhw6fDo28gT3BlbkFJCm1vZGVsIEluYm94SXRlbSB7CiAgaWQgICAgICAgICAgICAgU3RyaW5nICAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgZmlybUlkICAgICAgICAgU3RyaW5nCiAgY2xpZW50SWQgICAgICAgU3RyaW5nCiAgdXBsb2FkZWRCeUlkICAgU3RyaW5nPwogIGZpbGVuYW1lICAgICAgIFN0cmluZwogIG1pbWVUeXBlICAgICAgIFN0cmluZwogIGZpbGVQYXRoICAgICAgIFN0cmluZwogIGNsYXNzaWZpY2F0aW9uIFN0cmluZz8gICAvLyBEQVMgfCBORkUgfCBDT05UUkFDVCB8IFBST09GIHwgT1RIRVIKICBjb25maWRlbmNlICAgICBGbG9hdD8KICByYXdBaUpzb24gICAgICBTdHJpbmc/CiAgc3RhdHVzICAgICAgICAgU3RyaW5nICAgIEBkZWZhdWx0KCJQRU5ESU5HIikgLy8gUEVORElORyB8IENMQVNTSUZJRUQgfCBUUklBR0VEIHwgUkVKRUNURUQKICBub3RlICAgICAgICAgICBTdHJpbmc/CiAgY3JlYXRlZEF0ICAgICAgRGF0ZVRpbWUgIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgICAgIERhdGVUaW1lICBAdXBkYXRlZEF0CgogIGZpcm0gICBGaXJtICAgQHJlbGF0aW9uKGZpZWxkczogW2Zpcm1JZF0sIHJlZmVyZW5jZXM6IFtpZF0sIG9uRGVsZXRlOiBDYXNjYWRlKQogIGNsaWVudCBDbGllbnQgQHJlbGF0aW9uKGZpZWxkczogW2NsaWVudElkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCgogIEBAaW5kZXgoW2Zpcm1JZCwgc3RhdHVzXSkKICBAQGluZGV4KFtjbGllbnRJZF0pCn0KCi8vLyBTYcO6ZGUgZmlzY2FsIOKAlCBhbGVydGFzIGRlcml2YWRvcyBkZSBkYWRvcyByZWFpcwptb2RlbCBGaXNjYWxBbGVydCB7CiAgaWQgICAgICAgICBTdHJpbmcgICAgQGlkIEBkZWZhdWx0KGN1aWQoKSkKICBmaXJtSWQgICAgIFN0cmluZwogIGNsaWVudElkICAgU3RyaW5nCiAgdHlwZSAgICAgICBTdHJpbmcgICAgLy8gQ0VSVF9FWFBJUklORyB8IENORF9NSVNTSU5HIHwgT1ZFUkRVRSB8IFhNTF9FUlJPUgogIHNldmVyaXR5ICAgU3RyaW5nICAgIEBkZWZhdWx0KCJXQVJOSU5HIikgLy8gSU5GTyB8IFdBUk5JTkcgfCBDUklUSUNBTAogIG1lc3NhZ2UgICAgU3RyaW5nCiAgbWV0YUpzb24gICBTdHJpbmcgICAgQGRlZmF1bHQoInt9IikKICByZXNvbHZlZEF0IERhdGVUaW1lPwogIGNyZWF0ZWRBdCAgRGF0ZVRpbWUgIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCAgRGF0ZVRpbWUgIEB1cGRhdGVkQXQKCiAgZmlybSAgIEZpcm0gICBAcmVsYXRpb24oZmllbGRzOiBbZmlybUlkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCiAgY2xpZW50IENsaWVudCBAcmVsYXRpb24oZmllbGRzOiBbY2xpZW50SWRdLCByZWZlcmVuY2VzOiBbaWRdLCBvbkRlbGV0ZTogQ2FzY2FkZSkKCiAgQEBpbmRleChbZmlybUlkLCByZXNvbHZlZEF0XSkKICBAQGluZGV4KFtjbGllbnRJZCwgdHlwZV0pCn0KCi8vLyBSZWRlZmluacOnw6NvIGRlIHNlbmhhIGRvIHVzdcOhcmlvLgovLy8KLy8vIE1lc21vIHBhZHLDo28gZG8gRmlybUludml0ZTogbyBjw7NkaWdvIGRlIDMyIGhleCBzw7MgZXhpc3RlIGRlbnRybyBkYSBVUkwgZSBvCi8vLyBiYW5jbyBndWFyZGEgYXBlbmFzIG8gc2hhMjU2IGRlbGUuIEFzc2ltIHVtIGR1bXAgZG8gYmFuY28gbsOjbyBwZXJtaXRlCi8vLyBhc3N1bWlyIGNvbnRhcywgZSB1bSBjw7NkaWdvIHBlcmRpZG8gbsOjbyB0ZW0gY29tbyBzZXIgcmVjdXBlcmFkbyDigJQgc8OzCi8vLyByZWVtaXRpZG8uCi8vLwovLy8gVXNvIMO6bmljbyAodXNlZEF0KSBlIGV4cGlyYcOnw6NvIGN1cnRhOiByZWRlZmluaXIgc2VuaGEgw6kgYSBvcGVyYcOnw6NvIG1haXMKLy8vIGF0YWNhZGEgZGUgdW0gYXBwLCBlIHVtIGxpbmsgZGUgbG9uZ2EgdmFsaWRhZGUgcGFyYWRvIG51bWEgY2FpeGEgZGUgZS1tYWlsIMOpCi8vLyB1bWEgY2hhdmUgZXNxdWVjaWRhIG5hIHBvcnRhLgptb2RlbCBQYXNzd29yZFJlc2V0IHsKICBpZCAgICAgICAgU3RyaW5nICAgIEBpZCBAZGVmYXVsdChjdWlkKCkpCiAgLy8vIHNoYTI1NiBkbyBjw7NkaWdvIGVudmlhZG8gbm8gbGluawogIGNvZGVIYXNoICBTdHJpbmcgICAgQHVuaXF1ZQogIHVzZXJJZCAgICBTdHJpbmcKICAvLy8gIlNFTEYiIHF1YW5kbyBvIHByw7NwcmlvIHVzdcOhcmlvIHBlZGl1OyBpZCBkZSBxdWVtIGVtaXRpdSBxdWFuZG8gdmVpbyBkbwogIC8vLyBwYWluZWwgKGNhbWluaG8gcXVlIGZ1bmNpb25hIHNlbSBTTVRQIGNvbmZpZ3VyYWRvKS4KICBjcmVhdGVkQnkgU3RyaW5nCiAgZXhwaXJlc0F0IERhdGVUaW1lCiAgdXNlZEF0ICAgIERhdGVUaW1lPwogIGNyZWF0ZWRBdCBEYXRlVGltZSAgQGRlZmF1bHQobm93KCkpCgogIHVzZXIgVXNlciBAcmVsYXRpb24oZmllbGRzOiBbdXNlcklkXSwgcmVmZXJlbmNlczogW2lkXSwgb25EZWxldGU6IENhc2NhZGUpCgogIEBAaW5kZXgoW3VzZXJJZF0pCiAgQEBpbmRleChbZXhwaXJlc0F0XSkKfQo=
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Escritório de contabilidade (tenant)
+model Firm {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  brandName    String?
+  brandTagline String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users        User[]
+  clients      Client[]
+  processes    ProcessTemplate[]
+  tasks        Task[]
+  obligations  Obligation[]
+  xmlDocs      XmlDocument[]
+  pipelines    FiscalPipeline[]
+  deliveries   Delivery[]
+  certificates Certificate[]
+  captureRuns  CaptureRun[]
+  payments     Payment[]
+  timeEntries  TimeEntry[]
+  slaPolicies  SlaPolicy[]
+  xmlFindings  XmlAuditFinding[]
+  integrations Integration[]
+  contracts    Contract[]
+  inboxItems   InboxItem[]
+  fiscalAlerts FiscalAlert[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  firmId       String
+  clientId     String?
+  email        String
+  name         String
+  passwordHash String   @default("")
+  role         String   @default("STAFF") // OWNER | MANAGER | STAFF | CLIENT
+  createdAt    DateTime @default(now())
+
+  firm          Firm    @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client        Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  assignedTasks Task[]  @relation("TaskAssignee")
+  timeEntries   TimeEntry[]
+  passwordResets PasswordReset[]
+
+  @@unique([firmId, email])
+  @@index([clientId])
+}
+
+/// Cliente do escritório (empresa atendida)
+model Client {
+  id           String   @id @default(cuid())
+  firmId       String
+  legalName    String
+  tradeName    String?
+  cnpj         String
+  regime       String   @default("SIMPLES") // SIMPLES | LUCRO_PRESUMIDO | LUCRO_REAL | MEI
+  /// id da empresa correspondente no ProContador (SaaS), dono do certificado e
+  /// da captura. Preenchido pelo sync de clientes; o CNPJ serve de fallback.
+  procontadorCompanyId String?
+  whatsapp     String?
+  email        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  firm         Firm             @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  users        User[]
+  tasks        Task[]
+  obligations  Obligation[]
+  xmlDocs      XmlDocument[]
+  pipelines    FiscalPipeline[]
+  certificates Certificate[]
+  captureRuns  CaptureRun[]
+  timeEntries  TimeEntry[]
+  contracts    Contract[]
+  inboxItems   InboxItem[]
+  fiscalAlerts FiscalAlert[]
+
+  @@unique([firmId, cnpj])
+  @@index([firmId])
+}
+
+/// Template de processo recorrente (inspirado Karbon + TaskHub)
+model ProcessTemplate {
+  id          String   @id @default(cuid())
+  firmId      String
+  name        String
+  code        String
+  department  String   // FISCAL | CONTABIL | DP | SOCIETARIO | ATENDIMENTO
+  regimeScope String   @default("ALL") // ALL | SIMPLES | ...
+  recurring   Boolean  @default(true)
+  dayOfMonth  Int?     // dia típico de vencimento
+  stepsJson   String   @default("[]") // JSON array of step definitions
+  createdAt   DateTime @default(now())
+
+  firm  Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@unique([firmId, code])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  firmId      String
+  clientId    String?
+  templateId  String?
+  assigneeId  String?
+  title       String
+  description String?
+  status      String    @default("PENDING") // PENDING | IN_PROGRESS | BLOCKED | DONE | CANCELLED
+  priority    String    @default("NORMAL") // LOW | NORMAL | HIGH | URGENT
+  department  String    @default("FISCAL")
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  firm        Firm             @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client      Client?          @relation(fields: [clientId], references: [id])
+  template    ProcessTemplate? @relation(fields: [templateId], references: [id])
+  assignee    User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  obligation  Obligation?
+  pipeline    FiscalPipeline?
+  timeEntries TimeEntry[]
+
+  @@index([firmId, status])
+  @@index([firmId, dueAt])
+  @@index([firmId, department])
+}
+
+/// Guia / obrigação fiscal (MonitorHub+)
+model Obligation {
+  id            String    @id @default(cuid())
+  firmId        String
+  clientId      String
+  taskId        String?   @unique
+  type          String    // DAS | DARF | GPS | DCTFWEB | PGDAS | CND | FGTS | ISS | GNRE | OTHER
+  competence    String    // YYYY-MM
+  amountCents   Int?
+  barcode       String?
+  pixPayload    String?
+  status        String    @default("DRAFT") // DRAFT | READY | SENT | VIEWED | PAID | OVERDUE | CANCELLED
+  dueAt         DateTime?
+  sentAt        DateTime?
+  viewedAt      DateTime?
+  paidAt        DateTime?
+  proofUrl      String?
+  sourcePortal  String?   // e-CAC | FGTS | SEFAZ | MANUAL
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  task   Task?  @relation(fields: [taskId], references: [id])
+  deliveries Delivery[]
+  payments   Payment[]
+
+  @@index([firmId, status])
+  @@index([clientId, competence])
+}
+
+/// Envio de guia (ConnectHub / Confi): e-mail + WhatsApp com rastreio
+model Delivery {
+  id            String    @id @default(cuid())
+  firmId        String
+  obligationId  String
+  channel       String    // EMAIL | WHATSAPP
+  toAddress     String
+  status        String    @default("QUEUED") // QUEUED | SENT | DELIVERED | VIEWED | FAILED
+  providerMsgId String?
+  bodyPreview   String?
+  errorMessage  String?
+  sentAt        DateTime?
+  viewedAt      DateTime?
+  createdAt     DateTime  @default(now())
+
+  firm       Firm       @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  obligation Obligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+
+  @@index([obligationId])
+  @@index([firmId, status])
+}
+
+/// Pagamento de guia (Dootax / Pag Útil level)
+model Payment {
+  id            String    @id @default(cuid())
+  firmId        String
+  obligationId  String
+  method        String    // PIX | BOLETO
+  status        String    @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | CANCELLED
+  amountCents   Int
+  pixCopyPaste  String?
+  boletoBarcode String?
+  boletoDigitable String?
+  providerRef   String?
+  proofPath     String?
+  paidAt        DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  firm       Firm       @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  obligation Obligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+
+  @@index([obligationId])
+  @@index([firmId, status])
+}
+
+/// XML fiscal compra/venda (XMLHub + Qive-level model)
+model XmlDocument {
+  id            String   @id @default(cuid())
+  firmId        String
+  clientId      String
+  accessKey     String
+  /// NFE | RESUMO | EVENT | NFSE | CTE — RESUMO é o resNFe do DistDFe (nota de
+  /// entrada ainda sem XML completo, depende de manifestação) e EVENT é procEvento.
+  docType       String
+  direction     String   // IN | OUT
+  issuerCnpj    String?
+  recipientCnpj String?
+  issuedAt      DateTime?
+  amountCents   Int?
+  status        String   @default("CAPTURED") // CAPTURED | AUDITED | OK | WARNING | ERROR | IMPORTED
+  auditJson     String?  // JSON audit findings
+  rawPath       String?
+  nsu           String?
+  schemaSource  String?  // SEFAZ_DISTDFE | MOCK | UPLOAD
+  createdAt     DateTime @default(now())
+
+  firm     Firm              @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client   Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  findings XmlAuditFinding[]
+
+  @@unique([firmId, accessKey])
+  @@index([clientId, direction])
+}
+
+/// Moat: captura → audita → apura → guia → paga → prova → fecha tarefa
+model FiscalPipeline {
+  id           String   @id @default(cuid())
+  firmId       String
+  clientId     String
+  taskId       String?  @unique
+  obligationType String @default("DAS")
+  competence   String
+  stage        String   @default("CAPTURE") // CAPTURE | AUDIT | APURATE | GUIDE | PAY | PROVE | CLOSE
+  stageStatus  String   @default("PENDING") // PENDING | RUNNING | DONE | FAILED | NEEDS_APPROVAL
+  metaJson     String   @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  task   Task?  @relation(fields: [taskId], references: [id])
+
+  @@index([firmId, stage])
+  @@unique([firmId, clientId, obligationType, competence])
+}
+
+/// Certificado A1 (.pfx) do cliente — mTLS DistDFe
+model Certificate {
+  id               String    @id @default(cuid())
+  firmId           String
+  clientId         String?
+  cnpj             String
+  label            String
+  /// Caminho legado em disco (efêmero no Railway). Preferir pfxEnc.
+  pfxPath          String    @default("")
+  /// .pfx criptografado (AES-GCM, base64 do binário) — persiste no Postgres
+  pfxEnc           String?
+  /// PEM chave/cert (criptografados) — evita reparse PKCS#12 na captura
+  pemKeyEnc        String?
+  pemCertEnc       String?
+  passwordEnc      String
+  environment      String    @default("2") // 1=prod 2=homolog
+  lastNsu          String    @default("000000000000000")
+  lastNsuCte       String    @default("000000000000000")
+  lastNsuNfse      String    @default("000000000000000")
+  validFrom        DateTime?
+  validTo          DateTime?
+  subjectCn        String?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  firm        Firm         @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client      Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  captureRuns CaptureRun[]
+
+  @@index([firmId, cnpj])
+}
+
+model CaptureRun {
+  id            String    @id @default(cuid())
+  firmId        String
+  clientId      String
+  certificateId String?
+  /// Quem disparou a captura. O A1 é a assinatura do contribuinte: uso tem dono.
+  userId        String?
+  mode          String    // MOCK | LIVE
+  kindsJson     String    @default("[\"NFE\"]")
+  status        String    @default("RUNNING") // RUNNING | DONE | FAILED
+  docsFound     Int       @default(0)
+  docsSaved     Int       @default(0)
+  ultNsu        String?
+  maxNsu        String?
+  cStat         String?
+  xMotivo       String?
+  errorMessage  String?
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+
+  firm        Firm         @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  certificate Certificate? @relation(fields: [certificateId], references: [id], onDelete: SetNull)
+
+  @@index([firmId, startedAt])
+  @@index([certificateId, startedAt])
+}
+
+/// Convite: única porta de entrada para escritório novo ou usuário novo.
+///
+/// Por que convite e não cadastro aberto: o app roda num domínio público
+/// (office.procontador.com.br). Cadastro livre deixaria qualquer visitante
+/// criar escritório na sua instância. O /setup continua valendo só para o
+/// primeiro escritório e segue recusando depois disso.
+///
+/// O código nunca é gravado: guardamos só o hash. Quem perder o link gera outro.
+model FirmInvite {
+  id         String    @id @default(cuid())
+  /// sha256 do código enviado no link
+  codeHash   String    @unique
+  /// NEW_FIRM = cria escritório novo · JOIN_FIRM = entra num existente
+  kind       String
+  /// preenchido em JOIN_FIRM
+  firmId     String?
+  role       String    @default("OWNER")
+  /// quando preenchido, só esse e-mail pode aceitar
+  email      String?
+  createdBy  String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  usedBy     String?
+  createdAt  DateTime  @default(now())
+
+  @@index([firmId])
+  @@index([expiresAt])
+}
+
+/// Trava de captura por certificado — impede duas consultas DistDFe simultâneas
+/// para o mesmo CNPJ, que a SEFAZ rejeita como "consumo indevido" (cStat 656) e
+/// pune com uma hora de bloqueio.
+///
+/// Por que tabela e não pg_advisory_lock: o advisory lock é preso à SESSÃO do
+/// Postgres, e o Prisma trabalha com pool. O lock sairia numa conexão e o
+/// unlock em outra, deixando o certificado travado até a conexão morrer.
+/// Linha com expiração é atômica (UPDATE condicionado), vale entre réplicas e
+/// se recupera sozinha se o processo cair no meio.
+model CaptureLock {
+  certificateId String   @id
+  runId         String?
+  lockedByUser  String?
+  lockedAt      DateTime @default(now())
+  expiresAt     DateTime
+
+  @@index([expiresAt])
+}
+
+/// Horas lançadas — P&L interno por cliente
+model TimeEntry {
+  id              String   @id @default(cuid())
+  firmId          String
+  clientId        String
+  userId          String
+  taskId          String?
+  minutes         Int
+  hourlyRateCents Int      @default(0)
+  costRateCents   Int      @default(0)
+  billable        Boolean  @default(true)
+  note            String?
+  workedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  firm   Firm  @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task   Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([firmId, clientId])
+  @@index([firmId, workedAt])
+}
+
+/// SLA de resposta/envio por canal
+model SlaPolicy {
+  id          String   @id @default(cuid())
+  firmId      String
+  channel     String   // EMAIL | WHATSAPP
+  department  String   @default("ALL")
+  targetHours Int      @default(24)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@unique([firmId, channel, department])
+}
+
+/// Achados de auditoria XML (bloqueiam fechamento se blocking)
+model XmlAuditFinding {
+  id            String   @id @default(cuid())
+  firmId        String
+  xmlDocumentId String
+  severity      String   // INFO | WARNING | ERROR
+  code          String
+  message       String
+  blocking      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  firm        Firm        @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  xmlDocument XmlDocument @relation(fields: [xmlDocumentId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, blocking])
+  @@index([xmlDocumentId])
+}
+
+/// Marketplace de integrações (credenciais criptografadas)
+model Integration {
+  id             String    @id @default(cuid())
+  firmId         String
+  provider       String    // DOMINIO | OMIE | CLICKSIGN | OPENAI
+  status         String    @default("DISCONNECTED") // DISCONNECTED | CONNECTED | ERROR
+  credentialsEnc String?
+  metaJson       String    @default("{}")
+  lastSyncAt     DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@unique([firmId, provider])
+}
+
+/// Contrato / OS — assinatura por upload de PDF assinado
+model Contract {
+  id             String    @id @default(cuid())
+  firmId         String
+  clientId       String
+  title          String
+  kind           String    @default("OS") // CONTRACT | OS
+  status         String    @default("DRAFT") // DRAFT | SENT | SIGNED | REJECTED
+  originalPath   String?
+  signedPdfPath  String?
+  signedFileHash String?
+  signedByIp     String?
+  signedByUserAgent String?
+  notes          String?
+  sentAt         DateTime?
+  signedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, status])
+  @@index([clientId])
+}
+
+/// Inbox inteligente — classificação OpenAI
+model InboxItem {
+  id             String    @id @default(cuid())
+  firmId         String
+  clientId       String
+  uploadedById   String?
+  filename       String
+  mimeType       String
+  filePath       String
+  classification String?   // DAS | NFE | CONTRACT | PROOF | OTHER
+  confidence     Float?
+  rawAiJson      String?
+  status         String    @default("PENDING") // PENDING | CLASSIFIED | TRIAGED | REJECTED
+  note           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, status])
+  @@index([clientId])
+}
+
+/// Saúde fiscal — alertas derivados de dados reais
+model FiscalAlert {
+  id         String    @id @default(cuid())
+  firmId     String
+  clientId   String
+  type       String    // CERT_EXPIRING | CND_MISSING | OVERDUE | XML_ERROR
+  severity   String    @default("WARNING") // INFO | WARNING | CRITICAL
+  message    String
+  metaJson   String    @default("{}")
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, resolvedAt])
+  @@index([clientId, type])
+}
+
+/// Redefinição de senha do usuário.
+///
+/// Mesmo padrão do FirmInvite: o código de 32 hex só existe dentro da URL e o
+/// banco guarda apenas o sha256 dele. Assim um dump do banco não permite
+/// assumir contas, e um código perdido não tem como ser recuperado — só
+/// reemitido.
+///
+/// Uso único (usedAt) e expiração curta: redefinir senha é a operação mais
+/// atacada de um app, e um link de longa validade parado numa caixa de e-mail é
+/// uma chave esquecida na porta.
+model PasswordReset {
+  id        String    @id @default(cuid())
+  /// sha256 do código enviado no link
+  codeHash  String    @unique
+  userId    String
+  /// "SELF" quando o próprio usuário pediu; id de quem emitiu quando veio do
+  /// painel (caminho que funciona sem SMTP configurado).
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
