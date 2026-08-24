@@ -19,6 +19,14 @@ const PUBLIC_API_ROUTES = new Set([
   // Aceite de convite e publico por natureza: quem aceita ainda nao tem conta.
   // O codigo do convite e a credencial, e a rota tem rate limit propria.
   "/api/auth/accept-invite",
+  // Recuperação de senha, pública pelo mesmo motivo: quem esqueceu a senha não
+  // consegue autenticar para pedir a troca. O código de 32 hex é a credencial,
+  // e as duas rotas têm rate limit próprio.
+  //
+  // Note que /api/password-resets (emissão do link pelo painel) NÃO entra aqui:
+  // essa exige sessão de OWNER/MANAGER e é escopada por firmId.
+  "/api/auth/forgot",
+  "/api/auth/reset",
   "/api/health",
 ]);
 
